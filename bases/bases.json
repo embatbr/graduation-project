@@ -1,0 +1,10 @@
+{
+    "bases" :
+    [
+        {
+            "name" : "mit",
+            "sections" : ["enroll_1", "enroll_2", "imposter"],
+            "speaker-types" : ["f", "m"]
+        }
+    ]
+}
