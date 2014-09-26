@@ -4,6 +4,8 @@ some fields from a .wav file (or an acoustic signal).
 """
 
 
+import os, os.path
+
 import scipy.io.wavfile as wavf
 import numpy as np
 
@@ -36,16 +38,40 @@ class Signal(object):
         return (self.sample_rate, self.samples.astype(np.int16, copy=False))
 
 
-#TODO ler o .json
-def read_base():
-    pass
+def dir_to_dict(filepath):
+    """A recursive function to turn a directory tree into a dictionary.
+    """
+    if os.path.isfile(filepath) and (not os.path.islink(filepath)):
+        filename = os.path.basename(filepath)
+        if filename.endswith('.txt'):
+            return None
+        return filename
+
+    subdirs = os.listdir(filepath)
+    subdirs.sort()
+    filename = os.path.basename(filepath)
+    filedict = {filename : list()}
+
+    for subdir in subdirs:
+        subdict = dir_to_dict('%s/%s' % (filepath, subdir))
+        if subdict is not None:
+            filedict[filename].append(subdict)
+
+    return filedict
+
+def base_to_dict(basename):
+    """Reads a base of utterances names and returns a dictionary containing
+    the hierarchy.
+    """
+    basepath = '%s%s' % (BASES_DIR, basename)
+    return dir_to_dict(basepath)
 
 
 #TEST
 if __name__ == '__main__':
-    filename = 'mit/enroll_1/f00/phrase01_16k.wav'
-    wavfile = wavf.read('%s%s' % (BASES_DIR, filename))
-    signal = Signal(wavfile)
-    print(signal)
-    wavfile2 = signal.to_wavfile()
-    print(wavfile2)
+    basename = 'mit'
+    base = base_to_dict(basename)
+    basefile = open('%s.json' % basename, 'w')
+
+    import json
+    json.dump(base, basefile, indent=4)
