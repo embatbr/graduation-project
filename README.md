@@ -37,9 +37,9 @@ voz. Dentre estes, está na mira o INTERSPEECH 2015.
 
 ##Referências
 
-[1] Speaker Verification Using Adapted Gaussian Mixture Models
-[2] Theory of fractional covariance matrix and its applications in PCA and 2D-PCA
-[3] An Algorithm for Determining the Endpoints of Isolated Utterances
-[4] ROBUST ENDPOINT DETECTION FOR SPEECH RECOGNITION BASED ON DISCRIMINATIVE FEATURE EXTRACTION
-[5] Voice Activity Detection Based on the Bispectrum
-[6] A Tutorial on Principal Component Analysis
++ [1] Speaker Verification Using Adapted Gaussian Mixture Models
++ [2] Theory of fractional covariance matrix and its applications in PCA and 2D-PCA
++ [3] An Algorithm for Determining the Endpoints of Isolated Utterances
++ [4] ROBUST ENDPOINT DETECTION FOR SPEECH RECOGNITION BASED ON DISCRIMINATIVE FEATURE EXTRACTION
++ [5] Voice Activity Detection Based on the Bispectrum
++ [6] A Tutorial on Principal Component Analysis
