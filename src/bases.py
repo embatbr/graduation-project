@@ -1,5 +1,5 @@
 """This module contains basic structures to represent the utterances extracted
-from any base used. The final representation is a Signal object, that represents
+from any base used. The final representation is a Signal object, equivalent to
 some fields from a .wav file (or an acoustic signal).
 """
 
