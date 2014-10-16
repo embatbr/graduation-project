@@ -1,2 +1,5 @@
 bases/mit/
+docs/*.aux
+docs/*.log
+docs/*.toc
 src/__pycache__/
