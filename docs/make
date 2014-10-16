@@ -1,0 +1,2 @@
+rm embat-proposta.aux  embat-proposta.log embat-proposta.toc
+pdflatex embat-proposta.tex
