@@ -1,0 +1,6 @@
+\contentsline {section}{\numberline {1}Introduction}{1}
+\contentsline {subsection}{\numberline {1.1}Related work}{1}
+\contentsline {section}{\numberline {2}Proposal Topic I}{1}
+\contentsline {section}{\numberline {3}Proposal Topic II}{1}
+\contentsline {section}{\numberline {4}Research plan}{1}
+\contentsline {subsection}{\numberline {4.1}Plan for completion of the research}{1}
