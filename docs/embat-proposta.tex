@@ -8,6 +8,7 @@
 \usepackage{titlesec}
 \usepackage[pdftex]{graphics}
 \usepackage{mathtools}
+\usepackage{enumitem}
 
 \topmargin      0.0cm
 \headheight     0.0cm
@@ -69,11 +70,11 @@ Additionally to Reynolds' work, there will be an attempt to improve outcomes usi
 
 This project main objective is to provide a decent speaker verification system, with experimental results similar to (or better than) those presented in \cite{reynolds_et_al_2000}, as well as a possible improvement given by the addition of FPCA. The specific objectives include:
 
-\begin{enumerate}
+\begin{itemize}[noitemsep]
     \item Develop a speaker recognition system with outcomes similar to those presented in \cite{reynolds_et_al_2000}.
     \item Study the differences in performance between the adapted speaker GMM and the simple speaker GMM.
     \item Verify the possibility of implement FPCA, and if yes, try to improve the outcomes with this modification.
-\end{enumerate}
+\end{itemize}
 
 
 \section{Methodology}
@@ -83,18 +84,54 @@ The project's idea is easily findable \cite{reynolds_et_al_2000}, as well as the
 
 The work will be divided in the following stages, with schedule detailed in the next section:
 
-\begin{enumerate}
+\begin{itemize}[noitemsep]
     \item Study of the \cite{reynolds_et_al_2000} to properly understand the idea, as well as a survey of the state of the art in speaker verification algorithms (particularly in works related to \cite{reynolds_et_al_2000}), in order to improve the dissertation if possible.
-    \item Implementation of the main idea using the tools specified before. Perform the training and testing of the GMMs.
+    \item Development of Voice Activity Detector (VAD) and feature extractor, using the tools specified before.
+    \item Development and training of the GMM-UBM.
+    \item Development of the adapted speaker GMM. Test the speaker's models.
     \item Attempt to improve the project using the idea of FPCA \cite{gao_et_al_2013}. If not possible, detail the process and try to find a new solution.
     \item Write the report while executing each stage.
-\end{enumerate}
+\end{itemize}
 
 
 \section{Schedule}
 \label{ch:schedule}
 
-TODO
+The schedule is divided in months, going from October (when this proposal is written) until February (when the dissertation is delivered).
+
+\paragraph{\textbf{October 2014}}
+\begin{itemize}[noitemsep]
+    \item Literature research.
+    \item Report writing.
+\end{itemize}
+
+\paragraph{\textbf{November 2014}}
+\begin{itemize}[noitemsep]
+    \item Literature research.
+    \item Voice Activity Detector (VAD) and feature extractor development.
+    \item Report writing.
+\end{itemize}
+
+\paragraph{\textbf{December 2014}}
+\begin{itemize}[noitemsep]
+    \item Speaker GMM adaptation.
+    \item System testing.
+    \item Report writing.
+\end{itemize}
+
+\paragraph{\textbf{January 2015}}
+\begin{itemize}[noitemsep]
+    \item FPCA research.
+    \item FPCA development.
+    \item FPCA testing.
+    \item Report writing.
+\end{itemize}
+
+\paragraph{\textbf{February 2015}}
+\begin{itemize}[noitemsep]
+    \item Project review.
+    \item Presentation.
+\end{itemize}
 
 
 \begin{thebibliography}{9}
