@@ -1,12 +1,13 @@
-\documentclass[12pt]{article}
+\documentclass[a4paper,twocolumn]{article}
 
 \usepackage{times}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage[a4paper,margin=2cm,columnsep=1cm]{geometry}
 \usepackage{authblk}
-\usepackage{graphics}
-\usepackage{epsfig}
-\usepackage{amsmath}
+\usepackage{titlesec}
+\usepackage[pdftex]{graphics}
+\usepackage{mathtools}
 
 \topmargin      0.0cm
 \headheight     0.0cm
@@ -16,95 +17,106 @@
 \textheight     22.86cm
 \textwidth      16.51cm
 
+
+\begin{document}
+
+\graphicspath{{images/}}
+\titleformat*{\section}{\normalsize\bfseries\filcenter}
+\titleformat*{\subsection}{\normalsize\bfseries\filcenter}
+\renewcommand{\figurename}{\small Figure}
+\newcommand{\figureref}[1]{Fig. (\ref{fig:#1})}
+\newcommand{\equationref}[1]{Eq. (\ref{eq:#1})}
+\newcommand{\bigsum}{\displaystyle\sum}
+
 \title{\textbf{Speaker Verification Using Adapted Gaussian Mixture Models}\\
 \textit{Dissertation proposal}}
 \author{
-    \textbf{Eduardo M. B. de A. Tenório} (\textit{student})\\
+    \textbf{Eduardo Martins Barros de Albuquerque Tenório} (\textit{student})\\
     \textbf{Tsang Ing-Ren} (\textit{advisor})\\
-    \small{\texttt{\{embat,tir\}@cin.ufpe.br}}
+    \textbf{George Darmiton da Cunha Cavalcanti} (\textit{reviewer})\\
+    \small{\texttt{\{embat,tir,gdcc\}@cin.ufpe.br}}
 }
-\affil{
-    Centro de Informática\\
+\affil{\large
+    Centro de Informática,\\
     Universidade Federal de Pernambuco\\
 }
 \date{\today}
 
-\begin{document}
-\pagestyle{plain}
-\pagenumbering{arabic}
 \maketitle
-\pagebreak  % here finishes the cover
+
 
 \begin{abstract}
+\begin{itshape}
+This dissertation is a reproduction of MIT Lincoln Laboratory's Gaussian Mixture Model (GMM)-based speaker verification system used successfully in several NIST Speaker Recognition Evaluations (SREs) implemented by Douglas A. Reynolds. The system is built around the likelihood ratio test for verification, using simple but effective GMMs for likelihood functions, an Universal Background Model (UBM) for alternative speaker representation, and a form of Bayesian adaptation to derive speaker models from the UBM. Additionally, a new image processing technique named Fractional Principal Component Analysis (FPCA) will be used in order to improve experimental outcomes, with no guarantee of success due to the lack of experiments in SREs.\\
 
-This dissertation is a reproduction of MIT Lincoln Laboratory's Gaussian Mixture Model (GMM)-based speaker verification system used successfully in several NIST Speaker Recognition Evaluations (SREs) implemented by Douglas A. Reynolds. The system is built around the likelihood ratio test for verification, using simple but effective GMMs for likelihood functions, an Universal Background Model (UBM) for alternative speaker representation, and a form of Bayesian adaptation to derive speaker models from the UBM. Additionally there is an attempt to improve the system using fractional principal component analysis (FPCA), a technique never tried before in SREs.
-
+\noindent\textbf{keywords}: speaker recognition; Gaussian Mixture Models; likelihood ratio test; Universal Background Model; Fractional Principal Component Analysis
+\end{itshape}
 \end{abstract}
 
-\pagebreak  % here finishes the abstract
-
-\tableofcontents
-
-\pagebreak  % here finishes the table of contents
-
-\cleardoublepage
 
 \section{Introduction}
 \label{ch:intro}
 
-This part provides an overall introduction of your work, including
-related work of your proposal.
+\textit{Speaker recognition} is a field of \textit{Digital Speech Processing}, a set of techniques aimed to identify who is speaking through the analysis of their voices' characteristics, also called \textit{voice recognition}. It is different from \textit{speech recognition}, in which the aim is to recognize what is being said. Additionally, there are two different subfields of speaker recognition: \textit{speaker verification} and \textit{speaker identification}.
 
-\subsection{Related work}
-\label{ch:related}
+This project is focused on the speaker verification field, when a speaker claims to be of a certain identity and the voice is used to verify this claim (the other is concerned about what is said). The dissertation is a reproduction of the main idea presented in \cite{reynolds_et_al_2000}, in which a likelihood test is performed using an UBM with adapted GMMs for speakers. The project' scope is reduce, using one speaker per track in the base \cite{corpus_paper}.
 
-This part talks about related work of your proposal.
+Additionally to Reynolds' work, there will be an attempt to improve outcomes using FPCA, described in \cite{gao_et_al_2013}. This technique is recent and was originally developed to \textit{Digital Image Processing}, with no guarantees of good experimental results (or anyone) in speech. As image and speech processing are just specializations of signal processing, we have confidence to receive some interesting outcome.
 
-\section{Proposal Topic I}
-\label{ch:proposal}
 
-The content of your proposal. Each topic occupies one section, each
-with their own conclusion and future work.
+\section{Objectives}
+\label{ch:objectives}
 
-\section{Proposal Topic II}
-\label{ch:proposal}
+This project main objective is to provide a decent speaker verification system, with experimental results similar to (or better than) those presented in \cite{reynolds_et_al_2000}, as well as a possible improvement given by the addition of FPCA. The specific objectives include:
 
-The content of your proposal. Each topic occupies one section, each
-with their own conclusion and future work.
+\begin{enumerate}
+    \item Develop a speaker recognition system with outcomes similar to those presented in \cite{reynolds_et_al_2000}.
+    \item Study the differences in performance between the adapted speaker GMM and the simple speaker GMM.
+    \item Verify the possibility of implement FPCA, and if yes, try to improve the outcomes with this modification.
+\end{enumerate}
 
-\section{Research plan}
-\label{ch:plan}
 
-Provide an overview of what you have done and what need to be done.
+\section{Methodology}
+\label{ch:methodology}
 
-\subsection{Plan for completion of the research}
+The project's idea is easily findable \cite{reynolds_et_al_2000}, as well as the base used \cite{corpus_paper} to train, test and validate the system. The same to the additional proposal \cite{gao_et_al_2013}. All tools used are open source (Python, NumPy, SciPy, etc.) and requires no training, just basic programming knowledge.
 
-Table \ref{tab:plan} shows my plan for completion of the research.
+The work will be divided in the following stages, with schedule detailed in the next section:
 
-\begin{table}[hc]
-\begin{small}
-\begin{center}
-\begin{tabular}{lll}
-Timeline & Work & Progress\\
-\hline
-          & XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX & completed\\
-Nov. xxxx & XXXXXXXXXXXXXXXXXXXXXXXXXXX & ongoing\\
-Jan. xxxx & Thesis writting & \\
-Feb. xxxx & Thesis defense & \\
-\end{tabular}
-\end{center}
-\end{small}
-\caption{Plan for completion of my research}
-\label{tab:plan}
-\end{table}
+\begin{enumerate}
+    \item Study of the \cite{reynolds_et_al_2000} to properly understand the idea, as well as a survey of the state of the art in speaker verification algorithms (particularly in works related to \cite{reynolds_et_al_2000}), in order to improve the dissertation if possible.
+    \item Implementation of the main idea using the tools specified before. Perform the training and testing of the GMMs.
+    \item Attempt to improve the project using the idea of FPCA \cite{gao_et_al_2013}. If not possible, detail the process and try to find a new solution.
+    \item Write the report while executing each stage.
+\end{enumerate}
 
-Thus, I plan to defend my thesis in XXX XXXX.
 
-\pagebreak
+\section{Schedule}
+\label{ch:schedule}
 
-\begin{footnotesize}
-\bibliographystyle{plain}
-\bibliography{string,itu,rfc,i-d}
-\end{footnotesize}
+TODO
+
+
+\begin{thebibliography}{9}
+    \bibitem{reynolds_et_al_2000}
+        D. A. Reynolds et al.,
+        ``Speaker verification using adapted gaussian mixture models,"
+        \textit{Digital Signal Processing}, vol. 10,
+        (1-3) pp. 19-41,
+        2000.
+
+    \bibitem{corpus_paper}
+        R. H. Woo et al.,
+        ``The MIT Mobile Device Speaker Verification Corpus: Data Collection and Preliminary Experiments,"
+        in \textit{The Speaker and Language Recognition Workshop (IEEE Odyssey 2006),}
+        San Juan, Puerto Rico, 2006.
+
+    \bibitem{gao_et_al_2013}
+        C. Gao et al.,
+        ``Theory of fractional covariance matrix and its applications in PCA and 2D-PCA,"
+        \textit{Expert Systems with Applications}, vol. 40,
+        (1-3) pp. 5395-5401,
+        2013.
+\end{thebibliography}
 
 \end{document}
