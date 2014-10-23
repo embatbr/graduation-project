@@ -29,17 +29,17 @@
 \newcommand{\equationref}[1]{Eq. (\ref{eq:#1})}
 \newcommand{\bigsum}{\displaystyle\sum}
 
-\title{\textbf{Speaker Verification Using Adapted Gaussian Mixture Models}\\
-\textit{Dissertation proposal}}
+\title{
+    \textbf{Speaker Verification Using Adapted Gaussian Mixture Models}\\
+    \textit{Final Term Paper Proposal - 2014-2}}
 \author{
     \textbf{Eduardo Martins Barros de Albuquerque Tenório} (\textit{student})\\
     \textbf{Tsang Ing-Ren} (\textit{advisor})\\
-    \textbf{George Darmiton da Cunha Cavalcanti} (\textit{reviewer})\\
-    \small{\texttt{\{embat,tir,gdcc\}@cin.ufpe.br}}
+    \small{\texttt{\{embat,tir\}@cin.ufpe.br}}
 }
 \affil{\large
     Centro de Informática,\\
-    Universidade Federal de Pernambuco\\
+    Universidade Federal de Pernambuco
 }
 \date{\today}
 
@@ -48,56 +48,38 @@
 
 \begin{abstract}
 \begin{itshape}
-This dissertation is a reproduction of MIT Lincoln Laboratory's Gaussian Mixture Model (GMM)-based speaker verification system used successfully in several NIST Speaker Recognition Evaluations (SREs) implemented by Douglas A. Reynolds. The system is built around the likelihood ratio test for verification, using simple but effective GMMs for likelihood functions, an Universal Background Model (UBM) for alternative speaker representation, and a form of Bayesian adaptation to derive speaker models from the UBM. Additionally, a new image processing technique named Fractional Principal Component Analysis (FPCA) will be used in order to improve experimental outcomes, with no guarantee of success due to the lack of experiments in SREs.\\
+The proposed project is a reproduction of MIT Lincoln Laboratory's Gaussian Mixture Model (GMM)-based speaker verification system used in several NIST Speaker Recognition Evaluations (SREs) implemented by Douglas A. Reynolds. The system is built around the likelihood ratio test for verification, using simple but effective GMMs for likelihood functions, an Universal Background Model (UBM)-GMM for alternative speaker representation, and a form of Bayesian adaptation to derive speaker models from the UBM-GMM. Additionally, Fractional Covariance Matrix (FCM) is used in an attempt to improve the performance.
 
-\noindent\textbf{keywords}: speaker recognition; Gaussian Mixture Models; likelihood ratio test; Universal Background Model; Fractional Principal Component Analysis
+\medskip
+
+\noindent\textbf{keywords}: speaker recognition; Gaussian Mixture Models; likelihood ratio test; Universal Background Model; Fractional Covariance Matrix.
 \end{itshape}
 \end{abstract}
 
 
 \section{Introduction}
-\label{ch:intro}
+\label{ch:introduction}
 
-\textit{Speaker recognition} is a field of \textit{Digital Speech Processing}, a set of techniques aimed to identify who is speaking through the analysis of their voices' characteristics, also called \textit{voice recognition}. It is different from \textit{speech recognition}, in which the aim is to recognize what is being said. Additionally, there are two different subfields of speaker recognition: \textit{speaker verification} and \textit{speaker identification}.
+Voice is a very convenient tool for human beings. We are used to communicate and command throught speech and be identified by our voices, so it is natural that the technology follow the path and become more vocal. From orders to a computer game to a system authentication, the knowledge of specific techniques and which is more appropriate is imperative. The first case demands \textit{speech recognition} to extract information about what is said, while the second uses \textit{speaker recognition} techniques to identify who is speaking through the analysis of vocal characteristics. Speaker recognition is a major area of Computer Engineering, divided in two subfields: \textit{speaker verification}, when a speaker's identity is verified by voice, and \textit{speaker identification}, when a speaker is recognized in a group.
 
-This project is focused on the speaker verification field, when a speaker claims to be of a certain identity and the voice is used to verify this claim (the other is concerned about what is said). The dissertation is a reproduction of the main idea presented in \cite{reynolds_et_al_2000}, in which a likelihood test is performed using an UBM with adapted GMMs for speakers. The project' scope is reduce, using one speaker per track in the base \cite{corpus_paper}.
-
-Additionally to Reynolds' work, there will be an attempt to improve outcomes using FPCA, described in \cite{gao_et_al_2013}. This technique is recent and was originally developed to \textit{Digital Image Processing}, with no guarantees of good experimental results (or anyone) in speech. As image and speech processing are just specializations of signal processing, we have confidence to receive some interesting outcome.
+The proposed project is focused on speaker verification and reproduces the idea presented in \cite{reynolds_et_al_2000}: a likelihood test using UBM-GMM and adapted GMMs to classify a speaker as enrolled or imposter, through rigorous training and testing. A secondary objective is use the theory of FCM \cite{gao_et_al_2013} to try to improve the results.
 
 
 \section{Objectives}
 \label{ch:objectives}
 
-This project main objective is to provide a decent speaker verification system, with experimental results similar to (or better than) those presented in \cite{reynolds_et_al_2000}, as well as a possible improvement given by the addition of FPCA. The specific objectives include:
+The project main objectives are:
 
-\begin{itemize}[noitemsep]
-    \item Develop a speaker recognition system with outcomes similar to those presented in \cite{reynolds_et_al_2000}.
-    \item Study the differences in performance between the adapted speaker GMM and the simple speaker GMM.
-    \item Verify the possibility of implement FPCA, and if yes, try to improve the outcomes with this modification.
-\end{itemize}
-
-
-\section{Methodology}
-\label{ch:methodology}
-
-The project's idea is easily findable \cite{reynolds_et_al_2000}, as well as the base used \cite{corpus_paper} to train, test and validate the system. The same to the additional proposal \cite{gao_et_al_2013}. All tools used are open source (Python, NumPy, SciPy, etc.) and requires no training, just basic programming knowledge.
-
-The work will be divided in the following stages, with schedule detailed in the next section:
-
-\begin{itemize}[noitemsep]
-    \item Study of the \cite{reynolds_et_al_2000} to properly understand the idea, as well as a survey of the state of the art in speaker verification algorithms (particularly in works related to \cite{reynolds_et_al_2000}), in order to improve the dissertation if possible.
-    \item Development of Voice Activity Detector (VAD) and feature extractor, using the tools specified before.
-    \item Development and training of the GMM-UBM.
-    \item Development of the adapted speaker GMM. Test the speaker's models.
-    \item Attempt to improve the project using the idea of FPCA \cite{gao_et_al_2013}. If not possible, detail the process and try to find a new solution.
-    \item Write the report while executing each stage.
-\end{itemize}
+\begin{enumerate}[noitemsep]
+    \item Development of a state-of-the-art speaker verification system based on \cite{reynolds_et_al_2000}, trained with noise free utterances and tested in a noisy environment (utterances recorded with natural background noise) to evaluate robustness.
+    \item Explore the theory of FCM to try to improve the system's performance, repeating the experiment from the first objective.
+\end{enumerate}
 
 
 \section{Schedule}
 \label{ch:schedule}
 
-The schedule is divided in months, going from October (when this proposal is written) until February (when the dissertation is delivered).
+The schedule is divided in months, from October (when this proposal is written) to February (when the paper is delivered).
 
 \paragraph{\textbf{October 2014}}
 \begin{itemize}[noitemsep]
@@ -108,30 +90,36 @@ The schedule is divided in months, going from October (when this proposal is wri
 \paragraph{\textbf{November 2014}}
 \begin{itemize}[noitemsep]
     \item Literature research.
-    \item Voice Activity Detector (VAD) and feature extractor development.
+    \item Voice Activity Detector (VAD) development.
+    \item Feature extractor development.
     \item Report writing.
 \end{itemize}
 
 \paragraph{\textbf{December 2014}}
 \begin{itemize}[noitemsep]
-    \item Speaker GMM adaptation.
-    \item System testing.
+    \item UBM-GMM development and training.
+    \item Simple speaker's GMM development and testing.
+    \item Adapted speaker's GMM development and testing.
     \item Report writing.
 \end{itemize}
 
 \paragraph{\textbf{January 2015}}
 \begin{itemize}[noitemsep]
-    \item FPCA research.
-    \item FPCA development.
-    \item FPCA testing.
+    \item FCM development and testing.
     \item Report writing.
 \end{itemize}
 
 \paragraph{\textbf{February 2015}}
 \begin{itemize}[noitemsep]
     \item Project review.
-    \item Presentation.
+    \item Delivery and presentation.
 \end{itemize}
+
+
+\section{Evaluators}
+\label{sec:eval}
+
+The requested evaluator is Professor George Darmiton  da  Cunha  Cavalcanti (\texttt{gdcc@cin.ufpe.br}). If unavailable, the presence of Professor Carlos Alexandre Barros de Melo (\texttt{cabm@cin.ufpe.br}) is requested.
 
 
 \begin{thebibliography}{9}
@@ -142,12 +130,6 @@ The schedule is divided in months, going from October (when this proposal is wri
         (1-3) pp. 19-41,
         2000.
 
-    \bibitem{corpus_paper}
-        R. H. Woo et al.,
-        ``The MIT Mobile Device Speaker Verification Corpus: Data Collection and Preliminary Experiments,"
-        in \textit{The Speaker and Language Recognition Workshop (IEEE Odyssey 2006),}
-        San Juan, Puerto Rico, 2006.
-
     \bibitem{gao_et_al_2013}
         C. Gao et al.,
         ``Theory of fractional covariance matrix and its applications in PCA and 2D-PCA,"
@@ -155,5 +137,25 @@ The schedule is divided in months, going from October (when this proposal is wri
         (1-3) pp. 5395-5401,
         2013.
 \end{thebibliography}
+
+\newpage
+
+\section*{Signatures}
+
+\begin{center}
+\vspace{3cm}
+
+\rule{0.5\textwidth}{.4pt}\\
+\textbf{Eduardo Martins Barros de Albuquerque Tenório}\\
+(\textit{student})
+
+\vspace{3cm}
+
+\rule{0.5\textwidth}{.4pt}\\
+\textbf{Tsang Ing-Ren}\\
+(\textit{advisor})
+\end{center}
+
+\noindent Recife, \date{\today}.
 
 \end{document}
