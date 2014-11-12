@@ -1,6 +1,6 @@
 """This module contains basic structures to represent the utterances extracted
 from any base used. The final representation is a Signal object, equivalent to
-some fields from a .wav file (or an acoustic signal).
+some fields from a .wav file (an acoustic signal).
 """
 
 
@@ -38,40 +38,38 @@ class Signal(object):
         return (self.sample_rate, self.samples.astype(np.int16, copy=False))
 
 
-def dir_to_dict(filepath):
-    """A recursive function to turn a directory tree into a dictionary.
-    """
-    if os.path.isfile(filepath) and (not os.path.islink(filepath)):
-        filename = os.path.basename(filepath)
-        if filename.endswith('.txt'):
-            return None
-        return filename
-
-    subdirs = os.listdir(filepath)
-    subdirs.sort()
-    filename = os.path.basename(filepath)
-    filedict = {filename : list()}
-
-    for subdir in subdirs:
-        subdict = dir_to_dict('%s/%s' % (filepath, subdir))
-        if subdict is not None:
-            filedict[filename].append(subdict)
-
-    return filedict
-
 def base_to_dict(basename):
-    """Reads a base of utterances names and returns a dictionary containing
-    the hierarchy.
+    """Reads a base and returns a dictionary with the hierarchy.
     """
     basepath = '%s%s' % (BASES_DIR, basename)
-    return dir_to_dict(basepath)
+    basedict = dict()
+
+    for baseset in os.listdir(basepath):
+        basedict[baseset] = dict()
+
+        speakers = os.listdir('%s/%s' % (basepath, baseset))
+        speakers.sort()
+        for speaker in speakers:
+            utterances = os.listdir('%s/%s/%s' % (basepath, baseset, speaker))
+            utterances.sort()
+            utterances = [u for u in utterances if u.endswith('.wav')]
+            basedict[baseset][speaker] = utterances
+
+    return basedict
+
+def read_base(basename):
+    basedict = base_to_dict(basename)
 
 
 #TEST
 if __name__ == '__main__':
+    if not os.path.exists('base.out'):
+        os.mkdir('base.out')
+
     basename = 'mit'
-    base = base_to_dict(basename)
-    basefile = open('%s.json' % basename, 'w')
+    basedict = base_to_dict(basename)
+    read_base(basename)
 
     import json
-    json.dump(base, basefile, indent=4)
+    basefile = open('base.out/%s.json' % basename, 'w')
+    json.dump(basedict, basefile, indent=4, sort_keys=True)
