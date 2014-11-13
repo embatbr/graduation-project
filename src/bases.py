@@ -38,38 +38,33 @@ class Signal(object):
         return (self.sample_rate, self.samples.astype(np.int16, copy=False))
 
 
-def base_to_dict(basename):
-    """Reads a base and returns a dictionary with the hierarchy.
+def read_base_mit():
+    """Reads a base and returns a dictionary with the utterances in hierarchy.
     """
-    basepath = '%s%s' % (BASES_DIR, basename)
+    basepath = '%s%s' % (BASES_DIR, 'mit')
     basedict = dict()
 
     for baseset in os.listdir(basepath):
         basedict[baseset] = dict()
+        basesetpath = '%s/%s' % (basepath, baseset)
+        speakers = os.listdir(basesetpath)
 
-        speakers = os.listdir('%s/%s' % (basepath, baseset))
-        speakers.sort()
         for speaker in speakers:
-            utterances = os.listdir('%s/%s/%s' % (basepath, baseset, speaker))
-            utterances.sort()
-            utterances = [u for u in utterances if u.endswith('.wav')]
-            basedict[baseset][speaker] = utterances
+            basedict[baseset][speaker] = dict()
+            speakerpath = '%s/%s' % (basesetpath, speaker)
+            uttnames = os.listdir(speakerpath)
+
+            for uttname in uttnames:
+                if uttname.endswith('.wav'):
+                    uttpath = '%s/%s' % (speakerpath, uttname)
+                    wave = wavf.read(uttpath)
+                    signal = Signal(wave)
+                    basedict[baseset][speaker][uttname] = signal
 
     return basedict
-
-def read_base(basename):
-    basedict = base_to_dict(basename)
 
 
 #TEST
 if __name__ == '__main__':
-    if not os.path.exists('base.out'):
-        os.mkdir('base.out')
-
-    basename = 'mit'
-    basedict = base_to_dict(basename)
-    read_base(basename)
-
-    import json
-    basefile = open('base.out/%s.json' % basename, 'w')
-    json.dump(basedict, basefile, indent=4, sort_keys=True)
+    basedict = read_base_mit()
+    print(basedict)
