@@ -44,17 +44,17 @@ def preproc_mit_base():
     """Performs the pre-processing of the MIT base, removing silences and noise
     (if needed), and joining the utterances of each speaker in one.
     """
-    basepath_2 = '%s%s' % (BASES_DIR, 'mit-2')
-    if os.path.exists(basepath_2):
-        shutil.rmtree(basepath_2)
-    os.mkdir(basepath_2)
+    preproc_basepath = '%s%s' % (BASES_DIR, 'mit-preproc')
+    if os.path.exists(preproc_basepath):
+        shutil.rmtree(preproc_basepath)
+    os.mkdir(preproc_basepath)
 
     basepath = '%s%s' % (BASES_DIR, 'mit')
     basesets = os.listdir(basepath)
 
     for baseset in basesets:
-        basesetpath_2 = '%s/%s' % (basepath_2, baseset)
-        os.mkdir(basesetpath_2)
+        preproc_basesetpath = '%s/%s' % (preproc_basepath, baseset)
+        os.mkdir(preproc_basesetpath)
 
         basesetpath = '%s/%s' % (basepath, baseset)
         speakers = os.listdir(basesetpath)
@@ -76,8 +76,8 @@ def preproc_mit_base():
 
             signal = Signal((sample_rate, np.concatenate(waves)))
             wavfile = signal.to_wavfile()
-            speakerpath_2 = '%s/%s.wav' % (basesetpath_2, speaker)
-            wavf.write(speakerpath_2, wavfile[0], wavfile[1])
+            preproc_speakerpath = '%s/%s.wav' % (preproc_basesetpath, speaker)
+            wavf.write(preproc_speakerpath, wavfile[0], wavfile[1])
 
 
 #TEST
