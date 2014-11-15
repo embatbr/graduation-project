@@ -80,41 +80,6 @@ def preproc_mit_base():
             wavf.write(speakerpath_2, wavfile[0], wavfile[1])
 
 
-
-
-def read_mit_base():
-    """Reads the MIT base and returns a dictionary with the utterances in the
-    directory's hierarchy.
-
-    OBS: uses too much resources. The system becomes slow.
-    """
-    basepath = '%s%s' % (BASES_DIR, 'mit')
-    basedict = dict()
-
-    for baseset in os.listdir(basepath):
-        basedict[baseset] = dict()
-        basesetpath = '%s/%s' % (basepath, baseset)
-        speakers = os.listdir(basesetpath)
-
-        for speaker in speakers:
-            basedict[baseset][speaker] = dict()
-            speakerpath = '%s/%s' % (basesetpath, speaker)
-            uttnames = os.listdir(speakerpath)
-
-            for uttname in uttnames:
-                if uttname.endswith('.wav'):
-                    uttpath = '%s/%s' % (speakerpath, uttname)
-                    wave = wavf.read(uttpath)
-                    signal = Signal(wave)
-                    basedict[baseset][speaker][uttname] = signal
-
-    return basedict
-
-
 #TEST
 if __name__ == '__main__':
-    #basedict = read_mit_base()
-    #signal = basedict['enroll_1']['f00']['phrase01_16k.wav']
-    #print(signal)
-
     preproc_mit_base()
