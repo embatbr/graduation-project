@@ -5,11 +5,13 @@ some fields from a .wav file (an acoustic signal).
 
 
 import os, os.path
+import shutil
 
 import scipy.io.wavfile as wavf
 import numpy as np
 
-from defines import *
+
+BASES_DIR = '../bases/'
 
 
 class Signal(object):
@@ -38,8 +40,53 @@ class Signal(object):
         return (self.sample_rate, self.samples.astype(np.int16, copy=False))
 
 
-def read_base_mit():
-    """Reads a base and returns a dictionary with the utterances in hierarchy.
+def preproc_mit_base():
+    """Performs the pre-processing of the MIT base, removing silences and noise
+    (if needed), and joining the utterances of each speaker in one.
+    """
+    basepath_2 = '%s%s' % (BASES_DIR, 'mit-2')
+    if os.path.exists(basepath_2):
+        shutil.rmtree(basepath_2)
+    os.mkdir(basepath_2)
+
+    basepath = '%s%s' % (BASES_DIR, 'mit')
+    basesets = os.listdir(basepath)
+
+    for baseset in basesets:
+        basesetpath_2 = '%s/%s' % (basepath_2, baseset)
+        os.mkdir(basesetpath_2)
+
+        basesetpath = '%s/%s' % (basepath, baseset)
+        speakers = os.listdir(basesetpath)
+
+        for speaker in speakers:
+            speakerpath = '%s/%s' % (basesetpath, speaker)
+            uttnames = os.listdir(speakerpath)
+            uttnames.sort()
+
+            waves = list()
+            sample_rate = 20000
+            for uttname in uttnames:
+                if uttname.endswith('.wav'):
+                    uttpath = '%s/%s' % (speakerpath, uttname)
+                    wave = wavf.read(uttpath)
+                    #if necessary, the VAD goes here
+                    sample_rate = wave[0]
+                    waves.append(wave[1])
+
+            signal = Signal((sample_rate, np.concatenate(waves)))
+            wavfile = signal.to_wavfile()
+            speakerpath_2 = '%s/%s.wav' % (basesetpath_2, speaker)
+            wavf.write(speakerpath_2, wavfile[0], wavfile[1])
+
+
+
+
+def read_mit_base():
+    """Reads the MIT base and returns a dictionary with the utterances in the
+    directory's hierarchy.
+
+    OBS: uses too much resources. The system becomes slow.
     """
     basepath = '%s%s' % (BASES_DIR, 'mit')
     basedict = dict()
@@ -66,5 +113,8 @@ def read_base_mit():
 
 #TEST
 if __name__ == '__main__':
-    basedict = read_base_mit()
-    print(basedict)
+    #basedict = read_mit_base()
+    #signal = basedict['enroll_1']['f00']['phrase01_16k.wav']
+    #print(signal)
+
+    preproc_mit_base()
