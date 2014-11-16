@@ -1,5 +1,5 @@
 """This module contains basic structures to represent the utterances extracted
-from any base used. The final representation is a Signal object, equivalent to
+from the MIT base. The final representation is a Signal object, equivalent to
 some fields from a .wav file (an acoustic signal).
 """
 
@@ -79,20 +79,6 @@ def preproc_mit_base():
             preproc_speakerpath = '%s/%s.wav' % (preproc_basesetpath, speaker)
             wavf.write(preproc_speakerpath, wavfile[0], wavfile[1])
 
-
-def pre_emphasis(signal, alpha=1):
-    """A highpass filter, with 0 < alpha <= 1.
-    """
-    samples = signal.samples
-    wave = list()
-    for n in range(1, len(samples)):
-        y = samples[n] - alpha*samples[n - 1]
-        wave.append(y)
-
-    samples = np.array(wave)
-    return Signal((signal.sample_rate, samples))
-
-
 def read_signal(path):
     """Reads a signal, given the path inside the base.
     """
@@ -102,19 +88,13 @@ def read_signal(path):
     return signal
 
 
-#TEST
+# TEST
 if __name__ == '__main__':
-    #preproc_mit_base()
+    preproc_mit_base()
     signal = read_signal('mit-preproc/enroll_1/f00.wav')
-    print(signal)
 
     import matplotlib.pyplot as plt
 
-    plt.grid(True)
-    plt.plot(signal.samples)
-    plt.figure()
-
-    signal = pre_emphasis(signal)
     plt.grid(True)
     plt.plot(signal.samples)
 
