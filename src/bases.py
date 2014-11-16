@@ -42,7 +42,7 @@ class Signal(object):
 
 def preproc_mit_base():
     """Performs the pre-processing of the MIT base, removing silences and noise
-    (if necessary), and joining the utterances of each speaker in one.
+    (not implemented yet), and joining the utterances of each speaker in one.
     """
     preproc_basepath = '%s%s' % (BASES_DIR, 'mit-preproc')
     if os.path.exists(preproc_basepath):
@@ -65,13 +65,12 @@ def preproc_mit_base():
             uttnames.sort()
 
             waves = list()
-            sample_rate = 20000
+            sample_rate = 16000
             for uttname in uttnames:
                 if uttname.endswith('.wav'):
                     uttpath = '%s/%s' % (speakerpath, uttname)
                     wave = wavf.read(uttpath)
                     #if necessary, the VAD goes here
-                    sample_rate = wave[0]
                     waves.append(wave[1])
 
             signal = Signal((sample_rate, np.concatenate(waves)))
