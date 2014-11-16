@@ -42,7 +42,7 @@ class Signal(object):
 
 def preproc_mit_base():
     """Performs the pre-processing of the MIT base, removing silences and noise
-    (if needed), and joining the utterances of each speaker in one.
+    (if necessary), and joining the utterances of each speaker in one.
     """
     preproc_basepath = '%s%s' % (BASES_DIR, 'mit-preproc')
     if os.path.exists(preproc_basepath):
@@ -80,6 +80,42 @@ def preproc_mit_base():
             wavf.write(preproc_speakerpath, wavfile[0], wavfile[1])
 
 
+def pre_emphasis(signal, alpha=1):
+    """A highpass filter, with 0 < alpha <= 1.
+    """
+    samples = signal.samples
+    wave = list()
+    for n in range(1, len(samples)):
+        y = samples[n] - alpha*samples[n - 1]
+        wave.append(y)
+
+    samples = np.array(wave)
+    return Signal((signal.sample_rate, samples))
+
+
+def read_signal(path):
+    """Reads a signal, given the path inside the base.
+    """
+    fullpath = '%s%s' % (BASES_DIR, path)
+    wave = wavf.read(fullpath)
+    signal = Signal(wave)
+    return signal
+
+
 #TEST
 if __name__ == '__main__':
-    preproc_mit_base()
+    #preproc_mit_base()
+    signal = read_signal('mit-preproc/enroll_1/f00.wav')
+    print(signal)
+
+    import matplotlib.pyplot as plt
+
+    plt.grid(True)
+    plt.plot(signal.samples)
+    plt.figure()
+
+    signal = pre_emphasis(signal)
+    plt.grid(True)
+    plt.plot(signal.samples)
+
+    plt.show()
