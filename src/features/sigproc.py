@@ -1,6 +1,6 @@
 """This module was made "from scratch" using the codes provided by James Lyons
 at the url "github.com/jameslyons/python_speech_features". It includes routines
-for basic signal processing including framing and computing power spectra.
+for basic signal processing, such as framing and computing power spectra.
 
 Most part of the code is similar to the "inspiration". What I did was read his
 code and copy what I understood. The idea is to do the same he did, using his
@@ -12,6 +12,16 @@ import numpy as np
 import math
 
 
+def preemphasis(signal, coeff=0.95):
+    """Perform preemphasis on the input signal.
+
+    :param signal: The signal to filter.
+    :param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
+
+    :returns: the filtered signal.
+    """
+    return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
+
 def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
     """Frame a signal into overlapping frames.
 
@@ -22,7 +32,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))
     :param winfunc: the analysis window to apply to each frame. By default no
     window is applied (signal is multiplied by 1).
 
-    :returns: an array of frames. Size is NUMFRAMES by frame_len.
+    :returns: an array of frames. Size is NUMFRAMES x frame_len.
     """
     signal_len = len(signal)
     frame_len = int(round(frame_len))
@@ -90,12 +100,12 @@ def logpowspec(frames, NFFT, norm=1):
     """
     ps = powspec(frames, NFFT);
     ps[ps <= 1e-30] = 1e-30
-    lps = 10*np.log10(ps)
+    log_ps = 10*np.log10(ps)
 
     if norm:
-        return (lps - np.max(lps))
+        return (log_ps - np.max(log_ps))
     else:
-        return lps
+        return log_ps
 
 
 # TEST
@@ -105,15 +115,17 @@ if __name__ == '__main__':
     (rate, signal) = wavf.read("file.wav")
     print('signal:')
     print(signal)
+    print('preemphasis:')
+    print(preemphasis(signal))
     framesig = frame_signal(signal, 0.025*16000, 0.01*16000)
     print('framesig:')
     print(framesig)
     magsig = magspec(framesig, 512)
-    print('magsig:')
+    print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
     powsig = powspec(framesig, 512)
-    print('powsig:')
+    print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
     logpowsig = logpowspec(framesig, 512)
-    print('logpowsig:')
+    print('logpowsig', len(logpowsig), 'x', len(logpowsig[0]))
     print(logpowsig)
