@@ -85,47 +85,35 @@ def powspec(frames, NFFT):
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
 
-def logpowspec(frames, NFFT, norm=1):
-    """Compute the log power spectrum of each frame in frames. If frames is an
-    NxD matrix, output will be NxNFFT.
-
-    :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
-    zero-padded.
-    :param norm: If norm=1, the log power spectrum is normalised so that the max
-    value (across all frames) is 1.
-
-    :returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
-    be the log power spectrum of the corresponding frame.
-    """
-    ps = powspec(frames, NFFT);
-    ps[ps <= 1e-30] = 1e-30
-    log_ps = 10*np.log10(ps)
-
-    if norm:
-        return (log_ps - np.max(log_ps))
-    else:
-        return log_ps
-
 
 # TEST
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
 
-    (rate, signal) = wavf.read("file.wav")
+    (samplerate, signal) = wavf.read("file.wav")
     print('signal:')
     print(signal)
+    signal = preemphasis(signal)
     print('preemphasis:')
-    print(preemphasis(signal))
-    framesig = frame_signal(signal, 0.025*16000, 0.01*16000)
-    print('framesig:')
-    print(framesig)
-    magsig = magspec(framesig, 512)
+    print(signal)
+    framedsig = frame_signal(signal, 0.025*16000, 0.01*16000)
+    print('framedsig', len(framedsig), 'x', len(framedsig[0]))
+    print(framedsig)
+    magsig = magspec(framedsig, 512)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
-    powsig = powspec(framesig, 512)
+    powsig = powspec(framedsig, 512)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
-    logpowsig = logpowspec(framesig, 512)
-    print('logpowsig', len(logpowsig), 'x', len(logpowsig[0]))
-    print(logpowsig)
+
+    import matplotlib.pyplot as plt
+
+    plt.grid(True)
+    plt.plot(wavf.read("file.wav")[1])
+    plt.plot(signal)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(magsig[50])
+    plt.plot(powsig[50])
+
+    plt.show()
