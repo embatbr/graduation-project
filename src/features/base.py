@@ -36,7 +36,7 @@ def mel2hz(mel):
     """
     return (700 * (10**(mel/2595.0) - 1))
 
-def get_filterbanks(nfilt=26, nfft=512, samplerate=16000, lowfreq=0, highfreq=None):
+def filterbanks(nfilt=26, nfft=512, samplerate=16000, lowfreq=0, highfreq=None):
     """Compute a Mel-filterbank. The filters are stored in the rows, the columns
     correspond to fft bins. The filters are returned as an array of size
     nfilt x (nfft/2 + 1)
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     (rate, signal) = wavf.read("file.wav")
     print('signal:')
     print(signal)
-    fbank = get_filterbanks(nfilt=10, lowfreq=300)
+    fbank = filterbanks(nfilt=10, lowfreq=300)
     print('fbank', len(fbank), 'x', len(fbank[0]))
     print(fbank)
 
