@@ -163,51 +163,49 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 # TEST
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
+    import matplotlib.pyplot as plt
 
-    (samplerate, signal) = wavf.read("file.wav")
-    signal = sigproc.preemphasis(signal, 0.97)
-    frames = sigproc.frame_signal(signal, 0.025*16000, 0.01*16000)
-    pspec = sigproc.powspec(frames, 512)
-    print('signal:')
-    print(signal)
+    frame_len = 0.025*16000
+    frame_step = 0.01*16000
+    preemph_coeff = 0
+
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
     print(fbank)
+    plt.grid(True)
+    for i in range(len(fbank)): #figure 1
+        plt.plot(fbank[i], 'b')
+
+    (samplerate, signal) = wavf.read("file.wav")
     signal_fb = filterbank_signal(signal)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0]', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
+    plt.figure()
+    plt.grid(True)
+    plt.plot(signal_fb[0]) #figure 2
     print('signal_fb[1]', len(signal_fb[1]))
     print(signal_fb[1])
+    plt.figure()
+    plt.grid(True)
+    plt.plot(signal_fb[1]) #figure 3
+
     logsig = np.log(signal_fb[0])
     print('log signal_fb[0]', len(logsig), 'x', len(logsig[0]))
     print(logsig)
-
-    import matplotlib.pyplot as plt
-
-    plt.grid(True)
-    plt.plot(pspec)
     plt.figure()
     plt.grid(True)
-    for i in range(len(fbank)):
-        plt.plot(fbank[i])
-    plt.figure()
-    plt.grid(True)
-    plt.plot(signal_fb[0])
-    plt.figure()
-    plt.grid(True)
-    plt.plot(signal_fb[1])
+    plt.plot(logsig) #figure 4
 
-    plt.show()
-
-    (samplerate, signal) = wavf.read("file.wav")
-    mfccs = mfcc(signal, samplerate, numcep=19)
+    mfccs = mfcc(signal, samplerate, preemph=preemph_coeff)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
-    plt.grid(True)
-    plt.plot(mfccs)
     plt.figure()
     plt.grid(True)
-    for i in range(len(mfccs)):
+    plt.plot(mfccs) #figure 5
+    plt.figure()
+    plt.grid(True)
+    for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
+
     plt.show()
