@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     frame_len = 0.025*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0
+    preemph_coeff = 0.95
 
     (samplerate, signal) = wavf.read("file.wav")
     print('signal:')
@@ -132,9 +132,6 @@ if __name__ == '__main__':
     plt.grid(True)
     concat_framedsig = concat_frame(framedsig, frame_len, frame_step)
     plt.plot(concat_framedsig) #figure 3
-
-    wavf.write('file2.wav', samplerate, concat_framedsig.astype(np.int16))
-
 
     magsig = magspec(framedsig, 512)
     print('magsig', len(magsig), 'x', len(magsig[0]))

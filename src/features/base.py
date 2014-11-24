@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
     frame_len = 0.025*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0
+    preemph_coeff = 0.95
 
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
