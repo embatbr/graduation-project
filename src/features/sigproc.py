@@ -22,7 +22,7 @@ def preemphasis(signal, coeff=0.95):
     """
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
-def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
+def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     """Frame a signal into overlapping frames.
 
     :param signal: the audio signal to frame.
@@ -115,5 +115,9 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(magsig[50])
     plt.plot(powsig[50])
+    plt.figure()
+    plt.grid(True)
+    plt.plot(magsig)
+    plt.plot(powsig)
 
     plt.show()
