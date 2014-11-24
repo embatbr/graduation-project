@@ -89,35 +89,40 @@ def powspec(frames, NFFT):
 # TEST
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
+    import matplotlib.pyplot as plt
 
     (samplerate, signal) = wavf.read("file.wav")
     print('signal:')
     print(signal)
-    signal = preemphasis(signal)
+    plt.grid(True)
+    plt.plot(signal) #figure 1
+
+    presignal = preemphasis(signal)
     print('preemphasis:')
-    print(signal)
-    framedsig = frame_signal(signal, 0.025*16000, 0.01*16000)
+    print(presignal)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(presignal) #figure 2
+
+    framedsig = frame_signal(presignal, 0.025*16000, 0.01*16000)
     print('framedsig', len(framedsig), 'x', len(framedsig[0]))
     print(framedsig)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(framedsig[0]) #figure 3
+
     magsig = magspec(framedsig, 512)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(magsig[0]) #figure 4
+
     powsig = powspec(framedsig, 512)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
-
-    import matplotlib.pyplot as plt
-
-    plt.grid(True)
-    plt.plot(wavf.read("file.wav")[1])
-    plt.plot(signal)
     plt.figure()
     plt.grid(True)
-    plt.plot(magsig[50])
-    plt.plot(powsig[50])
-    plt.figure()
-    plt.grid(True)
-    plt.plot(magsig)
-    plt.plot(powsig)
+    plt.plot(powsig[0]) #figure 5
 
     plt.show()
