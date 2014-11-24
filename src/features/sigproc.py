@@ -86,10 +86,31 @@ def powspec(frames, NFFT):
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
 
 
+# AUXILIAR
+def concat_frame(framedsig, frame_len, frame_step):
+    framedsig_len = len(framedsig)
+    signal_len = int((framedsig_len + 1)*frame_step)
+    signal = np.zeros(signal_len, dtype=np.int32)
+
+    for i in range(framedsig_len):
+        begin = int(i*frame_step)
+        end = begin + int(frame_len)
+        if end > signal_len:
+            end = signal_len
+
+        signal[begin : end] = signal[begin : end] + framedsig[i][ : (end - begin)]
+
+    return signal
+
+
 # TEST
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
+
+    frame_len = 0.025*16000
+    frame_step = 0.01*16000
+    preemph_coeff = 0
 
     (samplerate, signal) = wavf.read("file.wav")
     print('signal:')
@@ -97,19 +118,23 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(signal) #figure 1
 
-    presignal = preemphasis(signal)
+    presignal = preemphasis(signal, coeff=preemph_coeff)
     print('preemphasis:')
     print(presignal)
     plt.figure()
     plt.grid(True)
     plt.plot(presignal) #figure 2
 
-    framedsig = frame_signal(presignal, 0.025*16000, 0.01*16000)
+    framedsig = frame_signal(presignal, frame_len, frame_step)
     print('framedsig', len(framedsig), 'x', len(framedsig[0]))
     print(framedsig)
     plt.figure()
     plt.grid(True)
-    plt.plot(framedsig[0]) #figure 3
+    concat_framedsig = concat_frame(framedsig, frame_len, frame_step)
+    plt.plot(concat_framedsig) #figure 3
+
+    wavf.write('file2.wav', samplerate, concat_framedsig.astype(np.int16))
+
 
     magsig = magspec(framedsig, 512)
     print('magsig', len(magsig), 'x', len(magsig[0]))
