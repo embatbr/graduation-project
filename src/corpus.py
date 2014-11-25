@@ -14,39 +14,52 @@ import features.base
 BASES_DIR = '../bases/'
 
 
-def mit_to_mfcc():
-    pathfeat = '%s%s' % (BASES_DIR, 'mit/features/')
+def mit_features():
+    pathfeat = '%smit/features/' % BASES_DIR
     if os.path.exists(pathfeat):
         shutil.rmtree(pathfeat)
     os.mkdir(pathfeat)
-    os.mkdir('%senroll_1' % (pathfeat))
-    os.mkdir('%senroll_2' % (pathfeat))
-    os.mkdir('%simposter' % (pathfeat))
 
-    #corpus 'enroll_1' will have all mfccs from utterances concatenated
-    path_enroll_1 = '%smit/utterances/enroll_1/' % BASES_DIR
-    speakers = os.listdir(path_enroll_1)
-    speakers.sort()
-    for speaker in speakers:
-        path_speaker = '%s/%s' % (path_enroll_1, speaker)
-        utterances = os.listdir(path_speaker)
-        utterances = [utt for utt in utterances if utt.endswith('.wav')]
-        utterances.sort()
+    pathcorp = '%smit/corpuses/' % BASES_DIR
+    corpuses = os.listdir(pathcorp)
+    corpuses.sort()
 
-        mfccs_deltas_list = list()
-        for utt in utterances:
-            path_utt = '%s/%s' % (path_speaker, utt)
-            (samplerate, signal) = wavf.read(path_utt)
-            mfccs_deltas = features.base.mfcc_delta(signal, samplerate)
-            mfccs_deltas_list.append(mfccs_deltas.transpose())
+    for corpus in corpuses:
+        print(corpus)
+        os.mkdir('%s%s' % (pathfeat, corpus))
+        speakers = os.listdir('%s%s' % (pathcorp, corpus))
+        speakers.sort()
 
-        mfccs_deltas = np.array(mfccs_deltas_list)
-        mfccs_deltas = np.concatenate(mfccs_deltas)
-        mfccs_deltas = mfccs_deltas.transpose()
-        np.save('%senroll_1/%s.feat' % (pathfeat, speaker), mfccs_deltas)
+        for speaker in speakers:
+            print(speaker)
+            #reading list of utterances from each speaker
+            pathspeaker = '%s%s/%s' % (pathcorp, corpus, speaker)
+            utterances = os.listdir(pathspeaker)
+            utterances.sort()
+            utterances = [utt for utt in utterances if utt.endswith('.wav')]
 
-        print('speaker:', speaker)
-        print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
+            #path to write in features
+            pathspeaker_feat = '%s%s/%s' % (pathfeat, corpus, speaker)
+            if corpus == 'enroll_1':    #enroll_1 concatenate all utterances from speaker
+                mfccs_deltas_list = list()
+            else:                       #others, save each utterance as a file
+                os.mkdir('%s' % pathspeaker_feat)
+
+            for utt in utterances:
+                path_utt = '%s/%s' % (pathspeaker, utt)
+                (samplerate, signal) = wavf.read(path_utt)
+                mfccs_deltas = features.base.mfcc_delta(signal, samplerate)
+                if corpus == 'enroll_1':
+                    mfccs_deltas_list.append(mfccs_deltas.transpose())
+                else:
+                    mfccs_deltas = mfccs_deltas.transpose()
+                    np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
+
+            if corpus == 'enroll_1':
+                mfccs_deltas = np.array(mfccs_deltas_list)
+                mfccs_deltas = np.concatenate(mfccs_deltas)
+                mfccs_deltas = mfccs_deltas.transpose()
+                np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
 
 #TEST
@@ -56,7 +69,7 @@ if __name__ == '__main__':
 
     coeff = 0.95
 
-    (samplerate, signal) = wavf.read('%smit/utterances/enroll_2/f08/phrase54_16k.wav' % BASES_DIR)
+    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' % BASES_DIR)
     print('signal:')
     print(signal)
     plt.grid(True)
@@ -69,6 +82,6 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(presignal) #figure 2
 
-    mit_to_mfcc()
+    mit_features()
 
     #plt.show()
