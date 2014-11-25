@@ -15,7 +15,7 @@ def preemphasis(signal, coeff=0.97):
     """Performs preemphasis on the input signal.
 
     @param signal: The signal to filter.
-    @param coeff: The preemphasis coefficient. 0 is no filter, default is 0.97.
+    @param coeff: The preemphasis coefficient. 0 is no filter. Default is 0.97.
 
     @returns: the higher frequencies of signal.
     """
@@ -57,7 +57,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
 
     return (frames*win)
 
-def magspec(frames, NFFT):
+def magspec(frames, NFFT=512):
     """Computes the magnitude spectrum of each frame in frames. If frames is an
     N*D matrix, output will be N*(NFFT/2).
 
@@ -71,7 +71,7 @@ def magspec(frames, NFFT):
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
     return np.absolute(complex_spec)            # cuts half of the array off
 
-def powspec(frames, NFFT):
+def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
     If frames is an N*D matrix, output will be N*(NFFT/2).
 
