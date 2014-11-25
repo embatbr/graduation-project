@@ -99,9 +99,10 @@ def filterbank_signal(signal, samplerate=16000, winlen=0.025, winstep=0.01,
     signal = sigproc.preemphasis(signal, preemph)
     frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate)
     pspec = sigproc.powspec(frames, nfft)
-    energy = np.sum(pspec, 1)            # this stores the total energy in each frame
+
     signal_fb = filterbanks(nfilt, nfft, samplerate, lowfreq, highfreq)
-    feat = np.dot(pspec, signal_fb.T)    # compute the filterbank energies
+    feat = np.dot(pspec, signal_fb.T)    # computes the filterbank energies
+    energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
     return (feat, energy)
 
@@ -159,6 +160,64 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
     return feat
 
+def delta(coeffs, t, numframes, N, denom, begin, end):
+    """Calculates the delta from the mfcc coefficients.
+
+    :param coeffs: coefficients of order 0 (mfccs) or higher.
+    :param t: index of frame which delta is calculated.
+    :param numframes: number of frames.
+    :param N: complexity of delta (by default, 2).
+    :param denom: 2 * (sum_1^N n*n).
+    :param begin: beginning of coeffs[t]. begin = order*numcep.
+    :param end: ending of coeffs[t]. end = (order + 1)*numcep.
+
+    returns: the deltas from coeffs.
+    """
+    delta_coeffs = list()
+
+    for k in range(begin, end):
+        delta = 0
+        for n in range(1, N + 1):
+            if (t + n) < numframes:
+                after = coeffs[t + n][k]
+            else:
+                after = 0
+
+            if (t - n) >= 0:
+                before = coeffs[t - n][k]
+            else:
+                before = 0
+
+            delta = delta + n*(after - before)
+
+        delta = delta / denom
+        delta_coeffs.append(delta)
+
+    return delta_coeffs
+
+def mfcc_delta(mfccs, N = 2, double=True):
+    """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
+
+    :param mfccs: the original mfccs calculated by mfcc().
+    :param N: complexity of delta (by default, 2).
+    :param double: if True, calculates the Delta-Delta.
+    """
+    numcep = len(mfccs[0])
+    denom = 2 * sum([n*n for n in range(1, N + 1)])
+    numframes = len(mfccs)
+    new_coeffs = list()
+
+    for t in range(numframes):  #for each frame, take all 'numcep' coefficients
+        delta_coeffs = delta(mfccs, t, numframes, N, denom, 0, numcep)
+        new_coeffs.append(mfccs[t].tolist() + delta_coeffs)
+
+    #TODO juntar os 2 for em um for duplo (no hurry)
+    if double:
+        for t in range(numframes):  #for each frame, take all 'numcep' coefficients
+            delta_coeffs = delta(new_coeffs, t, numframes, N, denom, numcep, 2*numcep)
+            new_coeffs[t] = new_coeffs[t] + delta_coeffs
+
+    return np.array(new_coeffs)
 
 # TEST
 if __name__ == '__main__':
@@ -179,12 +238,12 @@ if __name__ == '__main__':
     (samplerate, signal) = wavf.read("file.wav")
     signal_fb = filterbank_signal(signal)
     print('signal_fb', len(signal_fb))
-    print('signal_fb[0]', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
+    print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
     plt.figure()
     plt.grid(True)
     plt.plot(signal_fb[0]) #figure 2
-    print('signal_fb[1]', len(signal_fb[1]))
+    print('signal_fb[1] (energy)', len(signal_fb[1]))
     print(signal_fb[1])
     plt.figure()
     plt.grid(True)
@@ -207,5 +266,16 @@ if __name__ == '__main__':
     plt.grid(True)
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
+
+    mfccs_delta = mfcc_delta(mfccs)
+    print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
+    print(mfccs_delta)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(mfccs_delta) #figure 7
+    plt.figure()
+    plt.grid(True)
+    for i in range(len(mfccs_delta)): #figure 8
+        plt.plot(mfccs_delta[i])
 
     plt.show()
