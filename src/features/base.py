@@ -5,6 +5,9 @@ to calculate the MFCCs extraction.
 Most part of the code is similar to the "inspiration". What I did was read his
 code and copy what I understood. The idea is to do the same he did, using his
 code as a guide.
+
+Given a matrix A, A[i][j] is the element of line i, column j (no matter how numpy
+saves the matrix internally).
 """
 
 
@@ -170,64 +173,40 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
     return feat.transpose()
 
-def delta(coeffs, t, numframes, N, denom, begin, end):
-    """Calculates the delta from the mfcc coefficients.
-
-    @param coeffs: coefficients of order 0 (mfccs) or higher.
-    @param t: index of frame which delta is calculated.
-    @param numframes: number of frames.
-    @param N: complexity of delta (by default, 2).
-    @param denom: 2 * (sum_1^N n*n).
-    @param begin: beginning of coeffs[t]. begin = order*numcep.
-    @param end: ending of coeffs[t]. end = (order + 1)*numcep.
-
-    returns: the deltas from coeffs.
-    """
-    delta_coeffs = list()
-
-    for k in range(begin, end):
-        delta = 0
-        for n in range(1, N + 1):
-            if (t + n) < numframes:
-                after = coeffs[t + n][k]
-            else:
-                after = 0
-
-            if (t - n) >= 0:
-                before = coeffs[t - n][k]
-            else:
-                before = 0
-
-            delta = delta + n*(after - before)
-
-        delta = delta / denom
-        delta_coeffs.append(delta)
-
-    return delta_coeffs
-
-def mfcc_delta(mfccs, N = 2, double=True):
+def delta(mfccs, N = 2, num_deltas=2):
     """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
     @param N: complexity of delta (by default, 2).
     @param double: if True, calculates the Delta-Delta.
     """
-    numcep = len(mfccs[0])
+    numcep = len(mfccs[:, 0])
     denom = 2 * sum([n*n for n in range(1, N + 1)])
-    numframes = len(mfccs)
-    new_coeffs = list()
+    numframes = len(mfccs[0])
+    new_coeffs = np.zeros((numcep*(1 + num_deltas), numframes))
+    new_coeffs[: numcep, :] = mfccs[:,:]
 
-    for t in range(numframes):  #for each frame, take all 'numcep' coefficients
-        delta_coeffs = delta(mfccs, t, numframes, N, denom, 0, numcep)
-        new_coeffs.append(mfccs[t].tolist() + delta_coeffs)
+    for order in range(num_deltas):
+        for k in range(order*numcep, (order + 1)*numcep): #index of coeff(0 to 12, 13 to 25 and 26 to 38)
+            coeff = new_coeffs[k]
+            for t in range(numframes):
+                delta = 0
+                for n in range(1, N + 1):
+                    if (t + n) < numframes:
+                        after = coeff[t + n]
+                    else:
+                        after = 0
 
-    #TODO juntar os 2 for em um for duplo (no hurry)
-    if double:
-        for t in range(numframes):  #for each frame, take all 'numcep' coefficients
-            delta_coeffs = delta(new_coeffs, t, numframes, N, denom, numcep, 2*numcep)
-            new_coeffs[t] = new_coeffs[t] + delta_coeffs
+                    if (t - n) >= 0:
+                        before = coeff[t - n]
+                    else:
+                        before = 0
 
-    return np.array(new_coeffs)
+                    delta = delta + n*(after - before)
+
+                new_coeffs[k + numcep][t] = delta / denom
+
+    return new_coeffs
 
 # TEST
 if __name__ == '__main__':
@@ -277,15 +256,15 @@ if __name__ == '__main__':
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    #mfccs_delta = mfcc_delta(mfccs)
-    #print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
-    #print(mfccs_delta)
-    #plt.figure()
-    #plt.grid(True)
-    #plt.plot(mfccs_delta) #figure 7
-    #plt.figure()
-    #plt.grid(True)
-    #for i in range(len(mfccs_delta)): #figure 8
-    #    plt.plot(mfccs_delta[i])
+    mfccs_delta = delta(mfccs)
+    print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
+    print(mfccs_delta)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(mfccs_delta[1]) #figure 7
+    plt.figure()
+    plt.grid(True)
+    for i in range(len(mfccs_delta)): #figure 8
+        plt.plot(mfccs_delta[i])
 
     plt.show()
