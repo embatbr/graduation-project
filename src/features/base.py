@@ -173,6 +173,8 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
     return feat.transpose()
 
+#TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
+
 def mfcc_delta(mfccs, N = 2, num_deltas=2):
     """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
 
