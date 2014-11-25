@@ -30,8 +30,9 @@ voz. Dentre estes, está na mira o INTERSPEECH 2015.
 
 ##Entregas
 
-**Proposta :** Até o dia 29-10-2014, para o professor Ruy Guerra via email
+**(OK) Proposta :** Até o dia 29-10-2014, para o professor Ruy Guerra via email
 (ruy@cin.ufpe.br) e em papel com a assinatura do orientador (Tsang).
+
 **Relatório :** Ao final do período. Deve ser o mais sucinto possível.
 
 
