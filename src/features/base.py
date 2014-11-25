@@ -14,7 +14,7 @@ saves the matrix internally).
 import numpy as np
 from scipy.fftpack import dct
 
-import sigproc
+from features import sigproc
 
 
 def hz2mel(hz):
