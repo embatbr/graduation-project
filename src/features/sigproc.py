@@ -13,7 +13,7 @@ import math
 
 
 def preemphasis(signal, coeff=0.95):
-    """Perform preemphasis on the input signal.
+    """Performs preemphasis on the input signal.
 
     :param signal: The signal to filter.
     :param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
@@ -23,7 +23,7 @@ def preemphasis(signal, coeff=0.95):
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
 def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
-    """Frame a signal into overlapping frames.
+    """Frames a signal into overlapping frames.
 
     :param signal: the audio signal to frame.
     :param frame_len: length of each frame measured in samples.
@@ -59,7 +59,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     return (frames*win)
 
 def magspec(frames, NFFT):
-    """Compute the magnitude spectrum of each frame in frames. If frames is an
+    """Computes the magnitude spectrum of each frame in frames. If frames is an
     NxD matrix, output will be NxNFFT.
 
     :param frames: the array of frames. Each row is a frame.
@@ -70,10 +70,10 @@ def magspec(frames, NFFT):
     be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
-    return np.absolute(complex_spec)
+    return np.absolute(complex_spec)            # cuts half of the array
 
 def powspec(frames, NFFT):
-    """Compute the power spectrum (periodogram estimate) of each frame in frames.
+    """Computes the power spectrum (periodogram estimate) of each frame in frames.
     If frames is an NxD matrix, output will be NxNFFT.
 
     :param frames: the array of frames. Each row is a frame.
@@ -87,18 +87,27 @@ def powspec(frames, NFFT):
 
 
 # AUXILIAR
-def concat_frame(framedsig, frame_len, frame_step):
-    framedsig_len = len(framedsig)
-    signal_len = int((framedsig_len + 1)*frame_step)
+def concat_frame(frames, frame_len, frame_step):
+    """Concatenates a framed signal into the original signal.
+
+    :param frames: the array of frames. Each row is a frame.
+    :param frame_len: length of each frame measured in samples.
+    :param frame_step: number of samples after the start of the previous frame
+    that the next frame should begin (in samples).
+
+    :returns: the original signal (almost exactly).
+    """
+    frames_len = len(frames)
+    signal_len = int((frames_len + 1)*frame_step)
     signal = np.zeros(signal_len, dtype=np.int32)
 
-    for i in range(framedsig_len):
+    for i in range(frames_len):
         begin = int(i*frame_step)
         end = begin + int(frame_len)
         if end > signal_len:
             end = signal_len
 
-        signal[begin : end] = signal[begin : end] + framedsig[i][ : (end - begin)]
+        signal[begin : end] = signal[begin : end] + frames[i][ : (end - begin)]
 
     return signal
 
@@ -125,22 +134,22 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(presignal) #figure 2
 
-    framedsig = frame_signal(presignal, frame_len, frame_step)
-    print('framedsig', len(framedsig), 'x', len(framedsig[0]))
-    print(framedsig)
+    frames = frame_signal(presignal, frame_len, frame_step)
+    print('frames', len(frames), 'x', len(frames[0]))
+    print(frames)
     plt.figure()
     plt.grid(True)
-    concat_framedsig = concat_frame(framedsig, frame_len, frame_step)
-    plt.plot(concat_framedsig) #figure 3
+    concat_frames = concat_frame(frames, frame_len, frame_step)
+    plt.plot(concat_frames) #figure 3
 
-    magsig = magspec(framedsig, 512)
+    magsig = magspec(frames, 512)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
     plt.figure()
     plt.grid(True)
     plt.plot(magsig[0]) #figure 4
 
-    powsig = powspec(framedsig, 512)
+    powsig = powspec(frames, 512)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
     plt.figure()
