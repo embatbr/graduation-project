@@ -173,7 +173,7 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
     return feat.transpose()
 
-def delta(mfccs, N = 2, num_deltas=2):
+def get_delta(mfccs, N = 2, num_deltas=2):
     """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    mfccs_delta = delta(mfccs)
+    mfccs_delta = get_delta(mfccs)
     print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
     print(mfccs_delta)
     plt.figure()
