@@ -226,7 +226,7 @@ if __name__ == '__main__':
     for i in range(len(fbank)): #figure 1
         plt.plot(fbank[i], 'b')
 
-    (samplerate, signal) = wavf.read("file.wav")
+    (samplerate, signal) = wavf.read("test.wav")
     signal_fb = filterbank_signal(signal, samplerate, winlen, winstep, preemph=preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))

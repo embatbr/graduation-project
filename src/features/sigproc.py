@@ -3,8 +3,7 @@ at the url "github.com/jameslyons/python_speech_features". It includes routines
 for basic signal processing, such as framing and computing power spectra.
 
 Most part of the code is similar to the "inspiration". What I did was read his
-code and copy what I understood. The idea is to do the same he did, using his
-code as a guide.
+code, copy what I understood and improve something.
 """
 
 
@@ -18,7 +17,7 @@ def preemphasis(signal, coeff=0.95):
     @param signal: The signal to filter.
     @param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
 
-    @returns: the filtered signal.
+    @returns: the higher frequencies of signal.
     """
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
@@ -122,7 +121,7 @@ if __name__ == '__main__':
     preemph_coeff = 0.95
     NFFT = 512
 
-    (samplerate, signal) = wavf.read("file.wav")
+    (samplerate, signal) = wavf.read("test.wav")
     print('signal:')
     print(signal)
     plt.grid(True)
