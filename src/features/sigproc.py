@@ -15,24 +15,24 @@ import math
 def preemphasis(signal, coeff=0.95):
     """Performs preemphasis on the input signal.
 
-    :param signal: The signal to filter.
-    :param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
+    @param signal: The signal to filter.
+    @param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
 
-    :returns: the filtered signal.
+    @returns: the filtered signal.
     """
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
 def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     """Frames a signal into overlapping frames.
 
-    :param signal: the audio signal to frame.
-    :param frame_len: length of each frame measured in samples.
-    :param frame_step: number of samples after the start of the previous frame
+    @param signal: the audio signal to frame.
+    @param frame_len: length of each frame measured in samples.
+    @param frame_step: number of samples after the start of the previous frame
     that the next frame should begin (in samples).
-    :param winfunc: the analysis window to apply to each frame. By default no
+    @param winfunc: the analysis window to apply to each frame. By default no
     window is applied (signal is multiplied by 1).
 
-    :returns: an array of frames. Size is NUMFRAMES x frame_len.
+    @returns: an array of frames. Size is NUMFRAMES x frame_len.
     """
     signal_len = len(signal)
     frame_len = int(round(frame_len))
@@ -62,11 +62,11 @@ def magspec(frames, NFFT):
     """Computes the magnitude spectrum of each frame in frames. If frames is an
     NxD matrix, output will be NxNFFT.
 
-    :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
+    @param frames: the array of frames. Each row is a frame.
+    @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    :returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
+    @returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
     be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
@@ -76,11 +76,11 @@ def powspec(frames, NFFT):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
     If frames is an NxD matrix, output will be NxNFFT.
 
-    :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
+    @param frames: the array of frames. Each row is a frame.
+    @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    :returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
+    @returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
     be the power spectrum of the corresponding frame.
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
@@ -90,12 +90,12 @@ def powspec(frames, NFFT):
 def concat_frame(frames, frame_len, frame_step):
     """Concatenates a framed signal into the original signal.
 
-    :param frames: the array of frames. Each row is a frame.
-    :param frame_len: length of each frame measured in samples.
-    :param frame_step: number of samples after the start of the previous frame
+    @param frames: the array of frames. Each row is a frame.
+    @param frame_len: length of each frame measured in samples.
+    @param frame_step: number of samples after the start of the previous frame
     that the next frame should begin (in samples).
 
-    :returns: the original signal (almost exactly).
+    @returns: the original signal (almost exactly).
     """
     frames_len = len(frames)
     signal_len = int((frames_len + 1)*frame_step)
