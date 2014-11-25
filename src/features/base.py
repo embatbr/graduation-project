@@ -110,9 +110,11 @@ def lifter(cepstra, L=22):
     """Apply a cepstral lifter to the matrix of cepstra. This has the effect of
     increasing the magnitude of the high frequency DCT coeffs.
 
-    @param cepstra: the matrix of mel-cepstra, will be numframes*numcep in size.
+    @param cepstra: the matrix of mel-cepstra, with size numframes*numcep.
     @param L: the liftering coefficient to use. Default is 22. L <= 0 disables
     lifter.
+
+    @return: the liftered cepstra.
     """
     if L > 0:
         (nframes, ncoeff) = np.shape(cepstra)
@@ -146,8 +148,16 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
     @param appendEnergy: if this is true, the zeroth cepstral coefficient is
     replaced with the log of the total frame energy.
 
-    @returns: A numpy array of size (NUMFRAMES*numcep) containing features.
-    Each row holds 1 feature vector.
+    @returns: A numpy array of size numcep*NUMFRAMES (transposed) containing
+    features. Each row holds 1 feature (with NUMFRAMES "timestamps") and each
+    column holds 1 vector (with numcep features). Ex:
+
+    |f_1_1 f_1_2 ... f_1_T|
+    |f_2_1 f_2_2 ... f_2_T|
+    |...                  |
+    |f_c_1 f_c_2 ... f_c_T|
+
+    where 'c' is the number of features and 'T' the number of frames.
     """
     (feat, energy) = filterbank_signal(signal, samplerate, winlen, winstep, nfilt,
                                        nfft, lowfreq, highfreq, preemph)
@@ -158,7 +168,7 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
         # replace first cepstral coefficient with log of frame energy
         feat[ : , 0] = np.log(energy)
 
-    return feat
+    return feat.transpose()
 
 def delta(coeffs, t, numframes, N, denom, begin, end):
     """Calculates the delta from the mfcc coefficients.
@@ -226,7 +236,7 @@ if __name__ == '__main__':
 
     frame_len = 0.025*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0.95
+    preemph_coeff = 0 #0.95
 
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
@@ -261,21 +271,21 @@ if __name__ == '__main__':
     print(mfccs)
     plt.figure()
     plt.grid(True)
-    plt.plot(mfccs) #figure 5
+    plt.plot(mfccs[1]) #figure 5
     plt.figure()
     plt.grid(True)
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    mfccs_delta = mfcc_delta(mfccs)
-    print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
-    print(mfccs_delta)
-    plt.figure()
-    plt.grid(True)
-    plt.plot(mfccs_delta) #figure 7
-    plt.figure()
-    plt.grid(True)
-    for i in range(len(mfccs_delta)): #figure 8
-        plt.plot(mfccs_delta[i])
+    #mfccs_delta = mfcc_delta(mfccs)
+    #print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
+    #print(mfccs_delta)
+    #plt.figure()
+    #plt.grid(True)
+    #plt.plot(mfccs_delta) #figure 7
+    #plt.figure()
+    #plt.grid(True)
+    #for i in range(len(mfccs_delta)): #figure 8
+    #    plt.plot(mfccs_delta[i])
 
     plt.show()
