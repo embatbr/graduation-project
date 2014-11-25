@@ -1,7 +1,5 @@
-bases/mit/
-bases/mit-*
+bases/
 docs/*.aux
 docs/*.log
 docs/*.toc
-src/**/__pycache__/
-src/**/*.wav
+src/__pycache__/
