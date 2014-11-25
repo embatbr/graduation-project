@@ -117,9 +117,9 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    frame_len = 0.025*16000
+    frame_len = 0.02*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0 #0.95
+    preemph_coeff = 0.95
     NFFT = 512
 
     (samplerate, signal) = wavf.read("file.wav")

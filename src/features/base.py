@@ -173,7 +173,7 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
     return feat.transpose()
 
-def get_delta(mfccs, N = 2, num_deltas=2):
+def mfcc_delta(mfccs, N = 2, num_deltas=2):
     """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
@@ -213,9 +213,9 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    frame_len = 0.025*16000
-    frame_step = 0.01*16000
-    preemph_coeff = 0 #0.95
+    winlen = 0.02
+    winstep = 0.01
+    preemph = 0.95
 
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
@@ -225,7 +225,7 @@ if __name__ == '__main__':
         plt.plot(fbank[i], 'b')
 
     (samplerate, signal) = wavf.read("file.wav")
-    signal_fb = filterbank_signal(signal)
+    signal_fb = filterbank_signal(signal, samplerate, winlen, winstep, preemph=preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(logsig) #figure 4
 
-    mfccs = mfcc(signal, samplerate, preemph=preemph_coeff)
+    mfccs = mfcc(signal, samplerate, winlen, winstep, preemph=preemph)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
     plt.figure()
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    mfccs_delta = get_delta(mfccs)
+    mfccs_delta = mfcc_delta(mfccs)
     print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
     print(mfccs_delta)
     plt.figure()
