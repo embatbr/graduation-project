@@ -119,7 +119,8 @@ if __name__ == '__main__':
 
     frame_len = 0.025*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0.95
+    preemph_coeff = 0 #0.95
+    NFFT = 512
 
     (samplerate, signal) = wavf.read("file.wav")
     print('signal:')
@@ -142,14 +143,14 @@ if __name__ == '__main__':
     concat_frames = concat_frame(frames, frame_len, frame_step)
     plt.plot(concat_frames) #figure 3
 
-    magsig = magspec(frames, 512)
+    magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
     plt.figure()
     plt.grid(True)
     plt.plot(magsig[0]) #figure 4
 
-    powsig = powspec(frames, 512)
+    powsig = powspec(frames, NFFT)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
     plt.figure()
