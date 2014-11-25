@@ -90,18 +90,19 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    frame_len = 0.02*16000
-    frame_step = 0.01*16000
-    preemph_coeff = 0.97
+    (samplerate, signal) = wavf.read('../bases/mit/corpuses/enroll_2/f08/phrase54_16k.wav')
+
+    frame_len = 0.02*samplerate
+    frame_step = 0.01*samplerate
+    preemph = 0.97
     NFFT = 512
 
-    (samplerate, signal) = wavf.read("test.wav")
     print('signal:')
     print(signal)
     plt.grid(True)
     plt.plot(signal) #figure 1
 
-    presignal = preemphasis(signal, coeff=preemph_coeff)
+    presignal = preemphasis(signal, coeff=preemph)
     print('preemphasis:')
     print(presignal)
     plt.figure()

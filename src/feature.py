@@ -5,19 +5,14 @@ to calculate the MFCCs extraction.
 Most part of the code is similar to the "inspiration". What I did was read his
 code and copy what I understood. The idea is to do the same he did, using his
 code as a guide.
-
-Given a matrix A, A[i][j] is the element of line i, column j (no matter how numpy
-saves the matrix internally).
 """
 
 
 import numpy as np
 from scipy.fftpack import dct
 
-if __name__ == '__main__':
-    import sigproc
-else:
-    from features import sigproc
+
+import sigproc
 
 
 def hz2mel(hz):
