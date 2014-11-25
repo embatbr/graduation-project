@@ -3,7 +3,7 @@ at the url "github.com/jameslyons/python_speech_features". It includes routines
 for basic signal processing, such as framing and computing power spectra.
 
 Most part of the code is similar to the "inspiration". What I did was read his
-code, copy what I understood and improve something.
+work, copy what I understood and improve some parts.
 """
 
 
@@ -28,10 +28,10 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     @param frame_len: length of each frame measured in samples.
     @param frame_step: number of samples after the start of the previous frame
     that the next frame should begin (in samples).
-    @param winfunc: the analysis window to apply to each frame. By default no
-    window is applied (signal is multiplied by 1).
+    @param winfunc: the analysis window to apply to each frame. By default it's
+    the Hamming window.
 
-    @returns: an array of frames. Size is NUMFRAMES x frame_len.
+    @returns: an array of frames. Size is NUMFRAMES*frame_len.
     """
     signal_len = len(signal)
     frame_len = int(round(frame_len))
@@ -47,7 +47,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     zeros = np.zeros((padsignal_len - signal_len))
     padsignal = np.concatenate((signal, zeros))  # addition of zeros at the end
 
-    # indices of samples in frames (0:0->399, 1:160->559, ..., n:26880->27279)
+    # indices of samples in frames (0:0->320, 1:160->480, ...)
     indices = np.tile(np.arange(0, frame_len), (numframes, 1)) +\
               np.tile(np.arange(0, numframes*frame_step, frame_step),
                       (frame_len, 1)).T
@@ -59,56 +59,30 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
 
 def magspec(frames, NFFT):
     """Computes the magnitude spectrum of each frame in frames. If frames is an
-    NxD matrix, output will be NxNFFT.
+    N*D matrix, output will be N*(NFFT/2).
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    @returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
+    @returns: If frames is an N*D matrix, output will be N*(NFFT/2). Each row will
     be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
-    return np.absolute(complex_spec)            # cuts half of the array
+    return np.absolute(complex_spec)            # cuts half of the array off
 
 def powspec(frames, NFFT):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
-    If frames is an NxD matrix, output will be NxNFFT.
+    If frames is an N*D matrix, output will be N*(NFFT/2).
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    @returns: If frames is an NxD matrix, output will be NxNFFT. Each row will
+    @returns: If frames is an N*D matrix, output will be N*(NFFT/2). Each row will
     be the power spectrum of the corresponding frame.
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
-
-
-# AUXILIAR
-def concat_frame(frames, frame_len, frame_step):
-    """Concatenates a framed signal into the original signal.
-
-    @param frames: the array of frames. Each row is a frame.
-    @param frame_len: length of each frame measured in samples.
-    @param frame_step: number of samples after the start of the previous frame
-    that the next frame should begin (in samples).
-
-    @returns: the original signal (almost exactly).
-    """
-    frames_len = len(frames)
-    signal_len = int((frames_len + 1)*frame_step)
-    signal = np.zeros(signal_len, dtype=np.int32)
-
-    for i in range(frames_len):
-        begin = int(i*frame_step)
-        end = begin + int(frame_len)
-        if end > signal_len:
-            end = signal_len
-
-        signal[begin : end] = signal[begin : end] + frames[i][ : (end - begin)]
-
-    return signal
 
 
 # TEST
@@ -139,8 +113,8 @@ if __name__ == '__main__':
     print(frames)
     plt.figure()
     plt.grid(True)
-    concat_frames = concat_frame(frames, frame_len, frame_step)
-    plt.plot(concat_frames) #figure 3
+    for frame in frames: #figure 3
+        plt.plot(frame)
 
     magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))
