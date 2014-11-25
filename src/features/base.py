@@ -80,7 +80,7 @@ def filterbanks(nfilt=26, nfft=512, samplerate=16000, lowfreq=0, highfreq=None):
 
     return fbank
 
-def filterbank_signal(signal, samplerate=16000, winlen=0.025, winstep=0.01,
+def filterbank_signal(signal, samplerate=16000, winlen=0.02, winstep=0.01,
                         nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97):
     """Compute Mel-filterbank energy features from an audio signal.
 
@@ -131,7 +131,7 @@ def lifter(cepstra, L=22):
         # values of L <= 0, do nothing
         return cepstra
 
-def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=26,
+def mfcc(signal, samplerate=16000, winlen=0.02, winstep=0.01, numcep=13, nfilt=26,
          nfft=512, lowfreq=0, highfreq=None, preemph=0.97, ceplifter=22, appendEnergy=True):
     """Compute MFCC features from an audio signal.
 
@@ -178,7 +178,7 @@ def mfcc(signal, samplerate=16000, winlen=0.025, winstep=0.01, numcep=13, nfilt=
 
 #TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
 
-def mfcc_delta(mfccs, N = 2, num_deltas=2):
+def add_delta(mfccs, N = 2, num_deltas=2):
     """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
@@ -213,6 +213,16 @@ def mfcc_delta(mfccs, N = 2, num_deltas=2):
 
     return new_coeffs
 
+def mfcc_delta(signal, samplerate=16000, winlen=0.02, winstep=0.01, numcep=13,
+               nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97,
+               ceplifter=22, appendEnergy=True, N = 2, num_deltas=2):
+    """
+    """
+    mfccs = mfcc(signal, samplerate, winlen, winstep, numcep, nfilt, nfft, lowfreq,
+                highfreq, preemph, ceplifter, appendEnergy)
+    return add_delta(mfccs, N, num_deltas)
+
+
 # TEST
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
@@ -220,7 +230,7 @@ if __name__ == '__main__':
 
     winlen = 0.02
     winstep = 0.01
-    preemph = 0.95
+    preemph = 0.97
 
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
@@ -261,15 +271,15 @@ if __name__ == '__main__':
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    mfccs_delta = mfcc_delta(mfccs)
-    print('mfccs_delta', len(mfccs_delta), 'x', len(mfccs_delta[0]))
-    print(mfccs_delta)
+    mfccs_deltas = mfcc_delta(signal, samplerate, winlen, winstep, preemph=preemph)
+    print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
+    print(mfccs_deltas)
     plt.figure()
     plt.grid(True)
-    plt.plot(mfccs_delta[1]) #figure 7
+    plt.plot(mfccs_deltas[1]) #figure 7
     plt.figure()
     plt.grid(True)
-    for i in range(len(mfccs_delta)): #figure 8
-        plt.plot(mfccs_delta[i])
+    for i in range(len(mfccs_deltas)): #figure 8
+        plt.plot(mfccs_deltas[i])
 
     plt.show()

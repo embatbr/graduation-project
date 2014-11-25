@@ -11,11 +11,11 @@ import numpy as np
 import math
 
 
-def preemphasis(signal, coeff=0.95):
+def preemphasis(signal, coeff=0.97):
     """Performs preemphasis on the input signal.
 
     @param signal: The signal to filter.
-    @param coeff: The preemphasis coefficient. 0 is no filter, default is 0.95.
+    @param coeff: The preemphasis coefficient. 0 is no filter, default is 0.97.
 
     @returns: the higher frequencies of signal.
     """
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     frame_len = 0.02*16000
     frame_step = 0.01*16000
-    preemph_coeff = 0.95
+    preemph_coeff = 0.97
     NFFT = 512
 
     (samplerate, signal) = wavf.read("test.wav")
