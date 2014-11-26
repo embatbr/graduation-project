@@ -37,27 +37,22 @@ def mel2hz(mel):
     """
     return (700 * (10**(mel/2595.0) - 1))
 
-def filterbanks(nfilt=26, nfft=512, samplerate=16000, lowfreq=0, highfreq=None):
+def filterbanks(samplerate=16000, nfilt=26, nfft=512):
     """Compute a Mel-filterbank. The filters are stored in the rows, the columns
     correspond to fft bins. The filters are returned as an array of size
     nfilt x (nfft/2 + 1)
 
-    @param nfilt: the number of filters in the filterbank, default 26.
-    @param nfft: the FFT size. Default is 512.
     @param samplerate: the samplerate of the signal we are working with. Affects
     mel spacing.
-    @param lowfreq: lowest band edge of mel filters, default 0 Hz
-    @param highfreq: highest band edge of mel filters, default samplerate/2
+    @param nfilt: the number of filters in the filterbank, default 26.
+    @param nfft: the FFT size. Default is 512.
 
     @returns: A numpy array of size nfilt*(nfft/2 + 1) containing filterbank.
     Each row holds 1 filter.
     """
-    if (not highfreq) or (highfreq > samplerate/2):
-        highfreq = samplerate/2
-
-    lowmel = hz2mel(lowfreq)
-    highmel = hz2mel(highfreq)
-    melpoints = np.linspace(lowmel, highmel, nfilt + 2)
+    lowfreq_mel = 0
+    highfreq_mel = hz2mel(samplerate / 2)
+    melpoints = np.linspace(lowfreq_mel, highfreq_mel, nfilt + 2)
     hzpoints = mel2hz(melpoints)
     bin = np.floor((nfft + 1) * hzpoints / samplerate)
 
@@ -75,8 +70,8 @@ def filterbanks(nfilt=26, nfft=512, samplerate=16000, lowfreq=0, highfreq=None):
 
     return fbank
 
-def filterbank_signal(signal, samplerate=16000, winlen=0.02, winstep=0.01,
-                        nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97):
+def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
+                      nfft=512, preemph=0.97):
     """Compute Mel-filterbank energy features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -98,10 +93,12 @@ def filterbank_signal(signal, samplerate=16000, winlen=0.02, winstep=0.01,
     in each frame (total energy, unwindowed)
     """
     signal = sigproc.preemphasis(signal, preemph)
+    print('winlen =', winlen)
+    print('winstep =', winstep)
     frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate)
     pspec = sigproc.powspec(frames, nfft)
 
-    signal_fb = filterbanks(nfilt, nfft, samplerate, lowfreq, highfreq)
+    signal_fb = filterbanks(samplerate, nfilt, nfft)
     feat = np.dot(pspec, signal_fb.T)    # computes the filterbank energies
     energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
@@ -126,8 +123,8 @@ def lifter(cepstra, L=22):
         # values of L <= 0, do nothing
         return cepstra
 
-def mfcc(signal, samplerate=16000, winlen=0.02, winstep=0.01, numcep=13, nfilt=26,
-         nfft=512, lowfreq=0, highfreq=None, preemph=0.97, ceplifter=22, appendEnergy=True):
+def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=512,
+         preemph=0.97, ceplifter=22, appendEnergy=True):
     """Compute MFCC features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -160,8 +157,8 @@ def mfcc(signal, samplerate=16000, winlen=0.02, winstep=0.01, numcep=13, nfilt=2
 
     where 'c' is the number of features and 'T' the number of frames.
     """
-    (feat, energy) = filterbank_signal(signal, samplerate, winlen, winstep, nfilt,
-                                       nfft, lowfreq, highfreq, preemph)
+    (feat, energy) = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
+                                       nfft, preemph)
     feat = np.log(feat)
     feat = dct(feat, type=2, axis=1, norm='ortho')[ : , : numcep]
     feat = lifter(feat, ceplifter)
@@ -208,13 +205,13 @@ def add_delta(mfccs, N = 2, num_deltas=2):
 
     return new_coeffs
 
-def mfcc_delta(signal, samplerate=16000, winlen=0.02, winstep=0.01, numcep=13,
-               nfilt=26, nfft=512, lowfreq=0, highfreq=None, preemph=0.97,
-               ceplifter=22, appendEnergy=True, N = 2, num_deltas=2):
+def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
+               nfft=512, preemph=0.97, ceplifter=22, appendEnergy=True, N = 2,
+               num_deltas=2):
     """
     """
-    mfccs = mfcc(signal, samplerate, winlen, winstep, numcep, nfilt, nfft, lowfreq,
-                highfreq, preemph, ceplifter, appendEnergy)
+    mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, nfft, preemph,
+                 ceplifter, appendEnergy)
     return add_delta(mfccs, N, num_deltas)
 
 
@@ -234,8 +231,8 @@ if __name__ == '__main__':
     for i in range(len(fbank)): #figure 1
         plt.plot(fbank[i], 'b')
 
-    (samplerate, signal) = wavf.read("test.wav")
-    signal_fb = filterbank_signal(signal, samplerate, winlen, winstep, preemph=preemph)
+    (samplerate, signal) = wavf.read('../bases/mit/corpuses/enroll_2/f08/phrase54_16k.wav')
+    signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, preemph=preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
@@ -255,7 +252,7 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(logsig) #figure 4
 
-    mfccs = mfcc(signal, samplerate, winlen, winstep, preemph=preemph)
+    mfccs = mfcc(signal, winlen, winstep, samplerate, preemph=preemph)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
     plt.figure()
@@ -266,7 +263,7 @@ if __name__ == '__main__':
     for i in range(len(mfccs)): #figure 6
         plt.plot(mfccs[i])
 
-    mfccs_deltas = mfcc_delta(signal, samplerate, winlen, winstep, preemph=preemph)
+    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, preemph=preemph)
     print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
     print(mfccs_deltas)
     plt.figure()
