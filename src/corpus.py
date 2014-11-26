@@ -8,13 +8,13 @@ import shutil
 import scipy.io.wavfile as wavf
 import numpy as np
 
-import features.base
+import features
 
 
 BASES_DIR = '../bases/'
 
 
-def mit_features():
+def mit_features(winlen, winstep):
     pathfeat = '%smit/features/' % BASES_DIR
     if os.path.exists(pathfeat):
         shutil.rmtree(pathfeat)
@@ -48,7 +48,7 @@ def mit_features():
             for utt in utterances:
                 path_utt = '%s/%s' % (pathspeaker, utt)
                 (samplerate, signal) = wavf.read(path_utt)
-                mfccs_deltas = features.base.mfcc_delta(signal, samplerate)
+                mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate)
                 if corpus == 'enroll_1':
                     mfccs_deltas_list.append(mfccs_deltas.transpose())
                 else:
@@ -65,8 +65,10 @@ def mit_features():
 #TEST
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    import features.sigproc
+    import sigproc
 
+    winlen = 0.02
+    winstep = 0.01
     coeff = 0.95
 
     (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' % BASES_DIR)
@@ -75,13 +77,13 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(signal) #figure 1
 
-    presignal = features.sigproc.preemphasis(signal, coeff=coeff)
+    presignal = sigproc.preemphasis(signal, coeff=coeff)
     print('preemphasis:')
     print(presignal)
     plt.figure()
     plt.grid(True)
     plt.plot(presignal) #figure 2
 
-    mit_features()
+    mit_features(winlen, winstep)
 
-    #plt.show()
+    plt.show()

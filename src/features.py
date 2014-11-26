@@ -93,8 +93,6 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     in each frame (total energy, unwindowed)
     """
     signal = sigproc.preemphasis(signal, preemph)
-    print('winlen =', winlen)
-    print('winstep =', winstep)
     frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate)
     pspec = sigproc.powspec(frames, nfft)
 
