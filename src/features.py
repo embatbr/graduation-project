@@ -38,16 +38,16 @@ def mel2hz(mel):
     return (700 * (10**(mel/2595.0) - 1))
 
 def filterbanks(samplerate=16000, nfilt=26, nfft=512):
-    """Compute a Mel-filterbank. The filters are stored in the rows, the columns
+    """Computes a Mel-filterbank. The filters are stored in the rows, the columns
     correspond to fft bins. The filters are returned as an array of size
-    nfilt x (nfft/2 + 1)
+    (nfilt x (nfft/2 + 1))
 
     @param samplerate: the samplerate of the signal we are working with. Affects
     mel spacing.
     @param nfilt: the number of filters in the filterbank, default 26.
     @param nfft: the FFT size. Default is 512.
 
-    @returns: A numpy array of size nfilt*(nfft/2 + 1) containing filterbank.
+    @returns: A numpy array of size (nfilt x (nfft/2 + 1)) containing filterbank.
     Each row holds 1 filter.
     """
     lowfreq_mel = 0
@@ -72,7 +72,7 @@ def filterbanks(samplerate=16000, nfilt=26, nfft=512):
 
 def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
                       nfft=512, preemph=0.97):
-    """Compute Mel-filterbank energy features from an audio signal.
+    """Computes Mel-filterbank energy features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
@@ -88,7 +88,7 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is no
     filter. Default is 0.97.
 
-    @returns: 2 values. The first is a numpy array of size (NUMFRAMES*nfilt)
+    @returns: 2 values. The first is a numpy array of size (NUMFRAMES x nfilt)
     containing features. Each row holds 1 feature vector. The second is the energy
     in each frame (total energy, unwindowed)
     """
@@ -123,7 +123,7 @@ def lifter(cepstra, L=22):
 
 def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=512,
          preemph=0.97, ceplifter=22, appendEnergy=True):
-    """Compute MFCC features from an audio signal.
+    """Computes MFCC features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
@@ -144,7 +144,7 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=51
     @param appendEnergy: if this is true, the zeroth cepstral coefficient is
     replaced with the log of the total frame energy.
 
-    @returns: A numpy array of size numcep*NUMFRAMES (transposed) containing
+    @returns: A numpy array of size (numcep x NUMFRAMES) (transposed) containing
     features. Each row holds 1 feature (with NUMFRAMES "timestamps") and each
     column holds 1 vector (with numcep features). Ex:
 
@@ -169,11 +169,13 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=51
 #TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
 
 def add_delta(mfccs, N = 2, num_deltas=2):
-    """Calculates the Delta and Delta-Delta for a matrix of mfccs (frame x mfccs).
+    """Calculates the deltas for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
     @param N: complexity of delta (by default, 2).
     @param double: if True, calculates the Delta-Delta.
+
+    @returns: a new array containing the original MFCCs and the deltas calculated.
     """
     numcep = len(mfccs[:, 0])
     denom = 2 * sum([n*n for n in range(1, N + 1)])
@@ -206,7 +208,32 @@ def add_delta(mfccs, N = 2, num_deltas=2):
 def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
                nfft=512, preemph=0.97, ceplifter=22, appendEnergy=True, N = 2,
                num_deltas=2):
-    """
+    """Computes MFCC features from an audio signal and calculates it's deltas.
+
+    @param signal: the audio signal from which to compute features. Should be an
+    N*1 array
+    @param samplerate: the samplerate of the signal we are working with.
+    @param winlen: the length of the analysis window in seconds. Default is
+    0.025s (25 milliseconds)
+    @param winstep: the step between successive windows in seconds. Default is
+    0.01s (10 milliseconds)
+    @param numcep: the number of cepstrum to return, default 13
+    @param nfilt: the number of filters in the filterbank, default 26.
+    @param nfft: the FFT size. Default is 512.
+    @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
+    @param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
+    @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
+    no filter. Default is 0.97.
+    @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
+    lifter. Default is 22.
+    @param appendEnergy: if this is true, the zeroth cepstral coefficient is
+    replaced with the log of the total frame energy.
+    @param mfccs: the original mfccs calculated by mfcc().
+    @param N: complexity of delta (by default, 2).
+    @param double: if True, calculates the Delta-Delta.
+
+    @returns: A numpy array of size (num_deltas*numcep x NUMFRAMES) (transposed)
+    containing features (the MFCCs and it's deltas).
     """
     mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, nfft, preemph,
                  ceplifter, appendEnergy)

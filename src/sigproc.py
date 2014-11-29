@@ -31,7 +31,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     @param winfunc: the analysis window to apply to each frame. By default it's
     the Hamming window.
 
-    @returns: an array of frames. Size is NUMFRAMES*frame_len.
+    @returns: an array of frames. Size is (NUMFRAMES x frame_len).
     """
     signal_len = len(signal)
     frame_len = int(round(frame_len))
@@ -59,13 +59,13 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
 
 def magspec(frames, NFFT=512):
     """Computes the magnitude spectrum of each frame in frames. If frames is an
-    N*D matrix, output will be N*(NFFT/2).
+    N*D matrix, output will be (N x (NFFT/2)).
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    @returns: If frames is an N*D matrix, output will be N*(NFFT/2). Each row will
+    @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
@@ -73,13 +73,13 @@ def magspec(frames, NFFT=512):
 
 def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
-    If frames is an N*D matrix, output will be N*(NFFT/2).
+    If frames is an N*D matrix, output will be (N x (NFFT/2)).
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
     zero-padded.
 
-    @returns: If frames is an N*D matrix, output will be N*(NFFT/2). Each row will
+    @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the power spectrum of the corresponding frame.
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
