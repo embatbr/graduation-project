@@ -61,11 +61,15 @@ def mit_features(winlen, winstep):
                 mfccs_deltas = mfccs_deltas.transpose()
                 np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
+def read_features(featpath):
+    mfccs = np.load('%s%s' % (BASES_DIR, featpath))
+    return mfccs.transpose()
+
 
 #TEST
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    import sigproc
+    import features
 
     winlen = 0.02
     winstep = 0.01
@@ -77,13 +81,28 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.plot(signal) #figure 1
 
-    presignal = sigproc.preemphasis(signal, coeff=coeff)
-    print('preemphasis:')
-    print(presignal)
+    mfccs = features.mfcc_delta(signal, 0.02, 0.01, samplerate)
+    print('mfccs', len(mfccs), 'x', len(mfccs[0]))
+    print(mfccs)
     plt.figure()
     plt.grid(True)
-    plt.plot(presignal) #figure 2
+    plt.plot(mfccs[1]) #figure 2
+    plt.figure()
+    plt.grid(True)
+    for i in range(len(mfccs)): #figure 3
+        plt.plot(mfccs[i])
 
-    mit_features(winlen, winstep)
+    #mit_features(winlen, winstep)
+
+    mfccs = read_features('mit/features/enroll_2/f08/phrase54_16k.wav.npy')
+    print('mfccs (loaded)', len(mfccs), 'x', len(mfccs[0]))
+    print(mfccs)
+    plt.figure()
+    plt.grid(True)
+    plt.plot(mfccs[1]) #figure 4
+    plt.figure()
+    plt.grid(True)
+    for i in range(len(mfccs)): #figure 5
+        plt.plot(mfccs[i])
 
     plt.show()
