@@ -61,8 +61,9 @@ def mit_features(winlen, winstep):
                 mfccs_deltas = mfccs_deltas.transpose()
                 np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
-def read_features(featpath):
-    mfccs = np.load('%s%s' % (BASES_DIR, featpath))
+def read_features(corpus, speaker, uttnum):
+    mfccs = np.load('%smit/features/%s/%s/phrase%d_16k.wav.npy' % (BASES_DIR,
+                    corpus, speaker, uttnum))
     return mfccs.transpose()
 
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
 
     #mit_features(winlen, winstep)
 
-    mfccs = read_features('mit/features/enroll_2/f08/phrase54_16k.wav.npy')
+    mfccs = read_features('enroll_2', 'f08', 54)
     print('mfccs (loaded)', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
     plt.figure()
