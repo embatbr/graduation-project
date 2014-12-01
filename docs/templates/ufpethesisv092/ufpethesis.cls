@@ -25,7 +25,7 @@
 \input{aboutufpethesis.txt}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% OPTIONS 
+%% OPTIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \DeclareOption{pt}{%
@@ -41,14 +41,14 @@
 
 \DeclareOption{twoside}{%
   \PassOptionsToClass{twoside}{book}}
- 
+
 \DeclareOption{print}{%
   \let\@scr=0}
 
 \DeclareOption{scr}{%
   \let\@scr=1%
   \PassOptionsToClass{dvipdfm}{book}}
-  
+
 \DeclareOption{bsc}{%
   \let\@degreetype=0}
 
@@ -63,10 +63,10 @@
 
 \DeclareOption{phd}{%
   \let\@degreetype=4}
-  
+
 \DeclareOption{classic}{%
   \let\@style=0}
- 
+
 \DeclareOption{std}{%
   \let\@style=1
 }
@@ -198,7 +198,7 @@ grau de \@degree\ em \@majorfield.}
   This volume has been typeset in \LaTeX with the \textsf{UFPEThesis} class
   (\url{www.cin.ufpe.br/~paguso/ufpethesis}).
   \if\@scr1
-  For details about this document, click \Acrobatmenu{GeneralInfo}{here}. 
+  For details about this document, click \Acrobatmenu{GeneralInfo}{here}.
   \fi}
 \fi\fi
 
@@ -442,7 +442,7 @@ grau de \@degree\ em \@majorfield.}
   \gdef\@keywordsname{\keywordsnameEN}
   \chapter*{\abstrname}}
 
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Keywords
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -489,7 +489,7 @@ grau de \@degree\ em \@majorfield.}
   \end{flushright}
   \normalfont\vskip\baselineskip}
 
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Table of contents
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -716,7 +716,7 @@ grau de \@degree\ em \@majorfield.}
 	{\slshape}% Body style
 	{0pt}% Heading indent amount
 	{\bfseries}{.}% Heading font and punctuation after it
-	{1ex plus 0pt minus .2ex}% Space after heading 
+	{1ex plus 0pt minus .2ex}% Space after heading
 	{}% Head spec (empty = same as ‘plain’ style
 \theoremstyle{definition}
 \newtheorem{Def}{\@defname}[chapter]
@@ -879,7 +879,7 @@ grau de \@degree\ em \@majorfield.}
   \gdef\@keywordsname{\keywordsnameEN}
   \chapter*{\abstrname}}
 
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Keywords
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -926,7 +926,7 @@ grau de \@degree\ em \@majorfield.}
   \end{flushright}
   \normalfont\vskip2\baselineskip}
 
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Table of contents
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -952,7 +952,7 @@ grau de \@degree\ em \@majorfield.}
  \renewcommand\tableofcontents{%
    \chapter*{\contentsname}
    \@starttoc{toc}}
- 
+
 
 % \def\l@part#1#2{%
 %   \ifnum \c@tocdepth >-2\relax
@@ -1072,8 +1072,8 @@ grau de \@degree\ em \@majorfield.}
           \vskip2.5pc}}\hskip\leftskip\fi
      #1\par \endgroup
   \skip@10pc \advance\skip@-\normalbaselineskip
-  \vskip\skip@ }  
-  
+  \vskip\skip@ }
+
 \def\@schapter#1{%
   \schaptermark{#1}%
   \@makeschapterhead{#1}%
@@ -1123,7 +1123,7 @@ grau de \@degree\ em \@majorfield.}
   \thispagestyle{empty}
   \null\vfill
   \small\noindent
-  \@colophontext	
+  \@colophontext
 }
 
 
@@ -1197,7 +1197,7 @@ grau de \@degree\ em \@majorfield.}
 	{\slshape}% Body style
 	{0pt}% Heading indent amount
 	{\bfseries}{.}% Heading font and punctuation after it
-	{1ex plus 0pt minus .2ex}% Space after heading 
+	{1ex plus 0pt minus .2ex}% Space after heading
 	{}% Head spec (empty = same as ‘plain’ style
 \theoremstyle{definition}
 \newtheorem{Def}{\@defname}[chapter]
