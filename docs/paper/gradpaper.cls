@@ -163,6 +163,17 @@ recognize this \@papertype\space and it's results.
 % Fonts
 \newcommand\regulartext{\normalfont\normalsize}
 \newcommand\regulartextit{\it\normalsize}
+\newcommand\frontmatterblankpage{
+  \null
+  \thispagestyle{empty}
+  \addtocounter{page}{-1}
+  \newpage
+}
+\newcommand\mainmatterblankpage{
+  \null
+  \thispagestyle{empty}
+  \newpage
+}
 
 % Frontpage
 \def\frontpage{
@@ -193,7 +204,7 @@ recognize this \@papertype\space and it's results.
         \begin{flushleft}
           \@authorname:\space\@author
           \\
-          \@advisername:\space\@adviser,\space\@advisertitle
+          \@advisername: Prof.\space\@advisertitle\space\@adviser
         \end{flushleft}
       \end{center}
     \end{minipage}
@@ -207,8 +218,10 @@ recognize this \@papertype\space and it's results.
 
 % Presentationpage
 \def\presentationpage{
+  \afterpage{\frontmatterblankpage}
   \clearpage
   \thispagestyle{empty}
+  \vspace*{\fill}
   \begin{center}
     \begin{minipage}{120mm}
       \begin{center}
@@ -229,20 +242,18 @@ recognize this \@papertype\space and it's results.
       \begin{flushleft}
         \@authorname:\space\@author
         \\
-        \@advisername:\space\@adviser,\space\@advisertitle
+        \@advisername: Prof.\space\@advisertitle\space\@adviser
         \\
-        \@revisername:\space\@reviser,\space\@revisertitle
+        \@revisername: Prof.\space\@revisertitle\space\@reviser
       \end{flushleft}
     \end{minipage}
     \vfill
-    \@address
-    \\
-    \@date
   \end{center}
 }
 
 % Signatures
 \def\signatures{
+  \afterpage{\frontmatterblankpage}
   \clearpage
   \chapter*{\signaturesname}
   \thispagestyle{empty}
@@ -271,6 +282,7 @@ recognize this \@papertype\space and it's results.
 % Acknowledgements
 % TODO aumentar o espaço entre as linhas
 \def\acknowledgements#1{
+  \afterpage{\frontmatterblankpage}
   \clearpage
   \chapter*{\acknowledgementsname}
   \thispagestyle{empty}
@@ -279,50 +291,30 @@ recognize this \@papertype\space and it's results.
   \end{minipage}
 }
 
-% Epigraph and quotations
-\def\epigraph{
+\newcommand{\addstretch}[1]{\addtolength{#1}{\fill}}
+% Epigraph
+\def\epigraph#1#2{
+  \afterpage{\frontmatterblankpage}
   \clearpage
   \thispagestyle{empty}
-  ~\\\vfill
-  \begin{quotation}
-}
-\def\endepigraph{
-  \end{quotation}
-  \vfill
-}
-
-\def\quotation{
-  \@ifnextchar [
-    {\begin{pquotation}}
-    {\begin{pquotation}[\@empty]}
-}
-\def\endquotation{
-  \end{pquotation}\@afterindentfalse\@afterheading
-}
-
-\def\pquotation[#1]#2{
-  \def\@qauthor{#2}
-  \def\@qnote{#1}
-  \begin{flushright}
-    \begin{minipage}{0.8\textwidth}
-      \begin{flushright}\regulartextit
-}
-\def\endpquotation{
-        \vskip.2\baselineskip
-        \regulartext---\MakeTextUppercase{\@qauthor}
-        \if\@qnote\@empty
-          \relax
-        \else
-          \space(\@qnote)
-        \fi
+  \vspace*{\fill}
+  \begin{center}
+    \begin{minipage}{110mm}
+      \begin{flushright}
+        \regulartextit
+        #1
+        \vskip\baselineskip
+        \regulartext
+        #2
       \end{flushright}
     \end{minipage}
-  \end{flushright}
-  \normalfont\vskip2\baselineskip
+  \end{center}
+  \vfill
 }
 
 % Abstract and keywords
 \def\abstract{
+  \afterpage{\frontmatterblankpage}
   \clearpage
   \gdef\@keywordsname{\keywordsname}
   \chapter*{\abstrname}
@@ -337,7 +329,9 @@ recognize this \@papertype\space and it's results.
 
 % Table of contents
 \def\@plaintocline#1#2#3#4#5{
-  \ifnum #1>\c@tocdepth \else
+  \ifnum #1>
+    \c@tocdepth
+  \else
     \vskip \z@ \@plus.2\p@
     {\leftskip #2\relax \rightskip \@tocrmarg \parfillskip -\rightskip
      \parindent #2\relax\@afterindenttrue
@@ -385,16 +379,16 @@ recognize this \@papertype\space and it's results.
 \setcounter{tocdepth}{3}
 
 \renewcommand\listoffigures{
-   \clearpage
-   \chapter*{\listfigurename}
-   \thispagestyle{empty}
-   \@starttoc{lof}}
+  \clearpage
+  \chapter*{\listfigurename}
+  \thispagestyle{empty}
+  \@starttoc{lof}}
 
 \renewcommand\listoftables{
-   \clearpage
-   \chapter*{\listtablename}
-   \thispagestyle{empty}
-   \@starttoc{lot}}
+  \clearpage
+  \chapter*{\listtablename}
+  \thispagestyle{empty}
+  \@starttoc{lot}}
 
 
 % Sectioning
@@ -416,7 +410,7 @@ recognize this \@papertype\space and it's results.
   {\centering
    \interlinepenalty \@M
    \normalfont
-   \null\vfil
+   \vspace*{\fill}
    \ifnum \c@secnumdepth >-2\relax
      {\sc\Large\partname\nobreakspace\thepart}
      \par
@@ -429,7 +423,7 @@ recognize this \@papertype\space and it's results.
   {\centering
    \interlinepenalty \@M
    \normalfont
-   \null\vfil
+   \vspace*{\fill}
    {\huge\bfseries #1\par}}
    \vfil
 }
@@ -521,14 +515,6 @@ recognize this \@papertype\space and it's results.
 \def\paragraph{
   \@startsection{paragraph}{4}{0mm}{\baselineskip}
    {-1em}{\itshape}
-}
-
-\def\colophon{
-  \if@openright\cleardoublepage\else\clearpage\fi
-  \thispagestyle{empty}
-  \null\vfill
-  \small\noindent
-  \@colophontext
 }
 
 

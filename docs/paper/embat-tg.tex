@@ -10,15 +10,14 @@
 %\date{TODO colocar a data da defesa}
 \author{Eduardo Martins Barros de Albuquerque Tenório}
 \adviser{Tsang Ing Ren}
-\advisertitle{PhD}
+\advisertitle{Dr.}
 \reviser{George Darmiton da Cunha Cavalcanti}
-\revisertitle{PhD}
+\revisertitle{Dr.}
 
 
 \begin{document}
 
-
-% Pre-text
+% Frontmatter
 
 \frontpage
 \presentationpage
@@ -31,29 +30,35 @@ during this long graduation,
 GMM.
 }
 
-\begin{epigraph}[nota]{autor}
-TODO
-\end{epigraph}
+\epigraph{Live long and prosper}{Vulcan salute}
 
 \abstract
-TODO abstract
+abstract
 \begin{keywords}
-TODO keywords
+keywords
 \end{keywords}
 
+% TODO verificar se as listas possuem # de paginas impar ou par
+\afterpage{\frontmatterblankpage}
 \listoffigures
 \listoftables
-%\listofcodes
 \tableofcontents
 
 
-% Text
+% Mainmatter
 
-% TODO colocar aqui a chamada para os capítulos (1-intro, 2-feature-extraction,
-% 3-GMM, 4-FCM, 5-experimentos, 6-conclusão)
+\clearpage
+\setcounter{page}{1}
+\include{chap01}    %intro
+\afterpage{\mainmatterblankpage} %test
+\include{chap02}    %feature-extraction
+\include{chap03}    %GMM
+\include{chap04}    %FCM
+\include{chap05}    %experiments
+\include{chap06}    %conclusions
 
 
-% Post-text
+% Backmatter
 
 %\appendix
 %
@@ -61,8 +66,5 @@ TODO keywords
 %\nocite{*}
 %\bibliographystyle{alpha}
 %\bibliography{biblio}
-%
-%
-%\colophon
 
 \end{document}
