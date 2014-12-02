@@ -47,7 +47,7 @@ def filterbanks(samplerate=16000, nfilt=26, nfft=512):
     @param nfilt: the number of filters in the filterbank, default 26.
     @param nfft: the FFT size. Default is 512.
 
-    @returns: A numpy array of size (nfilt x (nfft/2 + 1)) containing filterbank.
+    @returns: A numpy array of size (nfilt x (floor(nfft/2) + 1)) containing filterbank.
     Each row holds 1 filter.
     """
     lowfreq_mel = 0
@@ -248,55 +248,73 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     preemph = 0.97
+    num_deltas = 2
 
     fbank = filterbanks()
     print('fbank', len(fbank), 'x', len(fbank[0]))
     print(fbank)
+    fig = plt.figure()
     plt.grid(True)
     for i in range(len(fbank)): #figure 1
         plt.plot(fbank[i], 'b')
+    fig.suptitle('filterbanks')
+    plt.xlabel('filter size')
 
     (samplerate, signal) = wavf.read('../bases/mit/corpuses/enroll_2/f08/phrase54_16k.wav')
     signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, preemph=preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
-    plt.figure()
+    recovered = np.array(list())
+    for sigfb in signal_fb[0]:
+        recovered = np.concatenate((recovered, sigfb))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(signal_fb[0]) #figure 2
+    plt.plot(recovered) #figure 2
+    fig.suptitle('signal filterbanked (features)')
+    plt.xlabel('frequency (Hz)')
     print('signal_fb[1] (energy)', len(signal_fb[1]))
     print(signal_fb[1])
-    plt.figure()
+    fig = plt.figure()
     plt.grid(True)
     plt.plot(signal_fb[1]) #figure 3
+    fig.suptitle('signal filterbanked (energy)')
 
     logsig = np.log(signal_fb[0])
     print('log signal_fb[0]', len(logsig), 'x', len(logsig[0]))
     print(logsig)
-    plt.figure()
+    recovered = np.array(list())
+    for lsig in logsig:
+        recovered = np.concatenate((recovered, lsig))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(logsig) #figure 4
+    plt.plot(recovered) #figure 4
+    fig.suptitle('log signal filterbanked (features)')
+    plt.xlabel('frequency (Hz)')
 
     mfccs = mfcc(signal, winlen, winstep, samplerate, preemph=preemph)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
-    plt.figure()
+    recovered = np.array(list())
+    for mfcc in mfccs:
+        recovered = np.concatenate((recovered, mfcc))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(mfccs[1]) #figure 5
-    plt.figure()
-    plt.grid(True)
-    for i in range(len(mfccs)): #figure 6
-        plt.plot(mfccs[i])
+    plt.plot(recovered) #figure 5
+    fig.suptitle('mfccs')
+    plt.xlabel('time (samples)')
 
-    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, preemph=preemph)
+    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, preemph=preemph,
+                              num_deltas=num_deltas)
     print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
     print(mfccs_deltas)
-    plt.figure()
+    recovered = np.array(list())
+    for mfcc_d in mfccs_deltas:
+        recovered = np.concatenate((recovered, mfcc_d))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(mfccs_deltas[1]) #figure 7
-    plt.figure()
-    plt.grid(True)
-    for i in range(len(mfccs_deltas)): #figure 8
-        plt.plot(mfccs_deltas[i])
+    plt.plot(recovered) #figure 6
+    fig.suptitle('mfccs + deltas until %dª order' % num_deltas)
+    plt.xlabel('time (samples)')
 
     plt.show()
