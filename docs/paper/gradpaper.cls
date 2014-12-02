@@ -110,7 +110,8 @@ recognize this \@papertype\space and it's results.
 }
 \def\@institutelogo{\@notdefined}
 \def\address#1{
-  \gdef\@address{#1}}
+  \gdef\@address{#1}
+}
 \def\@address{\@notdefined}
 
 % Degree identification
@@ -119,7 +120,8 @@ recognize this \@papertype\space and it's results.
 }
 \def\@degree{\@notdefined}
 \def\majorfield#1{
-  \gdef\@majorfield{#1}}
+  \gdef\@majorfield{#1}
+}
 \def\@majorfield{\@notdefined}
 \def\@program{\@majorfield\space \@degree\space Program}
 
@@ -223,7 +225,6 @@ recognize this \@papertype\space and it's results.
       \end{minipage}
     \end{flushright}
     \vfill
-    \vfill
     \begin{minipage}{100mm}
       \begin{flushleft}
         \@authorname:\space\@author
@@ -233,7 +234,7 @@ recognize this \@papertype\space and it's results.
         \@revisername:\space\@reviser,\space\@revisertitle
       \end{flushleft}
     \end{minipage}
-    \vskip4\baselineskip
+    \vfill
     \@address
     \\
     \@date
@@ -361,23 +362,6 @@ recognize this \@papertype\space and it's results.
   \@starttoc{toc}
 }
 
-
-% \def\l@part#1#2{
-%   \ifnum \c@tocdepth >-2\relax
-%     \addpenalty{-\@highpenalty}
-%     \addvspace{2.25em \@plus\p@}
-%     \setlength\@tempdima{3em}
-%     \begingroup
-%       \parindent \z@ \rightskip \@pnumwidth
-%       \parfillskip -\@pnumwidth
-%       {\leavevmode
-%        \large \bfseries #1\hfil \hb@xt@\@pnumwidth{\hss #2}}\par
-%        \nobreak
-%          \global\@nobreaktrue
-%          \everypar{\global\@nobreakfalse\everypar{}}
-%     \endgroup
-%   \fi}
-
 \def\l@chapter#1#2{
   \ifnum \c@tocdepth >\m@ne
     \addpenalty{-\@highpenalty}
@@ -393,20 +377,12 @@ recognize this \@papertype\space and it's results.
       \penalty\@highpenalty
     \endgroup
     %\vskip .75em \@plus\p@
-  \fi}
+  \fi
+}
 
-%\def\l@section{\@plaintocline{1}{1.5em}{2.3em}}
-%\def\l@subsection{\@plaintocline{2}{3.8em}{3.2em}}
-%\def\l@subsubsection{\@plaintocline{3}{7.0em}{4.1em}}
-%\def\l@paragraph{\@plaintocline{4}{10em}{5em}}
-%\def\l@subparagraph{\@plaintocline{5}{12em}{6em}}
-%
-%\def\l@figure{\@plaintocline{1}{1.5em}{2.3em}}
-%\def\l@table{\@plaintocline{1}{1.5em}{2.3em}}
 \let\@dottedtocline\@plaintocline
 
 \setcounter{tocdepth}{3}
-
 
 \renewcommand\listoffigures{
    \clearpage
