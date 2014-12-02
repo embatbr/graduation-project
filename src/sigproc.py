@@ -82,7 +82,7 @@ def powspec(frames, NFFT=512):
     @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the power spectrum of the corresponding frame.
     """
-    return ((1.0/NFFT) * np.square(magspec(frames, NFFT)))
+    return ((1.0/NFFT) * np.square(magspec(frames, NFFT=NFFT)))
 
 
 # TEST
@@ -99,36 +99,54 @@ if __name__ == '__main__':
 
     print('signal:')
     print(signal)
+    fig = plt.figure()
     plt.grid(True)
     plt.plot(signal) #figure 1
+    fig.suptitle('signal')
+    plt.xlabel('time (samples)')
 
     presignal = preemphasis(signal, coeff=preemph)
     print('preemphasis:')
     print(presignal)
-    plt.figure()
+    fig = plt.figure()
     plt.grid(True)
     plt.plot(presignal) #figure 2
+    fig.suptitle('presignal')
+    plt.xlabel('time (samples)')
 
     frames = frame_signal(presignal, frame_len, frame_step)
     print('frames', len(frames), 'x', len(frames[0]))
     print(frames)
-    plt.figure()
+    recovered = np.array(list())
+    for frame in frames:
+        recovered = np.concatenate((recovered, frame))
+    fig = plt.figure()
     plt.grid(True)
-    for frame in frames: #figure 3
-        plt.plot(frame)
+    plt.plot(recovered) #figure 3
+    fig.suptitle('frames')
+    plt.xlabel('time (samples)')
 
     magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
-    plt.figure()
+    recovered = np.array(list())
+    for mag in magsig:
+        recovered = np.concatenate((recovered, mag))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(magsig[0]) #figure 4
+    plt.plot(recovered) #figure 4
+    fig.suptitle('magsig')
+    plt.xlabel('frquency (Hz)')
 
     powsig = powspec(frames, NFFT)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
-    plt.figure()
+    for pwr in powsig:
+        recovered = np.concatenate((recovered, pwr))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(powsig[0]) #figure 5
+    plt.plot(recovered) #figure 5
+    fig.suptitle('powsig')
+    plt.xlabel('frquency (Hz)')
 
     plt.show()
