@@ -85,6 +85,9 @@ recognize this \@papertype\space and it's results.
 \gdef\@sectionname{Section}
 \gdef\@appendixname{Appendix}
 \gdef\@pagename{page}
+\gdef\@authorname{Author}
+\gdef\@advisername{Adviser}
+\gdef\@revisername{Reviser}
 
 
 %% IDENTIFICATION
@@ -182,25 +185,55 @@ recognize this \@papertype\space and it's results.
     \end{minipage}
     \\
     \vfill
+    \begin{minipage}{100mm}
+      \regulartext
+      \begin{center}
+        \begin{flushleft}
+          \@authorname:\space\@author
+          \\
+          \@advisername:\space\@adviser,\space\@advisertitle
+        \end{flushleft}
+      \end{center}
+    \end{minipage}
+    \vfill
+    \regulartext
+    \@address
+    \\
+    \@date
+  \end{center}
+}
+
+% Presentationpage
+\def\presentationpage{
+  \clearpage
+  \thispagestyle{empty}
+  \begin{center}
+    \begin{minipage}{120mm}
+      \begin{center}
+        {\Large\bfseries\@title}
+      \end{center}
+    \end{minipage}
+    \vfill
     \begin{flushright}
-      \begin{minipage}{100mm}
+      \begin{minipage}{80mm}
         \regulartextit
         \@presentationtext
-        \vskip2\baselineskip
+        \vskip\baselineskip
         \regulartext
-        \begin{center}
-          \begin{flushleft}
-            Author:\space\@author
-            \\
-            Adiviser:\space\@adviser,\space\@advisertitle
-            \\
-            Reviser:\space\@reviser,\space\@revisertitle
-          \end{flushleft}
-        \end{center}
       \end{minipage}
     \end{flushright}
     \vfill
-    \regulartext
+    \vfill
+    \begin{minipage}{100mm}
+      \begin{flushleft}
+        \@authorname:\space\@author
+        \\
+        \@advisername:\space\@adviser,\space\@advisertitle
+        \\
+        \@revisername:\space\@reviser,\space\@revisertitle
+      \end{flushleft}
+    \end{minipage}
+    \vskip4\baselineskip
     \@address
     \\
     \@date
@@ -245,7 +278,7 @@ recognize this \@papertype\space and it's results.
   \end{minipage}
 }
 
-% Quotations
+% Epigraph and quotations
 \def\epigraph{
   \clearpage
   \thispagestyle{empty}
@@ -287,13 +320,14 @@ recognize this \@papertype\space and it's results.
   \normalfont\vskip2\baselineskip
 }
 
-% Abstract
+% Abstract and keywords
 \def\abstract{
+  \clearpage
   \gdef\@keywordsname{\keywordsname}
   \chapter*{\abstrname}
+  \thispagestyle{empty}
 }
 
-% Keywords
 \def\@keywordsname{\@defaultkeywordsname}
 \def\keywords{
   \par\vskip\baselineskip\noindent{\bf\@keywordsname: }
@@ -321,7 +355,9 @@ recognize this \@papertype\space and it's results.
 }
 
 \renewcommand\tableofcontents{
+  \clearpage
   \chapter*{\contentsname}
+  \thispagestyle{empty}
   \@starttoc{toc}
 }
 
@@ -373,11 +409,15 @@ recognize this \@papertype\space and it's results.
 
 
 \renewcommand\listoffigures{
+   \clearpage
    \chapter*{\listfigurename}
+   \thispagestyle{empty}
    \@starttoc{lof}}
 
 \renewcommand\listoftables{
+   \clearpage
    \chapter*{\listtablename}
+   \thispagestyle{empty}
    \@starttoc{lot}}
 
 
