@@ -74,6 +74,7 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     preemph = 0.97
+    num_deltas = 2
 
     (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
                                      BASES_DIR)
@@ -85,28 +86,27 @@ if __name__ == '__main__':
     fig.suptitle('signal')
     plt.xlabel('time (samples)')
 
-    mfccs = features.mfcc_delta(signal, 0.02, 0.01, samplerate, preemph=preemph)
-    print('mfccs', len(mfccs), 'x', len(mfccs[0]))
-    print(mfccs)
-    recovered = np.array(list())
-    for mfcc in mfccs:
-        recovered = np.concatenate((recovered, mfcc))
+    mfccs_deltas = features.mfcc_delta(signal, 0.02, 0.01, samplerate, preemph=preemph,
+                                       num_deltas=num_deltas)
+    print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
+    print(mfccs_deltas)
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 2
-    fig.suptitle('mfccs')
-    plt.xlabel('time (samples)')
+    for melfeat_deltas in mfccs_deltas: #figure 2
+        plt.plot(melfeat_deltas)
+    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs_deltas), len(mfccs_deltas)*num_deltas))
+    plt.xlabel('frame')
+    plt.ylabel('feature value')
 
-    mfccs = read_features('enroll_2', 'f08', 54)
-    print('mfccs (loaded)', len(mfccs), 'x', len(mfccs[0]))
-    print(mfccs)
-    recovered = np.array(list())
-    for mfcc in mfccs:
-        recovered = np.concatenate((recovered, mfcc))
+    mfccs_deltas = read_features('enroll_2', 'f08', 54)
+    print('mfccs_deltas (loaded)', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
+    print(mfccs_deltas)
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 3
-    fig.suptitle('mfccs (read from file)')
-    plt.xlabel('time (samples)')
+    for melfeat_deltas in mfccs_deltas: #figure 3
+        plt.plot(melfeat_deltas)
+    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs_deltas), len(mfccs_deltas)*num_deltas))
+    plt.xlabel('frame')
+    plt.ylabel('feature value')
 
     plt.show()
