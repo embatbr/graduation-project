@@ -99,6 +99,7 @@ if __name__ == '__main__':
     frame_step = 0.01*samplerate
     preemph = 0.97
     NFFT = 512
+    freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
 
     print('signal:')
     print(signal)
@@ -132,24 +133,21 @@ if __name__ == '__main__':
     magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))
     print(magsig)
-    recovered = np.array(list())
-    for mag in magsig:
-        recovered = np.concatenate((recovered, mag))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 4
+    for mag in magsig: #figure 4
+        plt.plot(freq, mag, 'r')
     fig.suptitle('magsig')
-    plt.xlabel('frquency (Hz)')
+    plt.xlabel('frequency (Hz)')
 
     powsig = powspec(frames, NFFT)
     print('powsig', len(powsig), 'x', len(powsig[0]))
     print(powsig)
-    for pwr in powsig:
-        recovered = np.concatenate((recovered, pwr))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 5
+    for pwr in powsig: #figure 5
+        plt.plot(freq, pwr, 'r')
     fig.suptitle('powsig')
-    plt.xlabel('frquency (Hz)')
+    plt.xlabel('frequency (Hz)')
 
     plt.show()
