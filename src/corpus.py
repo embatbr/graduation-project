@@ -8,13 +8,11 @@ import shutil
 import scipy.io.wavfile as wavf
 import numpy as np
 
+from useful import BASES_DIR
 import features
 
 
-BASES_DIR = '../bases/'
-
-
-def mit_features(winlen, winstep):
+def mit_features(winlen, winstep, preemph=0.97):
     pathfeat = '%smit/features/' % BASES_DIR
     if os.path.exists(pathfeat):
         shutil.rmtree(pathfeat)
@@ -48,7 +46,8 @@ def mit_features(winlen, winstep):
             for utt in utterances:
                 path_utt = '%s/%s' % (pathspeaker, utt)
                 (samplerate, signal) = wavf.read(path_utt)
-                mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate)
+                mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate,
+                                                   preemph=preemph)
                 if corpus == 'enroll_1':
                     mfccs_deltas_list.append(mfccs_deltas.transpose())
                 else:
@@ -74,36 +73,40 @@ if __name__ == '__main__':
 
     winlen = 0.02
     winstep = 0.01
-    coeff = 0.95
+    preemph = 0.97
 
-    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' % BASES_DIR)
+    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
+                                     BASES_DIR)
     print('signal:')
     print(signal)
+    fig = plt.figure()
     plt.grid(True)
     plt.plot(signal) #figure 1
+    fig.suptitle('signal')
+    plt.xlabel('time (samples)')
 
-    mfccs = features.mfcc_delta(signal, 0.02, 0.01, samplerate)
+    mfccs = features.mfcc_delta(signal, 0.02, 0.01, samplerate, preemph=preemph)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
-    plt.figure()
+    recovered = np.array(list())
+    for mfcc in mfccs:
+        recovered = np.concatenate((recovered, mfcc))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(mfccs[1]) #figure 2
-    plt.figure()
-    plt.grid(True)
-    for i in range(len(mfccs)): #figure 3
-        plt.plot(mfccs[i])
-
-    #mit_features(winlen, winstep)
+    plt.plot(recovered) #figure 2
+    fig.suptitle('mfccs')
+    plt.xlabel('time (samples)')
 
     mfccs = read_features('enroll_2', 'f08', 54)
     print('mfccs (loaded)', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
-    plt.figure()
+    recovered = np.array(list())
+    for mfcc in mfccs:
+        recovered = np.concatenate((recovered, mfcc))
+    fig = plt.figure()
     plt.grid(True)
-    plt.plot(mfccs[1]) #figure 4
-    plt.figure()
-    plt.grid(True)
-    for i in range(len(mfccs)): #figure 5
-        plt.plot(mfccs[i])
+    plt.plot(recovered) #figure 3
+    fig.suptitle('mfccs (read from file)')
+    plt.xlabel('time (samples)')
 
     plt.show()

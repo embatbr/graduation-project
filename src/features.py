@@ -12,6 +12,7 @@ import numpy as np
 from scipy.fftpack import dct
 
 
+from useful import BASES_DIR
 import sigproc
 
 
@@ -260,7 +261,8 @@ if __name__ == '__main__':
     fig.suptitle('filterbanks')
     plt.xlabel('filter size')
 
-    (samplerate, signal) = wavf.read('../bases/mit/corpuses/enroll_2/f08/phrase54_16k.wav')
+    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
+                                     BASES_DIR)
     signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, preemph=preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))

@@ -10,6 +10,8 @@ work, copy what I understood and improve some parts.
 import numpy as np
 import math
 
+from useful import BASES_DIR
+
 
 def preemphasis(signal, coeff=0.97):
     """Performs preemphasis on the input signal.
@@ -90,7 +92,8 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    (samplerate, signal) = wavf.read('../bases/mit/corpuses/enroll_2/f08/phrase54_16k.wav')
+    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
+                                     BASES_DIR)
 
     frame_len = 0.02*samplerate
     frame_step = 0.01*samplerate
