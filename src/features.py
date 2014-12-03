@@ -10,6 +10,7 @@ code as a guide.
 
 import numpy as np
 from scipy.fftpack import dct
+import math
 
 
 from useful import BASES_DIR
@@ -38,26 +39,26 @@ def mel2hz(mel):
     """
     return (700 * (10**(mel/2595.0) - 1))
 
-def filterbanks(samplerate=16000, nfilt=26, nfft=512):
+def filterbanks(samplerate=16000, nfilt=26, NFFT=512):
     """Computes a Mel-filterbank. The filters are stored in the rows, the columns
     correspond to fft bins. The filters are returned as an array of size
-    (nfilt x (nfft/2 + 1))
+    (nfilt x (NFFT/2 + 1))
 
     @param samplerate: the samplerate of the signal we are working with. Affects
     mel spacing.
     @param nfilt: the number of filters in the filterbank, default 26.
-    @param nfft: the FFT size. Default is 512.
+    @param NFFT: the FFT size. Default is 512.
 
-    @returns: A numpy array of size (nfilt x (floor(nfft/2) + 1)) containing filterbank.
+    @returns: A numpy array of size (nfilt x (floor(NFFT/2) + 1)) containing filterbank.
     Each row holds 1 filter.
     """
     lowfreq_mel = 0
     highfreq_mel = hz2mel(samplerate / 2)
     melpoints = np.linspace(lowfreq_mel, highfreq_mel, nfilt + 2)
     hzpoints = mel2hz(melpoints)
-    bin = np.floor((nfft + 1) * hzpoints / samplerate)
+    bin = np.floor((NFFT + 1) * hzpoints / samplerate)
 
-    fbank = np.zeros([nfilt, nfft/2 + 1])
+    fbank = np.zeros([nfilt, NFFT/2 + 1])
     for m in range(0, nfilt):
         bin_m = int(bin[m])         # f(m - 1)
         bin_m_1 = int(bin[m + 1])   # f(m)
@@ -72,7 +73,7 @@ def filterbanks(samplerate=16000, nfilt=26, nfft=512):
     return fbank
 
 def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
-                      nfft=512, preemph=0.97):
+                      NFFT=512, preemph=0.97):
     """Computes Mel-filterbank energy features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -83,7 +84,7 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     @param winstep: the step between seccessive windows in seconds. Default is
     0.01s (10 milliseconds)
     @param nfilt: the number of filters in the filterbank, default 26.
-    @param nfft: the FFT size. Default is 512.
+    @param NFFT: the FFT size. Default is 512.
     @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
     @param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is no
@@ -95,9 +96,9 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     """
     signal = sigproc.preemphasis(signal, preemph)
     frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate)
-    pspec = sigproc.powspec(frames, nfft)
+    pspec = sigproc.powspec(frames, NFFT)
 
-    signal_fb = filterbanks(samplerate, nfilt, nfft)
+    signal_fb = filterbanks(samplerate, nfilt, NFFT)
     feat = np.dot(pspec, signal_fb.T)    # computes the filterbank energies
     energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
@@ -122,22 +123,20 @@ def lifter(cepstra, L=22):
         # values of L <= 0, do nothing
         return cepstra
 
-def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=512,
+def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=512,
          preemph=0.97, ceplifter=22, appendEnergy=True):
     """Computes MFCC features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
-    @param samplerate: the samplerate of the signal we are working with.
     @param winlen: the length of the analysis window in seconds. Default is
     0.025s (25 milliseconds)
     @param winstep: the step between successive windows in seconds. Default is
     0.01s (10 milliseconds)
+    @param samplerate: the samplerate of the signal we are working with.
     @param numcep: the number of cepstrum to return, default 13
     @param nfilt: the number of filters in the filterbank, default 26.
-    @param nfft: the FFT size. Default is 512.
-    @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    @param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
+    @param NFFT: the FFT size. Default is 512.
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
     no filter. Default is 0.97.
     @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
@@ -157,7 +156,7 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, nfft=51
     where 'c' is the number of features and 'T' the number of frames.
     """
     (feat, energy) = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
-                                       nfft, preemph)
+                                       NFFT, preemph)
     feat = np.log(feat)
     feat = dct(feat, type=2, axis=1, norm='ortho')[ : , : numcep]
     feat = lifter(feat, ceplifter)
@@ -207,36 +206,33 @@ def add_delta(mfccs, N = 2, num_deltas=2):
     return new_coeffs
 
 def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
-               nfft=512, preemph=0.97, ceplifter=22, appendEnergy=True, N = 2,
+               NFFT=512, preemph=0.97, ceplifter=22, appendEnergy=True, N = 2,
                num_deltas=2):
     """Computes MFCC features from an audio signal and calculates it's deltas.
 
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
-    @param samplerate: the samplerate of the signal we are working with.
     @param winlen: the length of the analysis window in seconds. Default is
     0.025s (25 milliseconds)
     @param winstep: the step between successive windows in seconds. Default is
     0.01s (10 milliseconds)
+    @param samplerate: the samplerate of the signal we are working with.
     @param numcep: the number of cepstrum to return, default 13
     @param nfilt: the number of filters in the filterbank, default 26.
-    @param nfft: the FFT size. Default is 512.
-    @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    @param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
+    @param NFFT: the FFT size. Default is 512.
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
     no filter. Default is 0.97.
     @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
     lifter. Default is 22.
     @param appendEnergy: if this is true, the zeroth cepstral coefficient is
     replaced with the log of the total frame energy.
-    @param mfccs: the original mfccs calculated by mfcc().
     @param N: complexity of delta (by default, 2).
-    @param double: if True, calculates the Delta-Delta.
+    @param num_deltas: number of delta calculations.
 
     @returns: A numpy array of size (num_deltas*numcep x NUMFRAMES) (transposed)
     containing features (the MFCCs and it's deltas).
     """
-    mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, nfft, preemph,
+    mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT, preemph,
                  ceplifter, appendEnergy)
     return add_delta(mfccs, N, num_deltas)
 
@@ -246,77 +242,81 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
+    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
+                                     BASES_DIR)
+
     winlen = 0.02
     winstep = 0.01
     preemph = 0.97
     num_deltas = 2
+    nfilt = 26
+    NFFT = 512
+    freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
 
-    fbank = filterbanks()
+    fbank = filterbanks(samplerate, nfilt, NFFT)
     print('fbank', len(fbank), 'x', len(fbank[0]))
     print(fbank)
     fig = plt.figure()
     plt.grid(True)
     for i in range(len(fbank)): #figure 1
-        plt.plot(fbank[i], 'b')
-    fig.suptitle('filterbanks')
-    plt.xlabel('filter size')
+        plt.plot(fbank[i])
+    fig.suptitle('%d filters' % nfilt)
+    plt.xlabel('from 0 to %d (filter length)' % math.floor(NFFT/2 + 1))
 
-    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
-                                     BASES_DIR)
-    signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, preemph=preemph)
+    signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
+                                  NFFT, preemph)
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
-    recovered = np.array(list())
-    for sigfb in signal_fb[0]:
-        recovered = np.concatenate((recovered, sigfb))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 2
-    fig.suptitle('signal filterbanked (features)')
-    plt.xlabel('frequency (Hz)')
+    for sigfb in signal_fb[0]: #figure 2
+        plt.plot(sigfb)
+    fig.suptitle('signal filterbanked (%d features)' % len(signal_fb[0]))
+    plt.xlabel('filter')
+    plt.ylabel('filter value')
     print('signal_fb[1] (energy)', len(signal_fb[1]))
     print(signal_fb[1])
     fig = plt.figure()
     plt.grid(True)
     plt.plot(signal_fb[1]) #figure 3
     fig.suptitle('signal filterbanked (energy)')
+    plt.xlabel('frame')
+    plt.ylabel('energy')
 
     logsig = np.log(signal_fb[0])
     print('log signal_fb[0]', len(logsig), 'x', len(logsig[0]))
     print(logsig)
-    recovered = np.array(list())
-    for lsig in logsig:
-        recovered = np.concatenate((recovered, lsig))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 4
-    fig.suptitle('log signal filterbanked (features)')
-    plt.xlabel('frequency (Hz)')
+    for lsig in logsig: #figure 4
+        plt.plot(lsig)
+    fig.suptitle('log signal filterbanked (%d features)' % len(logsig))
+    plt.xlabel('filter')
+    plt.ylabel('filter value')
 
-    mfccs = mfcc(signal, winlen, winstep, samplerate, preemph=preemph)
+    mfccs = mfcc(signal, winlen, winstep, samplerate, nfilt=nfilt, NFFT=NFFT,
+                 preemph=preemph)
     print('mfccs', len(mfccs), 'x', len(mfccs[0]))
     print(mfccs)
-    recovered = np.array(list())
-    for mfcc in mfccs:
-        recovered = np.concatenate((recovered, mfcc))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 5
-    fig.suptitle('mfccs')
-    plt.xlabel('time (samples)')
+    for melfeat in mfccs: #figure 5
+        plt.plot(melfeat)
+    fig.suptitle('%d mfccs' % len(mfccs))
+    plt.xlabel('frame')
+    plt.ylabel('feature value')
 
-    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, preemph=preemph,
-                              num_deltas=num_deltas)
+    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, nfilt=nfilt,
+                              NFFT=NFFT, preemph=preemph, num_deltas=num_deltas)
     print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
     print(mfccs_deltas)
-    recovered = np.array(list())
-    for mfcc_d in mfccs_deltas:
-        recovered = np.concatenate((recovered, mfcc_d))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 6
-    fig.suptitle('mfccs + deltas until %dª order' % num_deltas)
-    plt.xlabel('time (samples)')
+    for melfeat_deltas in mfccs_deltas: #figure 6
+        plt.plot(melfeat_deltas)
+    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs), len(mfccs)*num_deltas))
+    plt.xlabel('frame')
+    plt.ylabel('feature value')
 
     plt.show()
