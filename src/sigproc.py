@@ -10,7 +10,7 @@ work, copy what I understood and improve some parts.
 import numpy as np
 import math
 
-from useful import BASES_DIR
+from useful import CORPORA_DIR
 
 
 def preemphasis(signal, coeff=0.97):
@@ -92,31 +92,33 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
-                                     BASES_DIR)
+    (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
+                                     CORPORA_DIR)
 
     frame_len = 0.02*samplerate
     frame_step = 0.01*samplerate
     preemph = 0.97
     NFFT = 512
-    freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
+    freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
 
     print('signal:')
     print(signal)
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(signal) #figure 1
+    #figure 1
+    plt.plot(np.array(list(range(1, len(signal) + 1))), signal)
     fig.suptitle('signal')
-    plt.xlabel('time (samples)')
+    plt.xlabel('samples')
 
     presignal = preemphasis(signal, coeff=preemph)
     print('preemphasis:')
     print(presignal)
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(presignal) #figure 2
-    fig.suptitle('presignal')
-    plt.xlabel('time (samples)')
+    #figure 2
+    plt.plot(np.array(list(range(1, len(presignal) + 1))), presignal)
+    fig.suptitle('signal (preemph = %1.2f)' % preemph)
+    plt.xlabel('samples')
 
     frames = frame_signal(presignal, frame_len, frame_step)
     print('frames', len(frames), 'x', len(frames[0]))
@@ -126,9 +128,10 @@ if __name__ == '__main__':
         recovered = np.concatenate((recovered, frame))
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(recovered) #figure 3
+    #figure 3
+    plt.plot(np.array(list(range(1, len(recovered) + 1))), recovered)
     fig.suptitle('frames')
-    plt.xlabel('time (samples)')
+    plt.xlabel('samples')
 
     magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))

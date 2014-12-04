@@ -8,17 +8,22 @@ import shutil
 import scipy.io.wavfile as wavf
 import numpy as np
 
-from useful import BASES_DIR
+from useful import CORPORA_DIR, FEATURES_DIR
 import features
 
 
-def mit_features(winlen, winstep, preemph=0.97):
-    pathfeat = '%smit/features/' % BASES_DIR
+def mit_features(winlen, winstep, preemph, numcep, num_deltas):
+    if not os.path.exists(FEATURES_DIR):
+        os.mkdir(FEATURES_DIR)
+
+    pathfeat = '%smit_numcep_%d_deltas_%d_preemph_%f/' % (FEATURES_DIR, numcep,
+                                                          num_deltas, preemph)
+    print('CREATING %s' % pathfeat)
     if os.path.exists(pathfeat):
         shutil.rmtree(pathfeat)
     os.mkdir(pathfeat)
 
-    pathcorp = '%smit/corpuses/' % BASES_DIR
+    pathcorp = '%smit/' % CORPORA_DIR
     corpuses = os.listdir(pathcorp)
     corpuses.sort()
 
@@ -47,7 +52,8 @@ def mit_features(winlen, winstep, preemph=0.97):
                 path_utt = '%s/%s' % (pathspeaker, utt)
                 (samplerate, signal) = wavf.read(path_utt)
                 mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate,
-                                                   preemph=preemph)
+                                                   numcep=numcep, preemph=preemph,
+                                                   num_deltas=num_deltas)
                 if corpus == 'enroll_1':
                     mfccs_deltas_list.append(mfccs_deltas.transpose())
                 else:
@@ -60,9 +66,9 @@ def mit_features(winlen, winstep, preemph=0.97):
                 mfccs_deltas = mfccs_deltas.transpose()
                 np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
-def read_features(corpus, speaker, uttnum):
-    mfccs = np.load('%smit/features/%s/%s/phrase%d_16k.wav.npy' % (BASES_DIR,
-                    corpus, speaker, uttnum))
+def read_features(numcep, num_deltas, preemph, corpus, speaker, uttnum):
+    mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%2d_16k.wav.npy' %
+                    (FEATURES_DIR, numcep, num_deltas, preemph, corpus, speaker, uttnum))
     return mfccs.transpose()
 
 
@@ -73,11 +79,12 @@ if __name__ == '__main__':
 
     winlen = 0.02
     winstep = 0.01
-    preemph = 0.97
+    numcep = 13
     num_deltas = 2
+    preemph = 0.97
 
-    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
-                                     BASES_DIR)
+    (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
+                                     CORPORA_DIR)
     print('signal:')
     print(signal)
     fig = plt.figure()
@@ -94,19 +101,21 @@ if __name__ == '__main__':
     plt.grid(True)
     for melfeat_deltas in mfccs_deltas: #figure 2
         plt.plot(melfeat_deltas)
-    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs_deltas), len(mfccs_deltas)*num_deltas))
+    fig.suptitle('%d mfccs = %d cepstra + %d deltas\n(calculated)' %
+                 (len(mfccs_deltas), numcep, num_deltas))
     plt.xlabel('frame')
     plt.ylabel('feature value')
 
-    mfccs_deltas = read_features('enroll_2', 'f08', 54)
+    mfccs_deltas = read_features(numcep, num_deltas, preemph, 'enroll_2', 'f08', 54)
     print('mfccs_deltas (loaded)', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
     print(mfccs_deltas)
     fig = plt.figure()
     plt.grid(True)
     for melfeat_deltas in mfccs_deltas: #figure 3
         plt.plot(melfeat_deltas)
-    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs_deltas), len(mfccs_deltas)*num_deltas))
-    plt.xlabel('frame')
+    fig.suptitle('%d mfccs = %d cepstra + %d deltas\n(from database)' %
+                 (len(mfccs_deltas), numcep, num_deltas))
+    plt.xlabel('feature')
     plt.ylabel('feature value')
 
     plt.show()

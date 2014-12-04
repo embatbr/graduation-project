@@ -13,7 +13,7 @@ from scipy.fftpack import dct
 import math
 
 
-from useful import BASES_DIR
+from useful import CORPORA_DIR
 import sigproc
 
 
@@ -181,7 +181,7 @@ def add_delta(mfccs, N = 2, num_deltas=2):
     denom = 2 * sum([n*n for n in range(1, N + 1)])
     numframes = len(mfccs[0])
     new_coeffs = np.zeros((numcep*(1 + num_deltas), numframes))
-    new_coeffs[: numcep, :] = mfccs[:,:]
+    new_coeffs[: numcep, :] = mfccs[:,:]    #copy MFCCs array
 
     for order in range(num_deltas):
         for k in range(order*numcep, (order + 1)*numcep): #index of coeff(0 to 12, 13 to 25 and 26 to 38)
@@ -234,6 +234,8 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
     """
     mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT, preemph,
                  ceplifter, appendEnergy)
+    if num_deltas < 1:
+        return mfccs
     return add_delta(mfccs, N, num_deltas)
 
 
@@ -242,8 +244,8 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    (samplerate, signal) = wavf.read('%smit/corpuses/enroll_2/f08/phrase54_16k.wav' %
-                                     BASES_DIR)
+    (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
+                                     CORPORA_DIR)
 
     winlen = 0.02
     winstep = 0.01
@@ -258,28 +260,33 @@ if __name__ == '__main__':
     print(fbank)
     fig = plt.figure()
     plt.grid(True)
-    for i in range(len(fbank)): #figure 1
-        plt.plot(fbank[i])
+    #figure 1
+    for i in range(len(fbank)):
+        plt.plot(np.array(list(range(1, math.floor(NFFT/2 + 1) + 1))), fbank[i])
     fig.suptitle('%d filters' % nfilt)
     plt.xlabel('from 0 to %d (filter length)' % math.floor(NFFT/2 + 1))
 
     signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
                                   NFFT, preemph)
+
     print('signal_fb', len(signal_fb))
     print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
     print(signal_fb[0])
     fig = plt.figure()
     plt.grid(True)
-    for sigfb in signal_fb[0]: #figure 2
-        plt.plot(sigfb)
+    #figure 2
+    for sigfb in signal_fb[0]:
+        plt.plot(np.array(list(range(1, nfilt + 1))), sigfb)
     fig.suptitle('signal filterbanked (%d features)' % len(signal_fb[0]))
     plt.xlabel('filter')
     plt.ylabel('filter value')
+
     print('signal_fb[1] (energy)', len(signal_fb[1]))
     print(signal_fb[1])
     fig = plt.figure()
     plt.grid(True)
-    plt.plot(signal_fb[1]) #figure 3
+    #figure 3
+    plt.plot(np.array(list(range(1, len(signal_fb[1]) + 1))), signal_fb[1])
     fig.suptitle('signal filterbanked (energy)')
     plt.xlabel('frame')
     plt.ylabel('energy')
@@ -290,7 +297,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     plt.grid(True)
     for lsig in logsig: #figure 4
-        plt.plot(lsig)
+        plt.plot(np.array(list(range(1, len(lsig) + 1))), lsig)
     fig.suptitle('log signal filterbanked (%d features)' % len(logsig))
     plt.xlabel('filter')
     plt.ylabel('filter value')
@@ -302,7 +309,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     plt.grid(True)
     for melfeat in mfccs: #figure 5
-        plt.plot(melfeat)
+        plt.plot(np.array(list(range(1, len(melfeat) + 1))), melfeat)
     fig.suptitle('%d mfccs' % len(mfccs))
     plt.xlabel('frame')
     plt.ylabel('feature value')
@@ -314,7 +321,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     plt.grid(True)
     for melfeat_deltas in mfccs_deltas: #figure 6
-        plt.plot(melfeat_deltas)
+        plt.plot(np.array(list(range(1, len(melfeat_deltas) + 1))), melfeat_deltas)
     fig.suptitle('%d mfccs + %d deltas' % (len(mfccs), len(mfccs)*num_deltas))
     plt.xlabel('frame')
     plt.ylabel('feature value')
