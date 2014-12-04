@@ -13,6 +13,21 @@ import features
 
 
 def mit_features(winlen, winstep, preemph, numcep, num_deltas):
+    """Extracts features from base MIT. The utterances from datasets 'enroll_2'
+    and 'imposter' are treated separately. Utterances from dataset 'enroll_1' are
+    concatenated, after feature extraction, in a file for each user.
+    The features are saved in a directory with name given by
+    '..bases/features/mit_numcep_<numcep>_deltas_<num_deltas>_preemph_<preemph>.'
+
+    @param winlen: the length of the analysis window in seconds. Default is
+    0.02s (20 milliseconds).
+    @param winstep: the step between successive windows in seconds. Default is
+    0.01s (10 milliseconds).
+    @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
+    no filter. Default is 0.97.
+    @param numcep: the number of cepstrum to return, default 13.
+    @param num_deltas: number of delta calculations.
+    """
     if not os.path.exists(FEATURES_DIR):
         os.mkdir(FEATURES_DIR)
 
@@ -66,10 +81,22 @@ def mit_features(winlen, winstep, preemph, numcep, num_deltas):
                 mfccs_deltas = mfccs_deltas.transpose()
                 np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
-def read_features(numcep, num_deltas, preemph, dataset, speaker, uttnum):
-    mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%2d_16k.wav.npy' %
-                    (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker, uttnum))
-    return mfccs.transpose()
+def read_features(numcep, num_deltas, preemph, dataset, speaker, uttnum=None, transpose=True):
+    """Reads a feature from dataset 'enroll_2' or 'imposter'.
+
+    @returns: The features from the utterance given by (dataset, speaker, uttnum).
+    """
+    if not uttnum is None:
+        mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%02d_16k.wav.npy' %
+                        (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker, uttnum))
+    else:
+        mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s.npy' %
+                        (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker))
+
+    if transpose:
+        return mfccs.transpose()
+    else:
+        return mfccs
 
 
 #TEST
