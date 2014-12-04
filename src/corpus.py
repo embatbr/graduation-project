@@ -23,27 +23,27 @@ def mit_features(winlen, winstep, preemph, numcep, num_deltas):
         shutil.rmtree(pathfeat)
     os.mkdir(pathfeat)
 
-    pathcorp = '%smit/' % CORPORA_DIR
-    corpuses = os.listdir(pathcorp)
-    corpuses.sort()
+    pathdatasets = '%smit/' % CORPORA_DIR
+    datasets = os.listdir(pathdatasets)
+    datasets.sort()
 
-    for corpus in corpuses:
-        print(corpus)
-        os.mkdir('%s%s' % (pathfeat, corpus))
-        speakers = os.listdir('%s%s' % (pathcorp, corpus))
+    for dataset in datasets:
+        print(dataset)
+        os.mkdir('%s%s' % (pathfeat, dataset))
+        speakers = os.listdir('%s%s' % (pathdatasets, dataset))
         speakers.sort()
 
         for speaker in speakers:
             print(speaker)
             #reading list of utterances from each speaker
-            pathspeaker = '%s%s/%s' % (pathcorp, corpus, speaker)
+            pathspeaker = '%s%s/%s' % (pathdatasets, dataset, speaker)
             utterances = os.listdir(pathspeaker)
             utterances.sort()
             utterances = [utt for utt in utterances if utt.endswith('.wav')]
 
             #path to write in features
-            pathspeaker_feat = '%s%s/%s' % (pathfeat, corpus, speaker)
-            if corpus == 'enroll_1':    #enroll_1 concatenate all utterances from speaker
+            pathspeaker_feat = '%s%s/%s' % (pathfeat, dataset, speaker)
+            if dataset == 'enroll_1':    #enroll_1 concatenate all utterances from speaker
                 mfccs_deltas_list = list()
             else:                       #others, save each utterance as a file
                 os.mkdir('%s' % pathspeaker_feat)
@@ -54,21 +54,21 @@ def mit_features(winlen, winstep, preemph, numcep, num_deltas):
                 mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate,
                                                    numcep=numcep, preemph=preemph,
                                                    num_deltas=num_deltas)
-                if corpus == 'enroll_1':
+                if dataset == 'enroll_1':
                     mfccs_deltas_list.append(mfccs_deltas.transpose())
                 else:
                     mfccs_deltas = mfccs_deltas.transpose()
                     np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
 
-            if corpus == 'enroll_1':
+            if dataset == 'enroll_1':
                 mfccs_deltas = np.array(mfccs_deltas_list)
                 mfccs_deltas = np.concatenate(mfccs_deltas)
                 mfccs_deltas = mfccs_deltas.transpose()
                 np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
 
-def read_features(numcep, num_deltas, preemph, corpus, speaker, uttnum):
+def read_features(numcep, num_deltas, preemph, dataset, speaker, uttnum):
     mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%2d_16k.wav.npy' %
-                    (FEATURES_DIR, numcep, num_deltas, preemph, corpus, speaker, uttnum))
+                    (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker, uttnum))
     return mfccs.transpose()
 
 

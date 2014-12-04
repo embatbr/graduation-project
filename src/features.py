@@ -12,7 +12,6 @@ import numpy as np
 from scipy.fftpack import dct
 import math
 
-
 from useful import CORPORA_DIR
 import sigproc
 
@@ -78,11 +77,11 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
 
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
-    @param samplerate: the samplerate of the signal we are working with.
-    @param winlen: the length of the analysis window in seconds. Default is 0.025s
-    (25 milliseconds)
+    @param winlen: the length of the analysis window in seconds. Default is 0.02s
+    (20 milliseconds)
     @param winstep: the step between seccessive windows in seconds. Default is
     0.01s (10 milliseconds)
+    @param samplerate: the samplerate of the signal we are working with.
     @param nfilt: the number of filters in the filterbank, default 26.
     @param NFFT: the FFT size. Default is 512.
     @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
@@ -130,7 +129,7 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=51
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
     @param winlen: the length of the analysis window in seconds. Default is
-    0.025s (25 milliseconds)
+    0.02s (20 milliseconds)
     @param winstep: the step between successive windows in seconds. Default is
     0.01s (10 milliseconds)
     @param samplerate: the samplerate of the signal we are working with.
@@ -213,11 +212,11 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
     @param signal: the audio signal from which to compute features. Should be an
     N*1 array
     @param winlen: the length of the analysis window in seconds. Default is
-    0.025s (25 milliseconds)
+    0.02s (20 milliseconds)
     @param winstep: the step between successive windows in seconds. Default is
     0.01s (10 milliseconds)
     @param samplerate: the samplerate of the signal we are working with.
-    @param numcep: the number of cepstrum to return, default 13
+    @param numcep: the number of cepstrum to return, default 13.
     @param nfilt: the number of filters in the filterbank, default 26.
     @param NFFT: the FFT size. Default is 512.
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
