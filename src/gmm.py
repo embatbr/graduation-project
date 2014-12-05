@@ -41,7 +41,7 @@ def create_gmm(M, D):
 
         covariances = np.zeros((D, D))
         for i in range(D):
-            covariances[i, i] = random.uniform(1, 3)
+            covariances[i, i] = random.uniform(50*D, 100*D)
 
         mixture = (weight, means, covariances)
         gmm.append(mixture)
@@ -56,6 +56,8 @@ def eval_gmm(gmm, features):
 
     return prob
 
+#TODO criar funcao para gerar o UBM-GMM e treiná-lo
+
 #TEST
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -63,28 +65,28 @@ if __name__ == '__main__':
     from useful import CORPORA_DIR, FEATURES_DIR
 
     mfccs = corpus.read_features(13, 0, 0.97, 'enroll_1', 'f00', 1)
+    T = len(mfccs[0])
     fig = plt.figure()
-    fig.suptitle('MFCC #0')
+    fig.suptitle('MFCC #0\n1 <= frame <= %d' % T)
     plt.grid(True)
     plt.plot(mfccs[0]) #figure 1
     plt.xlabel('frame')
     plt.ylabel('feature value')
 
-    T = len(mfccs[0])
     frames = np.linspace(1, T, T)
     value = list()
     for features in mfccs.T:
-        features = features[0 : 1]  #D = 1 (only 1 feature)
+        #features = features[0 : 1]  #D = 1 (only 1 feature)
         D = len(features)
         means = np.array([random.uniform(5, 10) for _ in range(D)])
         covariances = np.zeros((D, D))
         for i in range(D):
-            covariances[i, i] = random.uniform(1, 3)
+            covariances[i, i] = random.uniform(50*D, 100*D)
         y = gaussian(features, means, covariances)
         value.append(y)
     value = np.array(value)
     fig = plt.figure()
-    fig.suptitle('MFCC #0\n1 <= t <= %d' % T)
+    fig.suptitle('Gaussian for MFCC #0\n1 <= frame <= %d' % T)
     plt.grid(True)
     plt.xlabel('frame')
     plt.ylabel('feature value')
@@ -99,14 +101,15 @@ if __name__ == '__main__':
 
     probs = list()
     for features in mfccs.T:
-        features = features[0 : 1]  #D = 1 (only 1 feature)
+        #features = features[0 : 1]  #D = 1 (only 1 feature)
         D = len(features)
         gmm = create_gmm(M, D)
         prob = eval_gmm(gmm, features)
+        print(prob)
         probs.append(prob)
     probs = np.array(probs)
     fig = plt.figure()
-    fig.suptitle('Probs for MFCC #0\n1 <= t <= %d' % T)
+    fig.suptitle('GMMs \n1 <= frame <= %d' % T)
     plt.grid(True)
     plt.xlabel('frame')
     plt.ylabel('prob')
