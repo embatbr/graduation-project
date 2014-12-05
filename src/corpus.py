@@ -13,11 +13,8 @@ import features
 
 
 def mit_features(winlen, winstep, preemph, numcep, num_deltas):
-    """Extracts features from base MIT. The utterances from datasets 'enroll_2'
-    and 'imposter' are treated separately. Utterances from dataset 'enroll_1' are
-    concatenated, after feature extraction, in a file for each user.
-    The features are saved in a directory with name given by
-    '..bases/features/mit_numcep_<numcep>_deltas_<num_deltas>_preemph_<preemph>.'
+    """Extracts features from base MIT. The features are saved in a directory with
+    name given by '..bases/features/mit_numcep_<numcep>_deltas_<num_deltas>_preemph_<preemph>.'
 
     @param winlen: the length of the analysis window in seconds. Default is
     0.02s (20 milliseconds).
@@ -58,10 +55,7 @@ def mit_features(winlen, winstep, preemph, numcep, num_deltas):
 
             #path to write in features
             pathspeaker_feat = '%s%s/%s' % (pathfeat, dataset, speaker)
-            if dataset == 'enroll_1':    #enroll_1 concatenate all utterances from speaker
-                mfccs_deltas_list = list()
-            else:                       #others, save each utterance as a file
-                os.mkdir('%s' % pathspeaker_feat)
+            os.mkdir('%s' % pathspeaker_feat)
 
             for utt in utterances:
                 path_utt = '%s/%s' % (pathspeaker, utt)
@@ -69,29 +63,16 @@ def mit_features(winlen, winstep, preemph, numcep, num_deltas):
                 mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate,
                                                    numcep=numcep, preemph=preemph,
                                                    num_deltas=num_deltas)
-                if dataset == 'enroll_1':
-                    mfccs_deltas_list.append(mfccs_deltas.transpose())
-                else:
-                    mfccs_deltas = mfccs_deltas.transpose()
-                    np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
-
-            if dataset == 'enroll_1':
-                mfccs_deltas = np.array(mfccs_deltas_list)
-                mfccs_deltas = np.concatenate(mfccs_deltas)
                 mfccs_deltas = mfccs_deltas.transpose()
-                np.save('%senroll_1/%s' % (pathfeat, speaker), mfccs_deltas)
+                np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
 
-def read_features(numcep, num_deltas, preemph, dataset, speaker, uttnum=None, transpose=True):
+def read_features(numcep, num_deltas, preemph, dataset, speaker, uttnum, transpose=True):
     """Reads a feature from dataset 'enroll_2' or 'imposter'.
 
     @returns: The features from the utterance given by (dataset, speaker, uttnum).
     """
-    if not uttnum is None:
-        mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%02d_16k.wav.npy' %
-                        (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker, uttnum))
-    else:
-        mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s.npy' %
-                        (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker))
+    mfccs = np.load('%smit_numcep_%d_deltas_%d_preemph_%f/%s/%s/phrase%02d_16k.wav.npy' %
+                    (FEATURES_DIR, numcep, num_deltas, preemph, dataset, speaker, uttnum))
 
     if transpose:
         return mfccs.transpose()
