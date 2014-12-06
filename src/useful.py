@@ -15,7 +15,7 @@ def testplot(x, y, newfig=True, suptitle='', xlabel='', ylabel='', options=''):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
-    @param y: a numpy array.
+    @param y: a numpy array of the same size of @param x.
     @param suptitle: the title of the figure.
     @param xlabel: the label of the x axis.
     @param ylabel: the label of the y axis.
