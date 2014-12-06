@@ -16,7 +16,7 @@ from useful import CORPORA_DIR, testplot
 import sigproc
 
 
-option = sys.argv[1]
+options = sys.argv[1:]
 
 (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' % CORPORA_DIR)
 numsamples = len(signal)
@@ -25,7 +25,7 @@ NFFT = 512
 freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
 
 #Pre emphasized signal plotting.
-if option == 'preemphasis':
+if 'preemphasis' in options:
     coeffs = [0, 0.25, 0.5, 0.75, 1]
 
     for coeff in coeffs:
@@ -44,7 +44,7 @@ if option == 'preemphasis':
                  coeff, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
 
 #Common code for options 'frames', 'magspec' and 'powspec'.
-if option in ['frames', 'magspec', 'powspec', 'framesall']:
+if any(option in ['frames', 'magnitude', 'power'] for option in options):
     frame_len = 0.02*samplerate     #sec * (samples/sec)
     frame_step = 0.01*samplerate    #sec * (samples/sec)
     coeffs = [0, 1]
@@ -61,7 +61,7 @@ if option in ['frames', 'magspec', 'powspec', 'framesall']:
             frames = sigproc.frame_signal(presignal, frame_len, frame_step, winfunc)
 
             #Framed signal protting.
-            if (option == 'frames') or (option == 'framesall'):
+            if 'frames' in options:
                 concatsig = np.array(list())
                 for frame in frames:
                     concatsig = np.concatenate((concatsig, frame))
@@ -71,7 +71,7 @@ if option in ['frames', 'magspec', 'powspec', 'framesall']:
                          (coeff, winname), xlabel='time (samples)', ylabel='concatsig[sample]')
 
             #Magnitude spectrum
-            if (option == 'magspec') or (option == 'framesall'):
+            if 'magspec' in options:
                 magframes = sigproc.magspec(frames, NFFT)
                 magspec = np.zeros(len(magframes[0]))
                 for magframe in magframes:
@@ -81,7 +81,7 @@ if option in ['frames', 'magspec', 'powspec', 'framesall']:
                                     (coeff, winname))
 
             #Squared magnitude spectrum
-            if (option == 'powspec') or (option == 'framesall'):
+            if 'powspec' in options:
                 powframes = sigproc.powspec(frames, NFFT)
                 powspec = np.zeros(len(powframes[0]))
                 for powframe in powframes:
