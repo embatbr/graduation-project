@@ -1,9 +1,10 @@
 """This module was made "from scratch" using the codes provided by James Lyons
-at the url "github.com/jameslyons/python_speech_features". It includes routines
-for basic signal processing, such as framing and computing power spectra.
+at the url "github.com/jameslyons/python_speech_features". Most part of the code
+is similar to the "inspiration". I just read his work, copy what I understood and
+improved some parts.
 
-Most part of the code is similar to the "inspiration". What I did was read his
-work, copy what I understood and improve some parts.
+It includes routines for basic signal processing, such as framing and computing
+magnitude and squared magnitude spectrum of framed signal.
 """
 
 
