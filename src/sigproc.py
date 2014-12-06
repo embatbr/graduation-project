@@ -10,20 +10,18 @@ work, copy what I understood and improve some parts.
 import numpy as np
 import math
 
-from useful import CORPORA_DIR
-
 
 def preemphasis(signal, coeff=0.97):
-    """Performs preemphasis on the input signal.
+    """Performs pre emphasis on the input signal.
 
     @param signal: The signal to filter.
-    @param coeff: The preemphasis coefficient. 0 is no filter. Default is 0.97.
+    @param coeff: The pre emphasis coefficient. 0 is no filter. Default is 0.97.
 
-    @returns: the higher frequencies of signal.
+    @returns: the highpass filtered signal.
     """
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
-def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
+def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
     """Frames a signal into overlapping frames.
 
     @param signal: the audio signal to frame.
@@ -31,7 +29,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
     @param frame_step: number of samples after the start of the previous frame
     that the next frame should begin (in samples).
     @param winfunc: the analysis window to apply to each frame. By default it's
-    the Hamming window.
+    the rectangular window.
 
     @returns: an array of frames. Size is (NUMFRAMES x frame_len).
     """
@@ -51,8 +49,7 @@ def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.hamming(x)):
 
     # indices of samples in frames (0:0->320, 1:160->480, ...)
     indices = np.tile(np.arange(0, frame_len), (numframes, 1)) +\
-              np.tile(np.arange(0, numframes*frame_step, frame_step),
-                      (frame_len, 1)).T
+              np.tile(np.arange(0, numframes*frame_step, frame_step), (frame_len, 1)).T
     indices = indices.astype(np.int32, copy=False)
     frames = padsignal[indices]
     win = np.tile(winfunc(frame_len), (numframes, 1))
@@ -91,6 +88,7 @@ def powspec(frames, NFFT=512):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
+    from useful import CORPORA_DIR
 
     (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
                                      CORPORA_DIR)
@@ -101,37 +99,8 @@ if __name__ == '__main__':
     NFFT = 512
     freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
 
-    print('signal:')
-    print(signal)
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 1
-    plt.plot(np.array(list(range(1, len(signal) + 1))), signal)
-    fig.suptitle('signal')
-    plt.xlabel('samples')
-
     presignal = preemphasis(signal, coeff=preemph)
-    print('preemphasis:')
-    print(presignal)
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 2
-    plt.plot(np.array(list(range(1, len(presignal) + 1))), presignal)
-    fig.suptitle('signal (preemph = %1.2f)' % preemph)
-    plt.xlabel('samples')
-
     frames = frame_signal(presignal, frame_len, frame_step)
-    print('frames', len(frames), 'x', len(frames[0]))
-    print(frames)
-    recovered = np.array(list())
-    for frame in frames:
-        recovered = np.concatenate((recovered, frame))
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 3
-    plt.plot(np.array(list(range(1, len(recovered) + 1))), recovered)
-    fig.suptitle('frames')
-    plt.xlabel('samples')
 
     magsig = magspec(frames, NFFT)
     print('magsig', len(magsig), 'x', len(magsig[0]))

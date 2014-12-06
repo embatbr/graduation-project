@@ -94,7 +94,8 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     in each frame (total energy, unwindowed)
     """
     signal = sigproc.preemphasis(signal, preemph)
-    frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate)
+    frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate,
+                                  winfunc=lambda x:np.hamming(x))
     pspec = sigproc.powspec(frames, NFFT)
 
     signal_fb = filterbanks(samplerate, nfilt, NFFT)
