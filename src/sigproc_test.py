@@ -16,7 +16,8 @@ from useful import CORPORA_DIR, testplot
 import sigproc
 
 
-options = sys.argv[1:]
+option = sys.argv[1]
+args = sys.argv[2:]
 
 (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' % CORPORA_DIR)
 numsamples = len(signal)
@@ -25,7 +26,7 @@ NFFT = 512
 freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
 
 #Pre emphasized signal plotting.
-if 'preemphasis' in options:
+if option == 'preemphasis':
     coeffs = [0, 0.25, 0.5, 0.75, 1]
 
     for coeff in coeffs:
@@ -34,21 +35,23 @@ if 'preemphasis' in options:
                  xlabel='time (samples)', ylabel='signal[sample]')
 
         #Magnitude of presignal's spectrum
-        magsig = sigproc.magspec(presignal, NFFT=NFFT)
-        testplot(freq, magsig, suptitle='Magnitude of spectrum\n(preemph = %.2f)' %
-                 coeff, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True)
+        if 'magspec' in args:
+            magsig = sigproc.magspec(presignal, NFFT=NFFT)
+            testplot(freq, magsig, suptitle='Magnitude of spectrum\n(preemph = %.2f)' %
+                     coeff, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True)
 
         #Squared magnitude of presignal's spectrum
-        powsig = sigproc.powspec(presignal, NFFT=NFFT)
-        testplot(freq, powsig, suptitle='Squared magnitude of spectrum\n(preemph = %.2f)' %
-                 coeff, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
+        if 'powspec' in args:
+            powsig = sigproc.powspec(presignal, NFFT=NFFT)
+            testplot(freq, powsig, suptitle='Squared magnitude of spectrum\n(preemph = %.2f)' %
+                     coeff, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
 
-#Common code for options 'frames', 'magspec' and 'powspec'.
-if any(option in ['frames', 'magnitude', 'power'] for option in options):
+#Common code for option 'frames'
+elif option == 'frames':
     frame_len = 0.02*samplerate     #sec * (samples/sec)
     frame_step = 0.01*samplerate    #sec * (samples/sec)
     coeffs = [0, 1]
-    winfuncs = [lambda x: np.ones((1, x)), lambda x: np.hamming(x)]   #Hamming Window
+    winfuncs = [lambda x: np.ones((1, x)), lambda x: np.hamming(x)]
     winnames = ['rectangular', 'hamming']
 
     for coeff in coeffs:
@@ -59,19 +62,17 @@ if any(option in ['frames', 'magnitude', 'power'] for option in options):
 
         for (winfunc, winname) in zip(winfuncs, winnames):
             frames = sigproc.frame_signal(presignal, frame_len, frame_step, winfunc)
-
-            #Framed signal protting.
-            if 'frames' in options:
-                concatsig = np.array(list())
-                for frame in frames:
-                    concatsig = np.concatenate((concatsig, frame))
-                numconcatsamples = len(concatsig)
-                concatsamples = np.linspace(1, numconcatsamples, numconcatsamples)
-                testplot(concatsamples, concatsig, suptitle='Frames\n(preemph = %.2f, win = %s)' %
-                         (coeff, winname), xlabel='time (samples)', ylabel='concatsig[sample]')
+            #Framed signal plotting.
+            concatsig = np.array(list())
+            for frame in frames:
+                concatsig = np.concatenate((concatsig, frame))
+            numconcatsamples = len(concatsig)
+            concatsamples = np.linspace(1, numconcatsamples, numconcatsamples)
+            testplot(concatsamples, concatsig, suptitle='Frames\n(preemph = %.2f, win = %s)' %
+                     (coeff, winname), xlabel='time (samples)', ylabel='concatsig[sample]')
 
             #Magnitude spectrum
-            if 'magspec' in options:
+            if 'magspec' in args:
                 magframes = sigproc.magspec(frames, NFFT)
                 magspec = np.zeros(len(magframes[0]))
                 for magframe in magframes:
@@ -81,7 +82,7 @@ if any(option in ['frames', 'magnitude', 'power'] for option in options):
                                     (coeff, winname))
 
             #Squared magnitude spectrum
-            if 'powspec' in options:
+            if 'powspec' in args:
                 powframes = sigproc.powspec(frames, NFFT)
                 powspec = np.zeros(len(powframes[0]))
                 for powframe in powframes:
