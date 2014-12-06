@@ -22,7 +22,7 @@ def preemphasis(signal, coeff=0.97):
     return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
 
 def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
-    """Frames a signal into overlapping frames.
+    """Divides a signal into overlapping frames.
 
     @param signal: the audio signal to frame.
     @param frame_len: length of each frame measured in samples.
@@ -68,7 +68,7 @@ def magspec(frames, NFFT=512):
     be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
-    return np.absolute(complex_spec)            # cuts half of the array off
+    return np.absolute(complex_spec)            # from a + jb to |z| (cuts half of the array off)
 
 def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
@@ -82,44 +82,3 @@ def powspec(frames, NFFT=512):
     be the power spectrum of the corresponding frame.
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT=NFFT)))
-
-
-# TEST
-if __name__ == '__main__':
-    import scipy.io.wavfile as wavf
-    import matplotlib.pyplot as plt
-    from useful import CORPORA_DIR
-
-    (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
-                                     CORPORA_DIR)
-
-    frame_len = 0.02*samplerate
-    frame_step = 0.01*samplerate
-    preemph = 0.97
-    NFFT = 512
-    freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
-
-    presignal = preemphasis(signal, coeff=preemph)
-    frames = frame_signal(presignal, frame_len, frame_step)
-
-    magsig = magspec(frames, NFFT)
-    print('magsig', len(magsig), 'x', len(magsig[0]))
-    print(magsig)
-    fig = plt.figure()
-    plt.grid(True)
-    for mag in magsig: #figure 4
-        plt.plot(freq, mag, 'r')
-    fig.suptitle('magsig')
-    plt.xlabel('frequency (Hz)')
-
-    powsig = powspec(frames, NFFT)
-    print('powsig', len(powsig), 'x', len(powsig[0]))
-    print(powsig)
-    fig = plt.figure()
-    plt.grid(True)
-    for pwr in powsig: #figure 5
-        plt.plot(freq, pwr, 'r')
-    fig.suptitle('powsig')
-    plt.xlabel('frequency (Hz)')
-
-    plt.show()

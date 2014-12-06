@@ -11,7 +11,7 @@ CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
 
 
-def testplot(x, y, suptitle='', xlabel='', ylabel=''):
+def testplot(x, y, newfig=True, suptitle='', xlabel='', ylabel='', options=''):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -22,13 +22,11 @@ def testplot(x, y, suptitle='', xlabel='', ylabel=''):
     @param xlim: the limits of the x axis.
     @param ylim: the limits of the y axis.
     """
-    fig = plt.figure()
-    fig.suptitle(suptitle)
+    if newfig:
+        fig = plt.figure()
+        fig.suptitle(suptitle)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-
-    plt.xlim([x[0], len(x)])
-    plt.ylim([np.amin(y), np.amax(y)])
-
+    plt.xlim([x[0], x[-1]])
     plt.grid(True)
-    plt.plot(x, y)
+    plt.plot(x, y, options)
