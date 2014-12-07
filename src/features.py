@@ -38,7 +38,7 @@ def mel2hz(mel):
     """
     return (700 * (10**(mel/2595.0) - 1))
 
-def filterbanks(samplerate=16000, nfilt=26, NFFT=512):
+def filterbank(samplerate=16000, nfilt=26, NFFT=512):
     """Computes a Mel-filterbank. The filters are stored in the rows, the columns
     correspond to fft bins. The filters are returned as an array of size
     (nfilt x (NFFT/2 + 1))
@@ -52,12 +52,12 @@ def filterbanks(samplerate=16000, nfilt=26, NFFT=512):
     Each row holds 1 filter.
     """
     lowfreq_mel = 0
-    highfreq_mel = hz2mel(samplerate / 2)
+    highfreq_mel = hz2mel(samplerate/2)
     melpoints = np.linspace(lowfreq_mel, highfreq_mel, nfilt + 2)
     hzpoints = mel2hz(melpoints)
-    bin = np.floor((NFFT + 1) * hzpoints / samplerate)
+    bin = np.floor((NFFT + 1) * hzpoints / samplerate)  #'bin', from FFT bin = 'caixa' de FFT
 
-    fbank = np.zeros([nfilt, NFFT/2 + 1])
+    fbank = np.zeros((nfilt, math.floor(NFFT/2 + 1)))
     for m in range(0, nfilt):
         bin_m = int(bin[m])         # f(m - 1)
         bin_m_1 = int(bin[m + 1])   # f(m)
@@ -98,7 +98,7 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
                                   winfunc=lambda x:np.hamming(x))
     pspec = sigproc.powspec(frames, NFFT)
 
-    signal_fb = filterbanks(samplerate, nfilt, NFFT)
+    signal_fb = filterbank(samplerate, nfilt, NFFT)
     feat = np.dot(pspec, signal_fb.T)    # computes the filterbank energies
     energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
@@ -259,18 +259,6 @@ if __name__ == '__main__':
     num_deltas = 2
     nfilt = 26
     NFFT = 512
-    freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
-
-    fbank = filterbanks(samplerate, nfilt, NFFT)
-    print('fbank', len(fbank), 'x', len(fbank[0]))
-    print(fbank)
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 1
-    for i in range(len(fbank)):
-        plt.plot(np.array(list(range(1, math.floor(NFFT/2 + 1) + 1))), fbank[i])
-    fig.suptitle('%d filters' % nfilt)
-    plt.xlabel('from 0 to %d (filter length)' % math.floor(NFFT/2 + 1))
 
     signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
                                   NFFT, preemph)
