@@ -12,15 +12,15 @@ import numpy as np
 import math
 
 
-def preemphasis(signal, coeff=0.97):
+def preemphasis(signal, preemph=0.97):
     """Performs pre emphasis on the input signal.
 
     @param signal: The signal to filter.
-    @param coeff: The pre emphasis coefficient. 0 is no filter. Default is 0.97.
+    @param preemph: The pre emphasis coefficient. 0 is no filter. Default is 0.97.
 
     @returns: the highpass filtered signal.
     """
-    return np.append(signal[0], signal[1 : ] - coeff*signal[ : -1])
+    return np.append(signal[0], signal[1 : ] - preemph*signal[ : -1])
 
 def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
     """Divides a signal into overlapping frames.

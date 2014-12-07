@@ -27,37 +27,37 @@ freq = np.linspace(0, samplerate/2, num=math.floor(NFFT/2 + 1))
 
 #Pre emphasized signal plotting.
 if option == 'preemphasis':
-    coeffs = [0, 0.25, 0.5, 0.75, 1]
+    preemphs = [0, 0.25, 0.5, 0.75, 1]
 
-    for coeff in coeffs:
-        presignal = sigproc.preemphasis(signal, coeff=coeff)
-        testplot(samples, presignal, suptitle='Signal (preemph = %.2f)' % coeff,
+    for preemph in preemphs:
+        presignal = sigproc.preemphasis(signal, preemph=preemph)
+        testplot(samples, presignal, suptitle='Signal (preemph = %.2f)' % preemph,
                  xlabel='time (samples)', ylabel='signal[sample]')
 
         #Magnitude of presignal's spectrum
         if 'magspec' in args:
             magsig = sigproc.magspec(presignal, NFFT=NFFT)
             testplot(freq, magsig, suptitle='Magnitude of spectrum\n(preemph = %.2f)' %
-                     coeff, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True)
+                     preemph, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True)
 
         #Squared magnitude of presignal's spectrum
         if 'powspec' in args:
             powsig = sigproc.powspec(presignal, NFFT=NFFT)
             testplot(freq, powsig, suptitle='Squared magnitude of spectrum\n(preemph = %.2f)' %
-                     coeff, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
+                     preemph, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
 
 #Common code for option 'frames'
 elif option == 'frames':
     frame_len = 0.02*samplerate     #sec * (samples/sec)
     frame_step = 0.01*samplerate    #sec * (samples/sec)
-    coeffs = [0, 1]
+    preemphs = [0, 1]
     winfuncs = [lambda x: np.ones((1, x)), lambda x: np.hamming(x)]
     winnames = ['rectangular', 'hamming']
 
-    for coeff in coeffs:
+    for preemph in preemphs:
         #Pre emphasized signal
-        presignal = sigproc.preemphasis(signal, coeff=coeff)
-        testplot(samples, presignal, suptitle='Signal (preemph = %.2f)' % coeff,
+        presignal = sigproc.preemphasis(signal, preemph=preemph)
+        testplot(samples, presignal, suptitle='Signal (preemph = %.2f)' % preemph,
                  xlabel='time (samples)', ylabel='presignal[sample]')
 
         for (winfunc, winname) in zip(winfuncs, winnames):
@@ -69,7 +69,7 @@ elif option == 'frames':
             numconcatsamples = len(concatsig)
             concatsamples = np.linspace(1, numconcatsamples, numconcatsamples)
             testplot(concatsamples, concatsig, suptitle='Frames\n(preemph = %.2f, win = %s)' %
-                     (coeff, winname), xlabel='time (samples)', ylabel='concatsig[sample]')
+                     (preemph, winname), xlabel='time (samples)', ylabel='concatsig[sample]')
 
             #Magnitude spectrum
             if 'magspec' in args:
@@ -79,7 +79,7 @@ elif option == 'frames':
                     magspec = np.maximum(magspec, magframe)
                 testplot(freq, magspec, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True,
                          suptitle='Magnitude of framed spectrum\n(preemph = %.2f, win = %s)' %
-                                    (coeff, winname))
+                                    (preemph, winname))
 
             #Squared magnitude spectrum
             if 'powspec' in args:
@@ -89,6 +89,6 @@ elif option == 'frames':
                     powspec = np.maximum(powspec, powframe)
                 testplot(freq, powspec, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True,
                          suptitle='Squared magnitude of framed spectrum\n(preemph = %.2f, win = %s)' %
-                                    (coeff, winname))
+                                    (preemph, winname))
 
 plt.show()

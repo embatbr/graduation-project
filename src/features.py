@@ -71,7 +71,7 @@ def filterbank(samplerate=16000, nfilt=26, NFFT=512):
 
     return fbank
 
-def filterbank_signal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
+def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
                       nfilt=26, NFFT=512, preemph=0.97):
     """Computes Mel-filterbank energy features from an audio signal.
 
@@ -91,7 +91,8 @@ def filterbank_signal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
 
     @returns: 2 values. The first is a numpy array of size (NUMFRAMES x nfilt)
     containing features. Each row holds 1 feature vector. The second is the energy
-    in each frame (total energy, unwindowed)
+    in each frame (total energy, unwindowed), so, a numpy array of energies with
+    size NUMFRAMES.
     """
     presignal = sigproc.preemphasis(signal, preemph)
     frames = sigproc.frame_signal(presignal, winlen*samplerate, winstep*samplerate,
@@ -99,8 +100,7 @@ def filterbank_signal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
     pspec = sigproc.powspec(frames, NFFT)
 
     fbank = filterbank(samplerate, nfilt, NFFT)
-    feats = np.dot(pspec, fbank.T)       # computes the filterbank energies
-    print(feats)
+    feats = np.dot(pspec, fbank.T)       # feats[n] = np.dot(pspec, fbank[n])
     energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
     return (feats, energy)
@@ -156,7 +156,7 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=51
 
     where 'c' is the number of features and 'T' the number of frames.
     """
-    (feats, energy) = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
+    (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt,
                                        NFFT, preemph)
     feats = np.log(feats)
     feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : numcep]
@@ -260,42 +260,6 @@ if __name__ == '__main__':
     num_deltas = 2
     nfilt = 26
     NFFT = 512
-
-    signal_fb = filterbank_signal(signal, winlen, winstep, samplerate, nfilt,
-                                  NFFT, preemph)
-
-    print('signal_fb', len(signal_fb))
-    print('signal_fb[0] (features)', len(signal_fb[0]), 'x', len(signal_fb[0][0]))
-    print(signal_fb[0])
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 2
-    for sigfb in signal_fb[0]:
-        plt.plot(np.array(list(range(1, nfilt + 1))), sigfb)
-    fig.suptitle('signal filterbanked (%d features)' % len(signal_fb[0]))
-    plt.xlabel('filter')
-    plt.ylabel('filter value')
-
-    print('signal_fb[1] (energy)', len(signal_fb[1]))
-    print(signal_fb[1])
-    fig = plt.figure()
-    plt.grid(True)
-    #figure 3
-    plt.plot(np.array(list(range(1, len(signal_fb[1]) + 1))), signal_fb[1])
-    fig.suptitle('signal filterbanked (energy)')
-    plt.xlabel('frame')
-    plt.ylabel('energy')
-
-    logsig = np.log(signal_fb[0])
-    print('log signal_fb[0]', len(logsig), 'x', len(logsig[0]))
-    print(logsig)
-    fig = plt.figure()
-    plt.grid(True)
-    for lsig in logsig: #figure 4
-        plt.plot(np.array(list(range(1, len(lsig) + 1))), lsig)
-    fig.suptitle('log signal filterbanked (%d features)' % len(logsig))
-    plt.xlabel('filter')
-    plt.ylabel('filter value')
 
     mfccs = mfcc(signal, winlen, winstep, samplerate, nfilt=nfilt, NFFT=NFFT,
                  preemph=preemph)
