@@ -99,10 +99,11 @@ def filterbank_signal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
     pspec = sigproc.powspec(frames, NFFT)
 
     fbank = filterbank(samplerate, nfilt, NFFT)
-    feat = np.dot(pspec, fbank.T)       # computes the filterbank energies
-    energy = np.sum(pspec, 1)           # this stores the total energy in each frame
+    feats = np.dot(pspec, fbank.T)       # computes the filterbank energies
+    print(feats)
+    energy = np.sum(pspec, 1)            # this stores the total energy in each frame
 
-    return (feat, energy)
+    return (feats, energy)
 
 def lifter(cepstra, L=22):
     """Apply a cepstral lifter to the matrix of cepstra. This has the effect of
