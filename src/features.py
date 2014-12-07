@@ -71,8 +71,8 @@ def filterbank(samplerate=16000, nfilt=26, NFFT=512):
 
     return fbank
 
-def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
-                      NFFT=512, preemph=0.97):
+def filterbank_signal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
+                      nfilt=26, NFFT=512, preemph=0.97):
     """Computes Mel-filterbank energy features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -93,14 +93,14 @@ def filterbank_signal(signal, winlen, winstep, samplerate=16000, nfilt=26,
     containing features. Each row holds 1 feature vector. The second is the energy
     in each frame (total energy, unwindowed)
     """
-    signal = sigproc.preemphasis(signal, preemph)
-    frames = sigproc.frame_signal(signal, winlen*samplerate, winstep*samplerate,
+    presignal = sigproc.preemphasis(signal, preemph)
+    frames = sigproc.frame_signal(presignal, winlen*samplerate, winstep*samplerate,
                                   winfunc=lambda x:np.hamming(x))
     pspec = sigproc.powspec(frames, NFFT)
 
-    signal_fb = filterbank(samplerate, nfilt, NFFT)
-    feat = np.dot(pspec, signal_fb.T)    # computes the filterbank energies
-    energy = np.sum(pspec, 1)            # this stores the total energy in each frame
+    fbank = filterbank(samplerate, nfilt, NFFT)
+    feat = np.dot(pspec, fbank.T)       # computes the filterbank energies
+    energy = np.sum(pspec, 1)           # this stores the total energy in each frame
 
     return (feat, energy)
 

@@ -31,5 +31,4 @@ def testplot(x, y, newfig=True, suptitle='', xlabel='', ylabel='', fill=False):
     plt.grid(True)
     if fill:
         plt.fill_between(x, y)
-    else:
-        plt.plot(x, y)
+    plt.plot(x, y)
