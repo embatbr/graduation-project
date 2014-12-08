@@ -22,38 +22,38 @@ def preemphasis(signal, preemph=0.97):
     """
     return np.append(signal[0], signal[1 : ] - preemph*signal[ : -1])
 
-def frame_signal(signal, frame_len, frame_step, winfunc=lambda x:np.ones((1, x))):
+def framesignal(signal, framelen, framestep, winfunc=lambda x:np.hamming(x)):
     """Divides a signal into overlapping frames.
 
     @param signal: the audio signal to frame.
-    @param frame_len: length of each frame measured in samples.
-    @param frame_step: number of samples after the start of the previous frame
+    @param framelen: length of each frame measured in samples.
+    @param framestep: number of samples after the start of the previous frame
     that the next frame should begin (in samples).
     @param winfunc: the analysis window to apply to each frame. By default it's
     the rectangular window.
 
-    @returns: an array of frames. Size is (NUMFRAMES x frame_len).
+    @returns: an array of frames. Size is (NUMFRAMES x framelen).
     """
     signal_len = len(signal)
-    frame_len = int(round(frame_len))
-    frame_step = int(round(frame_step))
-    if signal_len <= frame_len:
+    framelen = int(round(framelen))
+    framestep = int(round(framestep))
+    if signal_len <= framelen:
         numframes = 1
     else:
-        num_additional_frames = float(signal_len - frame_len) / frame_step
+        num_additional_frames = float(signal_len - framelen) / framestep
         num_additional_frames = int(math.ceil(num_additional_frames))
         numframes = 1 + num_additional_frames
 
-    padsignal_len = (numframes - 1)*frame_step + frame_len
+    padsignal_len = (numframes - 1)*framestep + framelen
     zeros = np.zeros((padsignal_len - signal_len))
     padsignal = np.concatenate((signal, zeros))  # addition of zeros at the end
 
     # indices of samples in frames (0:0->320, 1:160->480, ...)
-    indices = np.tile(np.arange(0, frame_len), (numframes, 1)) +\
-              np.tile(np.arange(0, numframes*frame_step, frame_step), (frame_len, 1)).T
+    indices = np.tile(np.arange(0, framelen), (numframes, 1)) +\
+              np.tile(np.arange(0, numframes*framestep, framestep), (framelen, 1)).T
     indices = indices.astype(np.int32, copy=False)
     frames = padsignal[indices]
-    win = np.tile(winfunc(frame_len), (numframes, 1))
+    win = np.tile(winfunc(framelen), (numframes, 1))
 
     return (frames*win)
 
@@ -62,13 +62,13 @@ def magspec(frames, NFFT=512):
     N*D matrix, output will be (N x (NFFT/2)).
 
     @param frames: the array of frames. Each row is a frame.
-    @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
+    @param NFFT: the FFT length to use. If NFFT > framelen, the frames are
     zero-padded.
 
     @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the magnitude spectrum of the corresponding frame.
     """
-    complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in frame_signal()
+    complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in framesignal()
     return np.absolute(complex_spec)            # from a + jb to |z| (cuts half of the array off)
 
 def powspec(frames, NFFT=512):
@@ -76,7 +76,7 @@ def powspec(frames, NFFT=512):
     If frames is an N*D matrix, output will be (N x (NFFT/2)).
 
     @param frames: the array of frames. Each row is a frame.
-    @param NFFT: the FFT length to use. If NFFT > frame_len, the frames are
+    @param NFFT: the FFT length to use. If NFFT > framelen, the frames are
     zero-padded.
 
     @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
