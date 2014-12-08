@@ -68,8 +68,8 @@ def magspec(frames, NFFT=512):
     @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the magnitude spectrum of the corresponding frame.
     """
-    complex_spec = np.fft.rfft(frames, NFFT)    # the window is multiplied in framesignal()
-    return np.absolute(complex_spec)            # from a + jb to |z| (cuts half of the array off)
+    complex_spec = np.fft.rfft(frames, NFFT)
+    return np.absolute(complex_spec)    # from a + jb to |z| (cuts in half due to simmetry)
 
 def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
@@ -83,3 +83,83 @@ def powspec(frames, NFFT=512):
     be the power spectrum of the corresponding frame.
     """
     return ((1.0/NFFT) * np.square(magspec(frames, NFFT=NFFT)))
+
+
+#TESTS
+if __name__ == '__main__':
+    import scipy.io.wavfile as wavf
+
+    import os, os.path, shutil
+
+    from useful import CORPORA_DIR, IMAGES_SIGPROC_DIR, testplot
+    import sigproc
+
+
+    if os.path.exists(IMAGES_SIGPROC_DIR):
+            shutil.rmtree(IMAGES_SIGPROC_DIR)
+    os.mkdir(IMAGES_SIGPROC_DIR)
+
+
+    #Reading signal from base and plotting
+    voice = ('enroll_2', 'f08', 54)
+    (enroll, speaker, speech) = voice
+    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' % (CORPORA_DIR, enroll,
+                                                                       speaker, speech))
+    numsamples = len(signal)
+    time = np.linspace(0, numsamples/samplerate, numsamples, False)
+    testplot(time, signal, '%s\n%d Hz' % (voice, samplerate), 't (seconds)',
+             'signal[t]', 'sigproc/0-signal-%s-%s-%02d-%dHz' % (enroll, speaker,
+                                                                speech, samplerate))
+
+    #Pre emphasized signal with coefficient 0.97
+    presignal = sigproc.preemphasis(signal)
+    testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
+             't (seconds)', 'presignal[t]', 'sigproc/1-signal-%s-%s-%02d-%dHz-preemph0.97' %
+             (enroll, speaker, speech, samplerate))
+
+    NFFT = 512
+    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
+    freq = np.linspace(0, samplerate/2, numfftbins)
+
+    #Magnitude of presignal's spectrum
+    magspec = sigproc.magspec(presignal, NFFT)
+    testplot(freq, magspec, '%s\n%d Hz, preemph 0.97, |FFT|' % (voice, samplerate),
+             'f (Hz)', '|FFT[f]|', 'sigproc/2-signal-%s-%s-%02d-%dHz-preemph0.97-magspec' %
+             (enroll, speaker, speech, samplerate), True, 'red')
+
+    #Squared magnitude of presignal's spectrum
+    powspec = sigproc.powspec(presignal, NFFT)
+    testplot(freq, powspec, '%s\n%d Hz, preemph 0.97, |FFT|²' % (voice, samplerate),
+             'f (Hz)', '|FFT[f]|²', 'sigproc/3-signal-%s-%s-%02d-%dHz-preemph0.97-powspec' %
+             (enroll, speaker, speech, samplerate), True, 'red')
+
+    #samples = sec * (samples/sec)
+    framelen = 0.02
+    framestep = 0.01
+
+    frames = sigproc.framesignal(presignal, framelen*samplerate, framestep*samplerate)
+    magframes = sigproc.magspec(frames, NFFT)
+    powframes = sigproc.powspec(frames, NFFT)
+    numframes = len(frames)
+    print('#frames = %d' % numframes)
+    numiter = 10
+    for i in range(0, numframes, math.floor(numframes/numiter)):
+        frametime = np.linspace(i*framestep, (i*framestep + framelen), framelen*samplerate,
+                                False)
+        #Framed pre emphasized signal using a Hamming window
+        testplot(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
+                 (voice, samplerate, i), 't (seconds)', 'presignal[t] * hamming',
+                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d' %
+                 (enroll, speaker, speech, samplerate, i))
+
+        #Magnitude of the framed spectrum
+        testplot(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
+                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-magspec' %
+                 (enroll, speaker, speech, samplerate, i), True, 'red')
+
+        #Squared magnitude of the framed spectrum
+        testplot(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
+                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-powspec' %
+                 (enroll, speaker, speech, samplerate, i), True, 'red')
