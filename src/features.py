@@ -258,6 +258,8 @@ if __name__ == '__main__':
     os.mkdir(IMAGES_FEATURES_DIR)
 
 
+##PART 0
+
     #Reading signal from base and plotting
     voice = ('enroll_2', 'f08', 54)
     (enroll, speaker, speech) = voice
@@ -266,12 +268,12 @@ if __name__ == '__main__':
     numsamples = len(signal)
     time = np.linspace(0, numsamples/samplerate, numsamples, False)
     testplot(time, signal, '%s\n%d Hz' % (voice, samplerate), 't (seconds)',
-             'signal[t]', 'features/0-signal-%s-%s-%02d-%dHz' % (enroll, speaker, speech, samplerate))
+             'signal[t]', 'features/part0-signal-%s-%s-%02d-%dHz' % (enroll, speaker, speech, samplerate))
 
     #Pre emphasized signal with coefficient 0.97
     presignal = sigproc.preemphasis(signal)
     testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
-             't (seconds)', 'presignal[t]', 'features/1-signal-%s-%s-%02d-%dHz-preemph0.97' %
+             't (seconds)', 'presignal[t]', 'features/part0-signal-%s-%s-%02d-%dHz-preemph0.97' %
              (enroll, speaker, speech, samplerate))
 
     NFFT = 512
@@ -279,12 +281,15 @@ if __name__ == '__main__':
     freq = np.linspace(0, samplerate/2, numfftbins)
     nfilt = 26
 
+
+##PART 1
+
     #Filterbank
     fbank = features.filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
     testmultiplot(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT), 'f (Hz)',
-                  'filter[n][f]', 'features/2-fbank-%03d-%dHz' % (NFFT, samplerate),
+                  'filter[n][f]', 'features/part1-fbank-%03d-%dHz' % (NFFT, samplerate),
                   color='green')
 
     #Pre emphasized signal's squared magnitude spectrum after 21st filter (index 20)
