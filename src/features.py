@@ -12,7 +12,6 @@ import numpy as np
 from scipy.fftpack import dct
 import math
 
-from useful import CORPORA_DIR
 import sigproc
 
 
@@ -243,43 +242,106 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
     return add_delta(mfccs, N, num_deltas)
 
 
-# TEST
+#TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import matplotlib.pyplot as plt
 
-    (samplerate, signal) = wavf.read('%smit/enroll_2/f08/phrase54_16k.wav' %
-                                     CORPORA_DIR)
+    import os, os.path, shutil
 
-    winlen = 0.02
-    winstep = 0.01
-    preemph = 0.97
-    num_deltas = 2
-    nfilt = 26
+    from useful import CORPORA_DIR, IMAGES_FEATURES_DIR, testplot, testmultiplot
+    import features
+
+
+    if os.path.exists(IMAGES_FEATURES_DIR):
+            shutil.rmtree(IMAGES_FEATURES_DIR)
+    os.mkdir(IMAGES_FEATURES_DIR)
+
+
+    #Reading signal from base and plotting
+    voice = ('enroll_2', 'f08', 54)
+    (enroll, speaker, speech) = voice
+    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' % (CORPORA_DIR, enroll,
+                                                                       speaker, speech))
+    numsamples = len(signal)
+    time = np.linspace(0, numsamples/samplerate, numsamples, False)
+    testplot(time, signal, '%s\n%d Hz' % (voice, samplerate), 't (seconds)',
+             'signal[t]', 'features/0-signal-%s-%s-%02d-%dHz' % (enroll, speaker, speech, samplerate))
+
+    #Pre emphasized signal with coefficient 0.97
+    presignal = sigproc.preemphasis(signal)
+    testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
+             't (seconds)', 'presignal[t]', 'features/1-signal-%s-%s-%02d-%dHz-preemph0.97' %
+             (enroll, speaker, speech, samplerate))
+
     NFFT = 512
+    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
+    freq = np.linspace(0, samplerate/2, numfftbins)
+    nfilt = 26
 
-    mfccs = mfcc(signal, winlen, winstep, samplerate, nfilt=nfilt, NFFT=NFFT,
-                 preemph=preemph)
-    print('mfccs', len(mfccs), 'x', len(mfccs[0]))
-    print(mfccs)
-    fig = plt.figure()
-    plt.grid(True)
-    for melfeat in mfccs: #figure 5
-        plt.plot(np.array(list(range(1, len(melfeat) + 1))), melfeat)
-    fig.suptitle('%d mfccs' % len(mfccs))
-    plt.xlabel('frame')
-    plt.ylabel('feature value')
+    #Filterbank
+    fbank = features.filterbank(samplerate, nfilt, NFFT)
+    numfilters = len(fbank)
+    print('#filters = %d' % numfilters)
+    testmultiplot(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT), 'f (Hz)',
+                  'filter[n][f]', 'features/2-fbank-%03d-%dHz' % (NFFT, samplerate),
+                  color='green')
 
-    mfccs_deltas = mfcc_delta(signal, winlen, winstep, samplerate, nfilt=nfilt,
-                              NFFT=NFFT, preemph=preemph, num_deltas=num_deltas)
-    print('mfccs_deltas', len(mfccs_deltas), 'x', len(mfccs_deltas[0]))
-    print(mfccs_deltas)
-    fig = plt.figure()
-    plt.grid(True)
-    for melfeat_deltas in mfccs_deltas: #figure 6
-        plt.plot(np.array(list(range(1, len(melfeat_deltas) + 1))), melfeat_deltas)
-    fig.suptitle('%d mfccs + %d deltas' % (len(mfccs), len(mfccs)*num_deltas))
-    plt.xlabel('frame')
-    plt.ylabel('feature value')
+    #Pre emphasized signal's squared magnitude spectrum after 21st filter (index 20)
+    #powspec = sigproc.powspec()
+    #filter_index = 20
+    #fspec = np.multiply(powspec, fbank[filter_index])
+    #testplot(freq, fbank[filter_index], 'Filter[%d]' % filter_index, 'f (Hz)',
+    #         'filter[fftbin]', color='red')
+    #testplot(freq, fspec, xlabel='frequency (Hz)', ylabel='powspec[f]',
+    #         fill=True, suptitle='Squared magnitude spectrum at filter[%d]' % filter_index)
 
-    plt.show()
+    #winlen = 0.02
+    #winstep = 0.01
+    #ceplifter = 22
+
+    #    #Pre emphasized signal's squared magnitude spectrum after filterbank
+    #    fspecfull = np.zeros(len(fspec))
+    #    for f in fbank:
+    #        fspec = np.multiply(powspec, f)
+    #        fspecfull = np.maximum(fspecfull, fspec)
+    #    testplot(freq, fspecfull, xlabel='frequency (Hz)', ylabel='powspec[f]',
+    #             fill=True, suptitle='Squared magnitude spectrum after %d-filterbank' %
+    #                                 nfilt)
+    #
+    #elif option == 'filtersignal':
+    #    #Squared magnitude spectrum of pre emphasized signal
+    #    powspec = sigproc.powspec(presignal, NFFT=NFFT)
+    #    testplot(freq, powspec, suptitle='Squared magnitude spectrum\n(preemph = %.2f, NFFT = %d)' %
+    #             (preemph, NFFT), xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
+    #
+    #    #Filterbanked presignal
+    #    fpresignal = features.filtersignal(presignal, winlen, winstep, samplerate, nfilt,
+    #                                       NFFT, preemph)
+    #    (feats, energy) = fpresignal
+    #    numframes = len(energy)
+    #    frameindices = np.linspace(1, numframes, numframes)
+    #
+    #    featsfull = np.zeros(numframes)
+    #    for (feat, n) in zip(feats.T, range(numframes)):
+    #        featsfull = np.maximum(featsfull, feat)
+    #        logfeat = np.log10(feat)
+    #        if 'features' in args:
+    #            testplot(frameindices, feat, xlabel='frames', ylabel='feature[frame]',
+    #                     suptitle='Feature %d' % n)
+    #        if 'logfeatures' in args:
+    #            testplot(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
+    #                     suptitle='Log-feature %d' % n)
+    #
+    #    if args == []:
+    #        testplot(frameindices, featsfull, xlabel='frames', ylabel='max(feature[frame])',
+    #                 suptitle='Maximum feature value per frame')
+    #
+    #    #Energy per frame
+    #    testplot(frameindices, energy, xlabel='frames', ylabel='energy[frame]',
+    #             suptitle='Energy per frame')
+    #    testplot(frameindices, np.log10(energy), xlabel='frames', ylabel='log(energy[frame])',
+    #             suptitle='Log-energy per frame')
+    #
+    #elif option == 'mfcc':
+    #    pass
