@@ -125,7 +125,7 @@ def lifter(cepstra, L=22):
         return cepstra
 
 def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=512,
-         preemph=0.97, ceplifter=22, appendEnergy=True, normalize=False):
+         preemph=0.97, ceplifter=22, appendEnergy=True):
     """Computes MFCC features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -157,21 +157,18 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=51
     where 'c' is the number of features and 'T' the number of frames.
     """
     (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt,
-                                       NFFT, preemph)
-    feats = np.log(feats)
-    feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : numcep]
-    feats = lifter(feats, ceplifter)
+                                   NFFT, preemph)
+    logfeats = np.log10(feats)
+    logfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
+    liflogfeats = lifter(logfeats, ceplifter)
     if appendEnergy:
         # replace first cepstral coefficient with log of frame energy
-        feats[ : , 0] = np.log(energy)
+        liflogfeats[ : , 0] = np.log(energy)
 
-    feats = feats.transpose()
-
-    #Cepstral Mean Normalization
-    if normalize:
-        feats = np.array([feat - np.mean(feat) for feat in feats])
-
-    return feats
+    liflogfeats = liflogfeats.transpose()
+    #CMS = Cepstral Mean Subtraction
+    #liflogfeats = np.array([feat - np.mean(feat) for feat in liflogfeats])
+    return liflogfeats
 
 #TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
 
