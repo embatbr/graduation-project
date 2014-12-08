@@ -100,6 +100,8 @@ if __name__ == '__main__':
     os.mkdir(IMAGES_SIGPROC_DIR)
 
 
+##PART 0
+
     #Reading signal from base and plotting
     voice = ('enroll_2', 'f08', 54)
     (enroll, speaker, speech) = voice
@@ -108,30 +110,48 @@ if __name__ == '__main__':
     numsamples = len(signal)
     time = np.linspace(0, numsamples/samplerate, numsamples, False)
     testplot(time, signal, '%s\n%d Hz' % (voice, samplerate), 't (seconds)',
-             'signal[t]', 'sigproc/0-signal-%s-%s-%02d-%dHz' % (enroll, speaker,
+             'signal[t]', 'sigproc/part0-signal-%s-%s-%02d-%dHz' % (enroll, speaker,
                                                                 speech, samplerate))
-
-    #Pre emphasized signal with coefficient 0.97
-    presignal = sigproc.preemphasis(signal)
-    testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
-             't (seconds)', 'presignal[t]', 'sigproc/1-signal-%s-%s-%02d-%dHz-preemph0.97' %
-             (enroll, speaker, speech, samplerate))
 
     NFFT = 512
     numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
     freq = np.linspace(0, samplerate/2, numfftbins)
 
+    #Magnitude of signal's spectrum
+    magspec = sigproc.magspec(signal, NFFT)
+    testplot(freq, magspec, '%s\n%d Hz, |FFT|' % (voice, samplerate),
+             'f (Hz)', '|FFT[f]|', 'sigproc/part0-signal-%s-%s-%02d-%dHz-magspec' %
+             (enroll, speaker, speech, samplerate), True, 'red')
+
+    #Squared magnitude of signal's spectrum
+    powspec = sigproc.powspec(signal, NFFT)
+    testplot(freq, powspec, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
+             'f (Hz)', '|FFT[f]|²', 'sigproc/part0-signal-%s-%s-%02d-%dHz-powspec' %
+             (enroll, speaker, speech, samplerate), True, 'red')
+
+
+##PART 1
+
+    #Pre emphasized signal with coefficient 0.97
+    presignal = sigproc.preemphasis(signal)
+    testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
+             't (seconds)', 'presignal[t]', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97' %
+             (enroll, speaker, speech, samplerate))
+
     #Magnitude of presignal's spectrum
     magspec = sigproc.magspec(presignal, NFFT)
     testplot(freq, magspec, '%s\n%d Hz, preemph 0.97, |FFT|' % (voice, samplerate),
-             'f (Hz)', '|FFT[f]|', 'sigproc/2-signal-%s-%s-%02d-%dHz-preemph0.97-magspec' %
+             'f (Hz)', '|FFT[f]|', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97-magspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
 
     #Squared magnitude of presignal's spectrum
     powspec = sigproc.powspec(presignal, NFFT)
     testplot(freq, powspec, '%s\n%d Hz, preemph 0.97, |FFT|²' % (voice, samplerate),
-             'f (Hz)', '|FFT[f]|²', 'sigproc/3-signal-%s-%s-%02d-%dHz-preemph0.97-powspec' %
+             'f (Hz)', '|FFT[f]|²', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97-powspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
+
+
+##PART 2
 
     #samples = sec * (samples/sec)
     framelen = 0.02
@@ -149,17 +169,17 @@ if __name__ == '__main__':
         #Framed pre emphasized signal using a Hamming window
         testplot(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
                  (voice, samplerate, i), 't (seconds)', 'presignal[t] * hamming',
-                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d' %
+                 'sigproc/part2-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%03d' %
                  (enroll, speaker, speech, samplerate, i))
 
         #Magnitude of the framed spectrum
         testplot(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
                  (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
-                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-magspec' %
+                 'sigproc/part2-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%03d-magspec' %
                  (enroll, speaker, speech, samplerate, i), True, 'red')
 
         #Squared magnitude of the framed spectrum
         testplot(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
                  (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
-                 'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-powspec' %
+                 'sigproc/part2-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%03d-powspec' %
                  (enroll, speaker, speech, samplerate, i), True, 'red')
