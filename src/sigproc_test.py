@@ -39,7 +39,8 @@ testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
          (enroll, speaker, speech, samplerate))
 
 NFFT = 512
-freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
+numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
+freq = np.linspace(0, samplerate/2, numfftbins)
 
 #Magnitude of presignal's spectrum
 magspec = sigproc.magspec(presignal, NFFT)
