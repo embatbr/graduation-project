@@ -14,7 +14,7 @@ IMAGES_SIGPROC_DIR = '%ssigproc' % IMAGES_DIR
 
 
 def testplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, fill=False,
-             options='b'):
+             color='blue'):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -33,7 +33,7 @@ def testplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, fill=False,
     #plt.xlim([x[0], x[-1]])
     plt.grid(True)
     if fill:
-        plt.fill_between(x, y)
-    plt.plot(x, y, options)
+        plt.fill_between(x, y, color=color)
+    plt.plot(x, y, color=color)
     if not filename is None:
         plt.savefig('%s%s.png' % (IMAGES_DIR, filename))

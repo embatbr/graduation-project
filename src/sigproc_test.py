@@ -45,13 +45,13 @@ freq = np.linspace(0, samplerate/2, math.floor(NFFT/2 + 1))
 magspec = sigproc.magspec(presignal, NFFT)
 testplot(freq, magspec, '%s\n%d Hz, preemph 0.97, |FFT|' % (voice, samplerate),
          'f (Hz)', '|FFT[f]|', 'sigproc/2-signal-%s-%s-%02d-%dHz-preemph0.97-magspec' %
-         (enroll, speaker, speech, samplerate), True)
+         (enroll, speaker, speech, samplerate), True, color='red')
 
 #Squared magnitude of presignal's spectrum
 powspec = sigproc.powspec(presignal, NFFT)
 testplot(freq, powspec, '%s\n%d Hz, preemph 0.97, |FFT|²' % (voice, samplerate),
          'f (Hz)', '|FFT[f]|²', 'sigproc/3-signal-%s-%s-%02d-%dHz-preemph0.97-powspec' %
-         (enroll, speaker, speech, samplerate), True)
+         (enroll, speaker, speech, samplerate), True, color='red')
 
 #samples = sec * (samples/sec)
 framelen = 0.02
@@ -68,22 +68,18 @@ for i in range(0, numframes, 30):
              'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d' %
              (enroll, speaker, speech, samplerate, i))
 
-#            #Magnitude spectrum
-#            if 'magspec' in args:
-#                magframes = sigproc.magspec(frames, NFFT)
-#                magspec = np.zeros(len(magframes[0]))
-#                for magframe in magframes:
-#                    magspec = np.maximum(magspec, magframe)
-#                testplot(freq, magspec, xlabel='frequency (Hz)', ylabel='magspec[f]', fill=True,
-#                         suptitle='Magnitude of framed spectrum\n(preemph = %.2f, win = %s)' %
-#                                    (preemph, winname))
-#
-#            #Squared magnitude spectrum
-#            if 'powspec' in args:
-#                powframes = sigproc.powspec(frames, NFFT)
-#                powspec = np.zeros(len(powframes[0]))
-#                for powframe in powframes:
-#                    powspec = np.maximum(powspec, powframe)
-#                testplot(freq, powspec, xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True,
-#                         suptitle='Squared magnitude of framed spectrum\n(preemph = %.2f, win = %s)' %
-#                                    (preemph, winname))
+#Magnitude of the framed spectrum
+magframes = sigproc.magspec(frames, NFFT)
+for i in range(0, numframes, 30):
+    testplot(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming %d)|' %
+             (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+             'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-magspec' %
+             (enroll, speaker, speech, samplerate, i), True, color='red')
+
+#Magnitude of the framed spectrum
+powframes = sigproc.powspec(frames, NFFT)
+for i in range(0, numframes, 30):
+    testplot(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming %d)|²' %
+             (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+             'sigproc/4-signal-%s-%s-%02d-%dHz-preemph0.97-hamming%02d-powspec' %
+             (enroll, speaker, speech, samplerate, i), True, color='red')
