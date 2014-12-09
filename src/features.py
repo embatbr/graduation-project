@@ -245,31 +245,35 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, IMAGES_FEATURES_DIR, testplot, testmultiplot
+    from useful import CORPORA_DIR, IMAGES_DIR, plotfile, multiplotfile
 
+
+    IMAGES_FEATURES_DIR = '%sfeatures/' % IMAGES_DIR
 
     if os.path.exists(IMAGES_FEATURES_DIR):
             shutil.rmtree(IMAGES_FEATURES_DIR)
     os.mkdir(IMAGES_FEATURES_DIR)
 
-
-##PART 0
+    filecounter = 0
+    filename = '%sfigure' % IMAGES_FEATURES_DIR
 
     #Reading signal from base and plotting
     voice = ('enroll_2', 'f08', 54)
     (enroll, speaker, speech) = voice
-    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' % (CORPORA_DIR, enroll,
-                                                                       speaker, speech))
+    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' %
+                                     (CORPORA_DIR, enroll, speaker, speech))
     numsamples = len(signal)
     time = np.linspace(0, numsamples/samplerate, numsamples, False)
-    testplot(time, signal, '%s\n%d Hz' % (voice, samplerate), 't (seconds)',
-             'signal[t]', 'features/part0-signal-%s-%s-%02d-%dHz' % (enroll, speaker, speech, samplerate))
+    ###figure000
+    filecounter = plotfile(time, signal, '%s\n%d Hz' % (voice, samplerate),
+                           't (seconds)', 'signal[t]', filename, filecounter)
 
     #Pre emphasized signal with coefficient 0.97
     presignal = sigproc.preemphasis(signal)
-    testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
-             't (seconds)', 'presignal[t]', 'features/part0-signal-%s-%s-%02d-%dHz-preemph0.97' %
-             (enroll, speaker, speech, samplerate))
+    ###figure001
+    filecounter = plotfile(time, presignal, '%s\n%d Hz, preemph 0.97' %
+                           (voice, samplerate), 't (seconds)', 'presignal[t]',
+                           filename, filecounter)
 
     NFFT = 512
     numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
@@ -278,33 +282,34 @@ if __name__ == '__main__':
 
     #Mel frequence plotting
     melfreq = hz2mel(freq)
-    testplot(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
-             'features/part0-melscale-%03d-%dHz' % (NFFT, samplerate), color='red')
-    testplot(melfreq, np.log10(melfreq), 'Log-mel scale', 'm (Mel)', 'log10[m]',
-             'features/part0-logmelscale-%03d-%dHz' % (NFFT, samplerate), color='red')
-
-
-##PART 1
+    ###figure002
+    filecounter = plotfile(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
+                           filename, filecounter, 'red')
+    ###figure003
+    filecounter = plotfile(melfreq, np.log10(melfreq), 'Log-mel scale', 'm (Mel)',
+                           'log10[m]', filename, filecounter, 'red')
 
     #Filterbank
     fbank = filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
-    testmultiplot(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT), 'f (Hz)',
-                  'filter[n][f]', 'features/part1-fbank-%03d-%dHz' % (NFFT, samplerate),
-                  color='green')
+    ###figure004
+    filecounter = multiplotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
+                                'f (Hz)', 'filter[n][f]', filename, filecounter,
+                                'green')
 
     #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
     powpresig = sigproc.powspec(presignal, NFFT)
     filter_index = 20
     framedpowpresig = np.multiply(powpresig, fbank[filter_index])
-    testplot(freq, fbank[filter_index], 'Filter[%d]' % filter_index, 'f (Hz)',
-             'filter[%d]' % filter_index, 'features/part1-fbank-%03d-%dHz-filter%02d' %
-             (NFFT, samplerate, filter_index), color='green')
-    testplot(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index, 'f (Hz)',
-             '|FFT * filter[%d]|²' % filter_index, ('features/part1-framedsig-%s-%s-' +
-             '%02d-%dHz-preemph0.97-filter%02d') % (enroll, speaker, speech, samplerate,
-             filter_index), True, 'red')
+    ###figure005
+    filecounter = plotfile(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
+                           'f (Hz)', 'filter[%d]' % filter_index, filename,
+                           filecounter, 'green')
+    ###figure006
+    filecounter = plotfile(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
+                           'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
+                           filecounter, 'red', True)
 
     #winlen = 0.02
     #winstep = 0.01
@@ -315,14 +320,14 @@ if __name__ == '__main__':
     #    for f in fbank:
     #        fspec = np.multiply(powspec, f)
     #        fspecfull = np.maximum(fspecfull, fspec)
-    #    testplot(freq, fspecfull, xlabel='frequency (Hz)', ylabel='powspec[f]',
+    #    plotfile(freq, fspecfull, xlabel='frequency (Hz)', ylabel='powspec[f]',
     #             fill=True, suptitle='Squared magnitude spectrum after %d-filterbank' %
     #                                 nfilt)
     #
     #elif option == 'filtersignal':
     #    #Squared magnitude spectrum of pre emphasized signal
     #    powspec = sigproc.powspec(presignal, NFFT=NFFT)
-    #    testplot(freq, powspec, suptitle='Squared magnitude spectrum\n(preemph = %.2f, NFFT = %d)' %
+    #    plotfile(freq, powspec, suptitle='Squared magnitude spectrum\n(preemph = %.2f, NFFT = %d)' %
     #             (preemph, NFFT), xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
     #
     #    #Filterbanked presignal
@@ -337,20 +342,20 @@ if __name__ == '__main__':
     #        featsfull = np.maximum(featsfull, feat)
     #        logfeat = np.log10(feat)
     #        if 'features' in args:
-    #            testplot(frameindices, feat, xlabel='frames', ylabel='feature[frame]',
+    #            plotfile(frameindices, feat, xlabel='frames', ylabel='feature[frame]',
     #                     suptitle='Feature %d' % n)
     #        if 'logfeatures' in args:
-    #            testplot(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
+    #            plotfile(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
     #                     suptitle='Log-feature %d' % n)
     #
     #    if args == []:
-    #        testplot(frameindices, featsfull, xlabel='frames', ylabel='max(feature[frame])',
+    #        plotfile(frameindices, featsfull, xlabel='frames', ylabel='max(feature[frame])',
     #                 suptitle='Maximum feature value per frame')
     #
     #    #Energy per frame
-    #    testplot(frameindices, energy, xlabel='frames', ylabel='energy[frame]',
+    #    plotfile(frameindices, energy, xlabel='frames', ylabel='energy[frame]',
     #             suptitle='Energy per frame')
-    #    testplot(frameindices, np.log10(energy), xlabel='frames', ylabel='log(energy[frame])',
+    #    plotfile(frameindices, np.log10(energy), xlabel='frames', ylabel='log(energy[frame])',
     #             suptitle='Log-energy per frame')
     #
     #elif option == 'mfcc':
