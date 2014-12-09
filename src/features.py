@@ -284,6 +284,13 @@ if __name__ == '__main__':
 
 ##PART 1
 
+    melfreq = hz2mel(freq)
+    print(melfreq)
+    testplot(freq, melfreq, 'Mel scale', 'f (Hz)', 'f (Mel)',
+             'features/part1-melscale-%03d-%dHz' % (NFFT, samplerate), color='red')
+    testplot(melfreq, np.log10(melfreq), 'Log-mel scale', 'f (Mel)', 'log10[f]',
+             'features/part1-logmelscale-%03d-%dHz' % (NFFT, samplerate), color='red')
+
     #Filterbank
     fbank = features.filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
