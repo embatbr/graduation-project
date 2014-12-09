@@ -311,19 +311,21 @@ if __name__ == '__main__':
                            'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
                            filecounter, 'red', True)
 
-    #winlen = 0.02
-    #winstep = 0.01
-    #ceplifter = 22
+    winlen = 0.02
+    winstep = 0.01
+    ceplifter = 22
 
-    #    #Pre emphasized signal's squared magnitude spectrum after filterbank
-    #    fspecfull = np.zeros(len(fspec))
-    #    for f in fbank:
-    #        fspec = np.multiply(powspec, f)
-    #        fspecfull = np.maximum(fspecfull, fspec)
-    #    plotfile(freq, fspecfull, xlabel='frequency (Hz)', ylabel='powspec[f]',
-    #             fill=True, suptitle='Squared magnitude spectrum after %d-filterbank' %
-    #                                 nfilt)
-    #
+    #Pre emphasized signal's squared magnitude spectrum after filterbank
+    powpresig = sigproc.powspec(presignal, NFFT)
+    powpresigfull = np.zeros(len(powpresig))
+    for f in fbank:
+        fspec = np.multiply(powpresig, f)
+        powpresigfull = np.maximum(powpresigfull, fspec)
+    ###figure007
+    filecounter = plotfile(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
+                           'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
+                           True)
+
     #elif option == 'filtersignal':
     #    #Squared magnitude spectrum of pre emphasized signal
     #    powspec = sigproc.powspec(presignal, NFFT=NFFT)
