@@ -69,8 +69,8 @@ def filterbank(samplerate=16000, nfilt=26, NFFT=512):
 
     return fbank
 
-def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
-                      nfilt=26, NFFT=512, preemph=0.97):
+def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000, nfilt=26,
+                 NFFT=512, preemph=0.97):
     """Computes Mel-filterbank energy features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -93,13 +93,12 @@ def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000,
     size NUMFRAMES.
     """
     presignal = sigproc.preemphasis(signal, preemph)
-    frames = sigproc.frame_signal(presignal, winlen*samplerate, winstep*samplerate,
-                                  winfunc=lambda x:np.hamming(x))
-    pspec = sigproc.powspec(frames, NFFT)
+    framedsignal = sigproc.framesignal(presignal, winlen*samplerate, winstep*samplerate)
+    powframedsignal = sigproc.powspec(framedsignal, NFFT)
 
     fbank = filterbank(samplerate, nfilt, NFFT)
-    feats = np.dot(pspec, fbank.T)       # feats[n] = np.dot(pspec, fbank[n])
-    energy = np.sum(pspec, 1)            # this stores the total energy in each frame
+    feats = np.dot(powframedsignal, fbank.T)       # feats[n] = np.dot(powframedsignal, fbank[n])
+    energy = np.sum(powframedsignal, 1)            # this stores the total energy in each frame
 
     return (feats, energy)
 
@@ -257,23 +256,12 @@ if __name__ == '__main__':
     filecounter = 0
     filename = '%sfigure' % IMAGES_FEATURES_DIR
 
-    #Reading signal from base and plotting
+    #Reading signal from base and plotting (signal and preemphasized signal)
     voice = ('enroll_2', 'f08', 54)
     (enroll, speaker, speech) = voice
-    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' %
-                                     (CORPORA_DIR, enroll, speaker, speech))
-    numsamples = len(signal)
-    time = np.linspace(0, numsamples/samplerate, numsamples, False)
-    ###figure000
-    filecounter = plotfile(time, signal, '%s\n%d Hz' % (voice, samplerate),
-                           't (seconds)', 'signal[t]', filename, filecounter)
-
-    #Pre emphasized signal with coefficient 0.97
-    presignal = sigproc.preemphasis(signal)
-    ###figure001
-    filecounter = plotfile(time, presignal, '%s\n%d Hz, preemph 0.97' %
-                           (voice, samplerate), 't (seconds)', 'presignal[t]',
-                           filename, filecounter)
+    speechname = '%smit/%s/%s/phrase%02d_16k.wav' % (CORPORA_DIR, enroll, speaker, speech)
+    (samplerate, signal) = wavf.read(speechname)
+    presignal = sigproc.preemphasis(signal)     #coeff = 0.97
 
     NFFT = 512
     numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
@@ -282,10 +270,10 @@ if __name__ == '__main__':
 
     #Mel frequence plotting
     melfreq = hz2mel(freq)
-    ###figure002
+    ###figure000
     filecounter = plotfile(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
                            filename, filecounter, 'red')
-    ###figure003
+    ###figure001
     filecounter = plotfile(melfreq, np.log10(melfreq), 'Log-mel scale', 'm (Mel)',
                            'log10[m]', filename, filecounter, 'red')
 
@@ -293,7 +281,7 @@ if __name__ == '__main__':
     fbank = filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
-    ###figure004
+    ###figure002
     filecounter = multiplotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
                                 'f (Hz)', 'filter[n][f]', filename, filecounter,
                                 'green')
@@ -302,54 +290,48 @@ if __name__ == '__main__':
     powpresig = sigproc.powspec(presignal, NFFT)
     filter_index = 20
     framedpowpresig = np.multiply(powpresig, fbank[filter_index])
-    ###figure005
+    ###figure003
     filecounter = plotfile(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
                            'f (Hz)', 'filter[%d]' % filter_index, filename,
                            filecounter, 'green')
-    ###figure006
+    ###figure004
     filecounter = plotfile(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
                            'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
                            filecounter, 'red', True)
 
-    winlen = 0.02
-    winstep = 0.01
-    ceplifter = 22
-
-    #Pre emphasized signal's squared magnitude spectrum after filterbank
+    #|FFT|² of pre emphasized signal after filterbank
     powpresig = sigproc.powspec(presignal, NFFT)
     powpresigfull = np.zeros(len(powpresig))
     for f in fbank:
         fspec = np.multiply(powpresig, f)
         powpresigfull = np.maximum(powpresigfull, fspec)
-    ###figure007
+    ###figure005
     filecounter = plotfile(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
                            'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
                            True)
 
-    #elif option == 'filtersignal':
-    #    #Squared magnitude spectrum of pre emphasized signal
-    #    powspec = sigproc.powspec(presignal, NFFT=NFFT)
-    #    plotfile(freq, powspec, suptitle='Squared magnitude spectrum\n(preemph = %.2f, NFFT = %d)' %
-    #             (preemph, NFFT), xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
-    #
-    #    #Filterbanked presignal
-    #    fpresignal = filtersignal(presignal, winlen, winstep, samplerate, nfilt,
-    #                                       NFFT, preemph)
-    #    (feats, energy) = fpresignal
-    #    numframes = len(energy)
-    #    frameindices = np.linspace(1, numframes, numframes)
-    #
-    #    featsfull = np.zeros(numframes)
-    #    for (feat, n) in zip(feats.T, range(numframes)):
-    #        featsfull = np.maximum(featsfull, feat)
-    #        logfeat = np.log10(feat)
-    #        if 'features' in args:
-    #            plotfile(frameindices, feat, xlabel='frames', ylabel='feature[frame]',
-    #                     suptitle='Feature %d' % n)
-    #        if 'logfeatures' in args:
-    #            plotfile(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
-    #                     suptitle='Log-feature %d' % n)
-    #
+    winlen = 0.02
+    winstep = 0.01
+
+    #Filterbanked signal
+    fbankedsignal = filtersignal(signal, winlen, winstep, samplerate, nfilt, NFFT)
+    (feats, energy) = fbankedsignal
+    numframes = len(energy)
+    frameindices = np.linspace(0, numframes, numframes, False)
+
+    print(feats.shape, energy.shape)
+    for (feat, n) in zip(feats.T, range(numframes)):
+        filecounter = plotfile(frameindices, feat, 'Feature %d' % n, 'frame',
+                               'feature[frame]', filename, filecounter, 'magenta')
+
+#    featsfull = np.zeros(numframes)
+#    for (feat, n) in zip(feats.T, range(numframes)):
+#        featsfull = np.maximum(featsfull, feat)
+#        logfeat = np.log10(feat)
+#        plotfile(frameindices, feat, 'Feature %d' % n, 'frame', 'feature[frame]')
+#            plotfile(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
+#                     suptitle='Log-feature %d' % n)
+
     #    if args == []:
     #        plotfile(frameindices, featsfull, xlabel='frames', ylabel='max(feature[frame])',
     #                 suptitle='Maximum feature value per frame')
