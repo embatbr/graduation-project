@@ -29,3 +29,8 @@ Explicar os passos da extração dos MFCCs.
 8. No final a função de extração dos MFCCs é executada, similar a tudo que foi feito antes, mas com **DCT** e um **lifter** de tamanho L = 22(e um CMS opcional). O tamanho da matriz é numcoeff x numframes (geralmente 13 x numframes). Estão indicadas nas figuras (pelo título "MFCC[<frame>]"). As imagens estão plotadas na cor magenta.
 
 9. Após extrair os MFCCs, podem ser calculados os deltas de 1ª e 2ª ordem (imagens com curva preta).
+
+
+## Chapter: Experimentos
+
+TODO falar aqui sobre os testes para o modulo **corpus**, que lê a base de vozes e extrai seus MFCCs.
