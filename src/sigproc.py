@@ -59,7 +59,8 @@ def framesignal(signal, framelen, framestep, winfunc=lambda x:np.hamming(x)):
 
 def magspec(frames, NFFT=512):
     """Computes the magnitude spectrum of each frame in frames. If frames is an
-    N*D matrix, output will be (N x (NFFT/2)).
+    N*D matrix, output will be (N x (NFFT/2)). Can be used in a one dimensional
+    numpy array.
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > framelen, the frames are
@@ -73,7 +74,8 @@ def magspec(frames, NFFT=512):
 
 def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame in frames.
-    If frames is an N*D matrix, output will be (N x (NFFT/2)).
+    If frames is an N*D matrix, output will be (N x (NFFT/2)). Can be used in a
+    one dimensional numpy array.
 
     @param frames: the array of frames. Each row is a frame.
     @param NFFT: the FFT length to use. If NFFT > framelen, the frames are
@@ -82,17 +84,15 @@ def powspec(frames, NFFT=512):
     @returns: If frames is an N*D matrix, output will be (N x (NFFT/2)). Each row will
     be the power spectrum of the corresponding frame.
     """
-    return ((1.0/NFFT) * np.square(magspec(frames, NFFT=NFFT)))
+    magframes = magspec(frames, NFFT)
+    return ((1.0/NFFT) * np.square(magframes))
 
 
 #TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
-
     import os, os.path, shutil
-
     from useful import CORPORA_DIR, IMAGES_SIGPROC_DIR, testplot
-    import sigproc
 
 
     if os.path.exists(IMAGES_SIGPROC_DIR):
@@ -118,14 +118,14 @@ if __name__ == '__main__':
     freq = np.linspace(0, samplerate/2, numfftbins)
 
     #Magnitude of signal's spectrum
-    magspec = sigproc.magspec(signal, NFFT)
-    testplot(freq, magspec, '%s\n%d Hz, |FFT|' % (voice, samplerate),
+    magsig = magspec(signal, NFFT)
+    testplot(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
              'f (Hz)', '|FFT[f]|', 'sigproc/part0-signal-%s-%s-%02d-%dHz-magspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
 
     #Squared magnitude of signal's spectrum
-    powspec = sigproc.powspec(signal, NFFT)
-    testplot(freq, powspec, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
+    powsig = powspec(signal, NFFT)
+    testplot(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
              'f (Hz)', '|FFT[f]|²', 'sigproc/part0-signal-%s-%s-%02d-%dHz-powspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
 
@@ -133,20 +133,24 @@ if __name__ == '__main__':
 ##PART 1
 
     #Pre emphasized signal with coefficient 0.97
-    presignal = sigproc.preemphasis(signal)
+    presignal = preemphasis(signal)
     testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice, samplerate),
              't (seconds)', 'presignal[t]', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97' %
              (enroll, speaker, speech, samplerate))
 
+    #Inteisities of lower frequences reduced and of higher, increased
+    #wavf.write('%s-%s-%02d-%dHz-preemph0.97.wav' % (enroll, speaker, speech, samplerate),
+    #           samplerate, np.int16(presignal))
+
     #Magnitude of presignal's spectrum
-    magspec = sigproc.magspec(presignal, NFFT)
-    testplot(freq, magspec, '%s\n%d Hz, preemph 0.97, |FFT|' % (voice, samplerate),
+    magpresig = magspec(presignal, NFFT)
+    testplot(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' % (voice, samplerate),
              'f (Hz)', '|FFT[f]|', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97-magspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
 
     #Squared magnitude of presignal's spectrum
-    powspec = sigproc.powspec(presignal, NFFT)
-    testplot(freq, powspec, '%s\n%d Hz, preemph 0.97, |FFT|²' % (voice, samplerate),
+    powpresig = powspec(presignal, NFFT)
+    testplot(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' % (voice, samplerate),
              'f (Hz)', '|FFT[f]|²', 'sigproc/part1-signal-%s-%s-%02d-%dHz-preemph0.97-powspec' %
              (enroll, speaker, speech, samplerate), True, 'red')
 
@@ -157,9 +161,9 @@ if __name__ == '__main__':
     framelen = 0.02
     framestep = 0.01
 
-    frames = sigproc.framesignal(presignal, framelen*samplerate, framestep*samplerate)
-    magframes = sigproc.magspec(frames, NFFT)
-    powframes = sigproc.powspec(frames, NFFT)
+    frames = framesignal(presignal, framelen*samplerate, framestep*samplerate)
+    magframes = magspec(frames, NFFT)
+    powframes = powspec(frames, NFFT)
     numframes = len(frames)
     print('#frames = %d' % numframes)
     numiter = 10
