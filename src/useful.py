@@ -10,12 +10,10 @@ BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
 IMAGES_DIR = '../docs/paper/images/'
-IMAGES_SIGPROC_DIR = '%ssigproc' % IMAGES_DIR
-IMAGES_FEATURES_DIR = '%sfeatures' % IMAGES_DIR
 
 
-def testplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, fill=False,
-             color='blue'):
+def testplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
+             color='blue', fill=False):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -37,7 +35,9 @@ def testplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, fill=False,
     plt.plot(x, y, color=color)
 
     if not filename is None:
-        plt.savefig('%s%s.png' % (IMAGES_DIR, filename))
+        plt.savefig('%s%03d.png' % (filename, filecounter))
+
+    return (filecounter + 1)
 
 def testmultiplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, color='blue'):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
@@ -60,4 +60,4 @@ def testmultiplot(x, y, suptitle='', xlabel='', ylabel='', filename=None, color=
         plt.plot(x, y[i], color=color)
 
     if not filename is None:
-        plt.savefig('%s%s.png' % (IMAGES_DIR, filename))
+        plt.savefig('%s.png' % filename)
