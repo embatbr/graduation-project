@@ -92,7 +92,7 @@ def powspec(frames, NFFT=512):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, IMAGES_DIR, testplot
+    from useful import CORPORA_DIR, IMAGES_DIR, plotfile
 
 
     IMAGES_SIGPROC_DIR = '%ssigproc/' % IMAGES_DIR
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     numsamples = len(signal)
     time = np.linspace(0, numsamples/samplerate, numsamples, False)
     ###figure000
-    filecounter = testplot(time, signal, '%s\n%d Hz' % (voice, samplerate),
+    filecounter = plotfile(time, signal, '%s\n%d Hz' % (voice, samplerate),
                            't (seconds)', 'signal[t]', filename, filecounter)
 
     NFFT = 512
@@ -122,19 +122,19 @@ if __name__ == '__main__':
     #Magnitude of signal's spectrum
     magsig = magspec(signal, NFFT)
     ###figure001
-    filecounter = testplot(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
+    filecounter = plotfile(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
                            'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
 
     #Squared magnitude of signal's spectrum
     powsig = powspec(signal, NFFT)
     ###figure002
-    filecounter = testplot(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
+    filecounter = plotfile(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
                            'f (Hz)', '|FFT[f]|²', filename, filecounter, 'red', True)
 
     #Pre emphasized signal with coefficient 0.97
     presignal = preemphasis(signal)
     ###figure003
-    filecounter = testplot(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
+    filecounter = plotfile(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
                            samplerate), 't (seconds)', 'presignal[t]', filename,
                            filecounter)
 
@@ -145,14 +145,14 @@ if __name__ == '__main__':
     #Magnitude of presignal's spectrum
     magpresig = magspec(presignal, NFFT)
     ###figure004
-    filecounter = testplot(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
+    filecounter = plotfile(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
                            (voice, samplerate), 'f (Hz)', '|FFT[f]|', filename,
                            filecounter, 'red', True)
 
     #Squared magnitude of presignal's spectrum
     powpresig = powspec(presignal, NFFT)
     ###figure005
-    filecounter = testplot(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
+    filecounter = plotfile(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
                            (voice, samplerate), 'f (Hz)', '|FFT[f]|²', filename,
                            filecounter, 'red', True)
 
@@ -170,16 +170,16 @@ if __name__ == '__main__':
         frametime = np.linspace(i*framestep, (i*framestep + framelen),
                                 framelen*samplerate, False)
         #Framed pre emphasized signal using a Hamming window
-        filecounter = testplot(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
+        filecounter = plotfile(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
                                (voice, samplerate, i), 't (seconds)',
                                'presignal[t] * hamming', filename, filecounter)
 
         #Magnitude of the framed spectrum
-        filecounter = testplot(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
+        filecounter = plotfile(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
                                (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
                                filename, filecounter, 'red', True)
 
         #Squared magnitude of the framed spectrum
-        filecounter = testplot(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
+        filecounter = plotfile(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
                                (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
                                filename, filecounter, 'red', True)
