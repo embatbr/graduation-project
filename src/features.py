@@ -95,8 +95,8 @@ def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000, nfilt=26,
     presignal = sigproc.preemphasis(signal, preemph)
     framedsignal = sigproc.framesignal(presignal, winlen*samplerate, winstep*samplerate)
     powframedsignal = sigproc.powspec(framedsignal, NFFT)
-
     fbank = filterbank(samplerate, nfilt, NFFT)
+
     feats = np.dot(powframedsignal, fbank.T)       # feats[n] = np.dot(powframedsignal, fbank[n])
     energy = np.sum(powframedsignal, 1)            # this stores the total energy in each frame
 
@@ -156,15 +156,17 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=51
     (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt,
                                    NFFT, preemph)
     logfeats = np.log10(feats)
-    logfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
-    liflogfeats = lifter(logfeats, ceplifter)
+    dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
+    liflogfeats = lifter(dctlogfeats, ceplifter)
+
+    #CMS = Cepstral Mean Subtraction
+    #liflogfeats = np.array([liflogfeat - np.mean(liflogfeat) for liflogfeat in liflogfeats])
+
     if appendEnergy:
         # replace first cepstral coefficient with log of frame energy
         liflogfeats[ : , 0] = np.log(energy)
 
     liflogfeats = liflogfeats.transpose()
-    #CMS = Cepstral Mean Subtraction
-    #liflogfeats = np.array([feat - np.mean(feat) for feat in liflogfeats])
     return liflogfeats
 
 #TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
@@ -319,28 +321,26 @@ if __name__ == '__main__':
     numframes = len(energy)
     frameindices = np.linspace(0, numframes, numframes, False)
 
-    print(feats.shape, energy.shape)
-    for (feat, n) in zip(feats.T, range(numframes)):
+    ###figure006
+    filecounter = plotfile(frameindices, energy, 'Total energy per frame', 'frame',
+                           'energy[frame]', filename, filecounter, 'red', True)
+
+    for (feat, n) in zip(feats.T, range(nfilt)):
         filecounter = plotfile(frameindices, feat, 'Feature %d' % n, 'frame',
                                'feature[frame]', filename, filecounter, 'magenta')
+        logfeat = np.log10(feat)
+        filecounter = plotfile(frameindices, logfeat, 'Log-feature %d' % n, 'frame',
+                               'log-feature[frame]', filename, filecounter, 'magenta')
 
-#    featsfull = np.zeros(numframes)
-#    for (feat, n) in zip(feats.T, range(numframes)):
-#        featsfull = np.maximum(featsfull, feat)
-#        logfeat = np.log10(feat)
-#        plotfile(frameindices, feat, 'Feature %d' % n, 'frame', 'feature[frame]')
-#            plotfile(frameindices, logfeat, xlabel='frames', ylabel='log(feature[frame])',
-#                     suptitle='Log-feature %d' % n)
+    numcep = 13
+    ceplifter = 22
+    num_deltas = 2
 
-    #    if args == []:
-    #        plotfile(frameindices, featsfull, xlabel='frames', ylabel='max(feature[frame])',
-    #                 suptitle='Maximum feature value per frame')
-    #
-    #    #Energy per frame
-    #    plotfile(frameindices, energy, xlabel='frames', ylabel='energy[frame]',
-    #             suptitle='Energy per frame')
-    #    plotfile(frameindices, np.log10(energy), xlabel='frames', ylabel='log(energy[frame])',
-    #             suptitle='Log-energy per frame')
-    #
-    #elif option == 'mfcc':
-    #    pass
+    #Calculatin the MFCC (similar to everything done until now, but with more!)
+    mfccs = mfcc_delta(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT,
+                       num_deltas=num_deltas)
+    print(mfccs.shape)
+    numcoeffs = numcep*(num_deltas + 1)
+    for (feat, n) in zip(mfccs, range(numcoeffs)):
+        filecounter = plotfile(frameindices, feat, 'MFCC[%d]' % n, 'frame',
+                               'mfcc[%d][frame]' % n, filename, filecounter, 'black')

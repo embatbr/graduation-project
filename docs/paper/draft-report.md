@@ -21,3 +21,11 @@ Explicar os passos da extração dos MFCCs.
 4. Mostrar a escala Mel, imagens "*features/figure{000,001}.png*", e o banco de filtros em escala MEL, representado pela imagem "*features/figure002.png*". Embora seja em escala MEL, a imagem mostra os filtros na escala Hertz. Na escala MEL todos os filtros tem o mesmo comprimento (que na escala Hertz crescem com a frequência). Explicar sobre o funcionamento da Cóclea no ouvido humano e como este banco de filtros simula sua funcionalidade (talvez colocar isso na seção anterior).
 
 5. Mostrar como o espectro de **potência** do sinal com pré-ênfase (imagem "*sigproc/figure005.png*") fica após passar pelo banco de filtros #20 (imagem "*features/figure003.png*"). O resultado é a imagem "*features/figure004.png*". Fazer o mesmo para todo o filtro (imagem "*features/figure002.png*"), com resultado na imagem "*features/figure005.png*" (parecida com a imagem do espectro de **potência** original).
+
+6. Após, mostrar o sinal pré-enfatizado ser janelado (com **Hamming**) e ter o espectro de **potência** de cada frame calculado (imagens "*sigproc/figure{008,011,...}.png*"), os powered frames passam pelo banco de filtros (anteriormente era o sinal completo, agora é cada power frame em separado). Os power frames ficam organizados numa matriz, que é multiplicada pela matriz do banco de filtros. Daí surgem as features (cujo número é o mesmo do número de filtros do banco), cada uma com valores diferentes a cada frame.
+
+7. Cada powered frame contém floor(NFFT/2 + 1) valores de energia. Estes valores são somados e temos a energia total por frame.
+
+8. No final a função de extração dos MFCCs é executada, similar a tudo que foi feito antes, mas com **DCT** e um **lifter** de tamanho L = 22(e um CMS opcional). O tamanho da matriz é numcoeff x numframes (geralmente 13 x numframes). Estão indicadas nas figuras (pelo título "MFCC[<frame>]"). As imagens estão plotadas na cor magenta.
+
+9. Após extrair os MFCCs, podem ser calculados os deltas de 1ª e 2ª ordem (imagens com curva preta).
