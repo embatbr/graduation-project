@@ -20,4 +20,4 @@ Explicar os passos da extração dos MFCCs.
 
 4. Mostrar o banco de filtros em escala MEL, representado pela imagem "*features/part1-fbank-512-16000Hz.png*". Embora seja em escala MEL, a imagem mostra os filtros na escala Hertz. Na escala MEL todos os filtros tem o mesmo comprimento (que na escala Hertz crescem com a frequência). Explicar sobre o funcionamento da Cóclea no ouvido humano e como este banco de filtros simula sua funcionalidade (talvez colocar isso na seção anterior).
 
-5.
+5. Mostrar como o espectro de **potência** (imagem "*sigproc/part0-signal-enroll_2-f08-54-16000Hz-powspec.png*") fica após passar pelo banco de filtros #20 (imagem "*features/part1-fbank-512-16000Hz-filter20.png*"). O resultado é a imagem "*features/part1-framedsig-enroll_2-f08-54-16000Hz-preemph0.97-filter20.png*".

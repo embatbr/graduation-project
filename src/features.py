@@ -11,7 +11,6 @@ code as a guide.
 import numpy as np
 from scipy.fftpack import dct
 import math
-
 import sigproc
 
 
@@ -245,12 +244,8 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
 #TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
-    import matplotlib.pyplot as plt
-
     import os, os.path, shutil
-
     from useful import CORPORA_DIR, IMAGES_FEATURES_DIR, testplot, testmultiplot
-    import features
 
 
     if os.path.exists(IMAGES_FEATURES_DIR):
@@ -281,32 +276,35 @@ if __name__ == '__main__':
     freq = np.linspace(0, samplerate/2, numfftbins)
     nfilt = 26
 
+    #Mel frequence plotting
+    melfreq = hz2mel(freq)
+    testplot(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
+             'features/part0-melscale-%03d-%dHz' % (NFFT, samplerate), color='red')
+    testplot(melfreq, np.log10(melfreq), 'Log-mel scale', 'm (Mel)', 'log10[m]',
+             'features/part0-logmelscale-%03d-%dHz' % (NFFT, samplerate), color='red')
+
 
 ##PART 1
 
-    melfreq = hz2mel(freq)
-    print(melfreq)
-    testplot(freq, melfreq, 'Mel scale', 'f (Hz)', 'f (Mel)',
-             'features/part1-melscale-%03d-%dHz' % (NFFT, samplerate), color='red')
-    testplot(melfreq, np.log10(melfreq), 'Log-mel scale', 'f (Mel)', 'log10[f]',
-             'features/part1-logmelscale-%03d-%dHz' % (NFFT, samplerate), color='red')
-
     #Filterbank
-    fbank = features.filterbank(samplerate, nfilt, NFFT)
+    fbank = filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
     testmultiplot(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT), 'f (Hz)',
                   'filter[n][f]', 'features/part1-fbank-%03d-%dHz' % (NFFT, samplerate),
                   color='green')
 
-    #Pre emphasized signal's squared magnitude spectrum after 21st filter (index 20)
-    #powspec = sigproc.powspec()
-    #filter_index = 20
-    #fspec = np.multiply(powspec, fbank[filter_index])
-    #testplot(freq, fbank[filter_index], 'Filter[%d]' % filter_index, 'f (Hz)',
-    #         'filter[fftbin]', color='red')
-    #testplot(freq, fspec, xlabel='frequency (Hz)', ylabel='powspec[f]',
-    #         fill=True, suptitle='Squared magnitude spectrum at filter[%d]' % filter_index)
+    #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
+    powpresig = sigproc.powspec(presignal, NFFT)
+    filter_index = 20
+    framedpowpresig = np.multiply(powpresig, fbank[filter_index])
+    testplot(freq, fbank[filter_index], 'Filter[%d]' % filter_index, 'f (Hz)',
+             'filter[%d]' % filter_index, 'features/part1-fbank-%03d-%dHz-filter%02d' %
+             (NFFT, samplerate, filter_index), color='green')
+    testplot(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index, 'f (Hz)',
+             '|FFT * filter[%d]|²' % filter_index, ('features/part1-framedsig-%s-%s-' +
+             '%02d-%dHz-preemph0.97-filter%02d') % (enroll, speaker, speech, samplerate,
+             filter_index), True, 'red')
 
     #winlen = 0.02
     #winstep = 0.01
@@ -328,7 +326,7 @@ if __name__ == '__main__':
     #             (preemph, NFFT), xlabel='frequency (Hz)', ylabel='powspec[f]', fill=True)
     #
     #    #Filterbanked presignal
-    #    fpresignal = features.filtersignal(presignal, winlen, winstep, samplerate, nfilt,
+    #    fpresignal = filtersignal(presignal, winlen, winstep, samplerate, nfilt,
     #                                       NFFT, preemph)
     #    (feats, energy) = fpresignal
     #    numframes = len(energy)
