@@ -69,3 +69,5 @@ def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, fileco
         return (filecounter + 1)
 
     return filecounter
+
+#TODO criar função para plotar as features

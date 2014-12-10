@@ -121,8 +121,8 @@ def lifter(cepstra, L=22):
         # values of L <= 0, do nothing
         return cepstra
 
-def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=512,
-         preemph=0.97, ceplifter=22, appendEnergy=True):
+def mfcc(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13, nfilt=26,
+         NFFT=512, preemph=0.97, ceplifter=22, appendEnergy=True):
     """Computes MFCC features from an audio signal.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -171,7 +171,7 @@ def mfcc(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26, NFFT=51
 
 #TODO efetuar Cepstral Mean Subtraction (CMS) antes de calcular os deltas
 
-def add_delta(mfccs, N = 2, num_deltas=2):
+def add_delta(mfccs, N=2, numdeltas=2):
     """Calculates the deltas for a matrix of mfccs (frame x mfccs).
 
     @param mfccs: the original mfccs calculated by mfcc().
@@ -183,10 +183,10 @@ def add_delta(mfccs, N = 2, num_deltas=2):
     numcep = len(mfccs[:, 0])
     denom = 2 * sum([n*n for n in range(1, N + 1)])
     numframes = len(mfccs[0])
-    new_coeffs = np.zeros((numcep*(1 + num_deltas), numframes))
+    new_coeffs = np.zeros((numcep*(1 + numdeltas), numframes))
     new_coeffs[: numcep, :] = mfccs[:,:]    #copy MFCCs array
 
-    for order in range(num_deltas):
+    for order in range(numdeltas):
         for k in range(order*numcep, (order + 1)*numcep): #index of coeff(0 to 12, 13 to 25 and 26 to 38)
             coeff = new_coeffs[k]
             for t in range(numframes):
@@ -208,9 +208,9 @@ def add_delta(mfccs, N = 2, num_deltas=2):
 
     return new_coeffs
 
-def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
-               NFFT=512, preemph=0.97, ceplifter=22, appendEnergy=True, N = 2,
-               num_deltas=2):
+def mfcc_delta(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13,
+               nfilt=26, NFFT=512, preemph=0.97, ceplifter=22, appendEnergy=True,
+               N=2, numdeltas=2):
     """Computes MFCC features from an audio signal and calculates it's deltas.
 
     @param signal: the audio signal from which to compute features. Should be an
@@ -230,16 +230,16 @@ def mfcc_delta(signal, winlen, winstep, samplerate=16000, numcep=13, nfilt=26,
     @param appendEnergy: if this is true, the zeroth cepstral coefficient is
     replaced with the log of the total frame energy.
     @param N: complexity of delta (by default, 2).
-    @param num_deltas: number of delta calculations.
+    @param numdeltas: number of delta calculations.
 
-    @returns: A numpy array of size (num_deltas*numcep x NUMFRAMES) (transposed)
+    @returns: A numpy array of size (numdeltas*numcep x NUMFRAMES) (transposed)
     containing features (the MFCCs and it's deltas).
     """
     mfccs = mfcc(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT, preemph,
                  ceplifter, appendEnergy)
-    if num_deltas < 1:
+    if numdeltas < 1:
         return mfccs
-    return add_delta(mfccs, N, num_deltas)
+    return add_delta(mfccs, N, numdeltas)
 
 
 #TESTS
@@ -334,13 +334,13 @@ if __name__ == '__main__':
 
     numcep = 13
     ceplifter = 22
-    num_deltas = 2
+    numdeltas = 2
 
     #Calculatin the MFCC (similar to everything done until now, but with more!)
     mfccs = mfcc_delta(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT,
-                       num_deltas=num_deltas)
+                       numdeltas=numdeltas)
     print(mfccs.shape)
-    numcoeffs = numcep*(num_deltas + 1)
+    numcoeffs = numcep*(numdeltas + 1)
     for (feat, n) in zip(mfccs, range(numcoeffs)):
         filecounter = plotfile(frameindices, feat, 'MFCC[%d]' % n, 'frame',
                                'mfcc[%d][frame]' % n, filename, filecounter, 'black')
