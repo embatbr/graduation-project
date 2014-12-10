@@ -22,7 +22,7 @@ def preemphasis(signal, preemph=0.97):
     """
     return np.append(signal[0], signal[1 : ] - preemph*signal[ : -1])
 
-def framesignal(signal, framelen, framestep, winfunc=lambda x:np.hamming(x)):
+def framing(signal, framelen, framestep, winfunc=lambda x:np.hamming(x)):
     """Divides a signal into overlapping frames.
 
     @param signal: the audio signal to frame.
@@ -160,13 +160,38 @@ if __name__ == '__main__':
     framelen = 0.02
     framestep = 0.01
 
-    frames = framesignal(presignal, framelen*samplerate, framestep*samplerate)
+    #Framing with rectangular window
+    frames = framing(presignal, framelen*samplerate, framestep*samplerate,
+                     winfunc=lambda x:np.ones((1, x)))
     magframes = magspec(frames, NFFT)
     powframes = powspec(frames, NFFT)
     numframes = len(frames)
-    print('#frames = %d' % numframes)
-    numiter = 10
-    for i in range(0, numframes, math.floor(numframes/numiter)):
+    print('Framing with rectangular window\n#frames = %d' % numframes)
+    for i in range(0, numframes):
+        frametime = np.linspace(i*framestep, (i*framestep + framelen),
+                                framelen*samplerate, False)
+        #Framed pre emphasized signal using a Rect window
+        filecounter = plotfile(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Rect #%d' %
+                               (voice, samplerate, i), 't (seconds)',
+                               'presignal[t] * rect', filename, filecounter)
+
+        #Magnitude of the framed spectrum
+        filecounter = plotfile(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|' %
+                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+                               filename, filecounter, 'red', True)
+
+        #Squared magnitude of the framed spectrum
+        filecounter = plotfile(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|²' %
+                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+                               filename, filecounter, 'red', True)
+
+    #Framing with Hamming window
+    frames = framing(presignal, framelen*samplerate, framestep*samplerate)
+    magframes = magspec(frames, NFFT)
+    powframes = powspec(frames, NFFT)
+    numframes = len(frames)
+    print('Framing with Hamming window\n#frames = %d' % numframes)
+    for i in range(0, numframes):
         frametime = np.linspace(i*framestep, (i*framestep + framelen),
                                 framelen*samplerate, False)
         #Framed pre emphasized signal using a Hamming window

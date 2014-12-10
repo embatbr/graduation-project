@@ -38,10 +38,11 @@ def plotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter
     @param fill: to fill the area beneath the curve.
     """
     plt.clf()
+    plt.xlim(x[0], x[-1])
     plot(x, y, suptitle, xlabel, ylabel, color, fill)
 
     if not filename is None:
-        plt.savefig('%s%03d.png' % (filename, filecounter))
+        plt.savefig('%s%05d.png' % (filename, filecounter))
         return (filecounter + 1)
 
     return filecounter
@@ -61,11 +62,12 @@ def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, fileco
     @param fill: to fill the area beneath the curve.
     """
     plt.clf()
+    plt.xlim(x[0], x[-1])
     for i in range(len(y)):
         plot(x, y[i], suptitle, xlabel, ylabel, color, fill)
 
     if not filename is None:
-        plt.savefig('%s%03d.png' % (filename, filecounter))
+        plt.savefig('%s%05d.png' % (filename, filecounter))
         return (filecounter + 1)
 
     return filecounter

@@ -93,7 +93,7 @@ def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000, nfilt=26,
     size NUMFRAMES.
     """
     presignal = sigproc.preemphasis(signal, preemph)
-    framedsignal = sigproc.framesignal(presignal, winlen*samplerate, winstep*samplerate)
+    framedsignal = sigproc.framing(presignal, winlen*samplerate, winstep*samplerate)
     powframedsignal = sigproc.powspec(framedsignal, NFFT)
     fbank = filterbank(samplerate, nfilt, NFFT)
 
