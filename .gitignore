@@ -2,7 +2,5 @@ bases/
 docs/*.aux
 docs/*.log
 docs/*.toc
-docs/paper/images/features/*
-docs/paper/images/sigproc/*
-docs/paper/images/corpus/*
+docs/paper/images/test/*
 src/__pycache__/

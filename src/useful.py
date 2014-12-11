@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
-IMAGES_DIR = '../docs/paper/images/'
+TEST_IMAGES_DIR = '../docs/paper/images/test/'
 
 
 def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False):

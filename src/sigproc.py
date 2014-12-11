@@ -92,10 +92,13 @@ def powspec(frames, NFFT=512):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, IMAGES_DIR, plotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
 
 
-    IMAGES_SIGPROC_DIR = '%ssigproc/' % IMAGES_DIR
+    if not os.path.exists(TEST_IMAGES_DIR):
+        os.mkdir(TEST_IMAGES_DIR)
+
+    IMAGES_SIGPROC_DIR = '%ssigproc/' % TEST_IMAGES_DIR
 
     if os.path.exists(IMAGES_SIGPROC_DIR):
             shutil.rmtree(IMAGES_SIGPROC_DIR)

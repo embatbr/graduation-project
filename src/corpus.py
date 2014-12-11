@@ -74,6 +74,35 @@ def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
     else:
         return mfccs
 
+def read_speaker_features(numcep, numdeltas, speaker):
+    """Reads the features files from database for each speaker and concatenate
+    in a single MFCCs matrix.
+
+    @param numcep: number of cepstral coefficients (used to access the base).
+    @param numdeltas: order of deltas (used to access the base).
+    @param speaker: the speaker to read the MFCCs.
+
+    @returns: a matrix of order (numcep x NUMFRAMESTOTAL) representing the MFCCs
+    for the speaker.
+    """
+    speakerpath = '%smit_%d_%d/enroll_1/%s' % (FEATURES_DIR, numcep, numdeltas,
+                                               speaker)
+    features = os.listdir(speakerpath)
+    features.sort()
+    mfccs = None
+
+    for feature in features:
+        featnum = int(feature[:2])
+        mfcc = read_features(numcep, numdeltas, 'enroll_1', speaker, featnum,
+                             False)
+
+        if mfccs is None:
+            mfccs = mfcc
+        else:
+            mfccs = np.vstack((mfccs, mfcc))
+
+    return mfccs.T
+
 def background(numcep, numdeltas, gender=None):
     """Returns the concatenated MFCCs from dataset 'enroll_1'.
 
@@ -114,10 +143,13 @@ def background(numcep, numdeltas, gender=None):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, IMAGES_DIR, plotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
 
 
-    IMAGES_CORPUS_DIR = '%scorpus/' % IMAGES_DIR
+    if not os.path.exists(TEST_IMAGES_DIR):
+        os.mkdir(TEST_IMAGES_DIR)
+
+    IMAGES_CORPUS_DIR = '%scorpus/' % TEST_IMAGES_DIR
 
     if os.path.exists(IMAGES_CORPUS_DIR):
             shutil.rmtree(IMAGES_CORPUS_DIR)
@@ -142,17 +174,26 @@ if __name__ == '__main__':
                                'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
                                'black')
 
+    speaker = 'm00'
+    mfccs = read_speaker_features(numcep, numdeltas, speaker)
+    numframes = len(mfccs[0])
+    frameindices = np.linspace(0, numframes, numframes, False)
+    print(mfccs.shape)
+    for (feat, n) in zip(mfccs, range(numcoeffs)):
+        filecounter = plotfile(frameindices, feat, 'MFCC[%d] %s' % (n, speaker),
+                               'frame', 'mfcc[%d][frame]' % n, filename, filecounter)
+
     #Composing MFCCs for background
-    genders = [None, 'f', 'm']
-    bkgnames = ['unisex', 'female', 'male']
-    for (gender, bkgname) in zip(genders, bkgnames):
-        print('CREATING MFCCs for a background model %s' % bkgname)
-        mfccsbkg = background(numcep, numdeltas, gender)
-        numframes = len(mfccsbkg[0])
-        frameindices = np.linspace(0, numframes, numframes, False)
-        numcoeffs = numcep*(numdeltas + 1)
-        print(mfccsbkg.shape)
-        for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
-            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
-                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
-                                   filename, filecounter, 'magenta')
+#    genders = [None, 'f', 'm']
+#    bkgnames = ['unisex', 'female', 'male']
+#    for (gender, bkgname) in zip(genders, bkgnames):
+#        print('CREATING MFCCs for a background model %s' % bkgname)
+#        mfccsbkg = background(numcep, numdeltas, gender)
+#        numframes = len(mfccsbkg[0])
+#        frameindices = np.linspace(0, numframes, numframes, False)
+#        numcoeffs = numcep*(numdeltas + 1)
+#        print(mfccsbkg.shape)
+#        for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
+#            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
+#                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
+#                                   filename, filecounter, 'magenta')
