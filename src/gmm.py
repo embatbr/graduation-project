@@ -36,7 +36,7 @@ def gaussian(features, means=np.array([0]), covariances=np.array([[1]])):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotgaussian, plotmultivargaussian
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotpoints
     import math
     import corpus
 
@@ -70,18 +70,18 @@ if __name__ == '__main__':
     pdfs = np.array([gaussian(features, means, covmatrix) for features in mfccs.T])
     for n in range(numcep):
         (mu, sigma) = (means[n], covmatrix[n][n])
-        filecounter = plotgaussian(mfccs[n], pdfs, 'MFCCs[%d] %s\nN(%f, %f)' %
-                                   (n, voice, mu, sigma), 'MFCCs[%d]' % n,
-                                   'gaussian', filename, filecounter)
+        filecounter = plotpoints(mfccs[n], pdfs, 'MFCCs[%d] %s\nN(%f, %f)' %
+                                 (n, voice, mu, sigma), 'MFCCs[%d]' % n,
+                                 'gaussian', filename, filecounter)
 
     #Multivariate plotting
     print('Multivariate plotting')
     for i in range(numcep):
+        (mu_i, sigma_i) = (means[i], covmatrix[i][i])
         for j in range(i + 1, numcep):
-            (mu_i, sigma_i) = (means[i], covmatrix[i][i])
             (mu_j, sigma_j) = (means[j], covmatrix[j][j])
-            filecounter = plotmultivargaussian(mfccs[i], mfccs[j],
-                                               'MFCCs[%d] x MFCCs[%d] %s\nN([%f, %f], [%f, %f])' %
-                                               (i, j, voice, mu_i, sigma_i, mu_j, sigma_j),
-                                               'mfccs[%d]' % i, 'mfccs[%d]' % j,
-                                               filename, filecounter)
+            filecounter = plotpoints(mfccs[i], mfccs[j],
+                                     'MFCCs[%d] x MFCCs[%d] %s\nN([%f, %f], [%f, %f])' %
+                                     (i, j, voice, mu_i, mu_j, sigma_i, sigma_j),
+                                     'mfccs[%d]' % i, 'mfccs[%d]' % j, filename,
+                                     filecounter, 'green')

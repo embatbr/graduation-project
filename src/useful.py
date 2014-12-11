@@ -79,34 +79,20 @@ def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, fileco
 
 def plotpoints(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
              color='blue'):
+    """Creates a Matplotlib figure and plots the @param y related to @param x as
+    points.
+
+    @param x: a numpy array.
+    @param y: a numpy array of the same size of @param x.
+    @param suptitle: the title of the figure.
+    @param xlabel: the label of the x axis.
+    @param ylabel: the label of the y axis.
+    @param filename: name of file to plot.
+    @param filecounter: composes the final filename.
+    @param color: the color of line (and area filled).
+    """
     plt.clf()
     plot(x, y, suptitle, xlabel, ylabel, color, False, ':')
-
-    if not filename is None:
-        plt.savefig('%s%05d.png' % (filename, filecounter))
-        return (filecounter + 1)
-
-    return filecounter
-
-def __gaussian__(x, mean, variance):
-    cte = 1 / math.sqrt(2*math.pi*variance)
-    power = - (1/2) * ((x - mean)**2) / (variance)
-    return (cte*np.exp(power))
-
-def plotgaussian(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0):
-    plt.clf()
-    plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
-
-    if not filename is None:
-        plt.savefig('%s%05d.png' % (filename, filecounter))
-        return (filecounter + 1)
-
-    return filecounter
-
-def plotmultivargaussian(x, y, suptitle='', xlabel='', ylabel='', filename=None,
-                         filecounter=0):
-    plt.clf()
-    plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
 
     if not filename is None:
         plt.savefig('%s%05d.png' % (filename, filecounter))
