@@ -25,7 +25,7 @@ def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
     plt.plot(x, y, color=color, linestyle=linestyle)
 
 def plotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
-             color='blue', fill=False):
+             color='blue', fill=False, xlim=True):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -39,7 +39,8 @@ def plotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter
     @param fill: to fill the area beneath the curve.
     """
     plt.clf()
-    plt.xlim(x[0], x[-1])
+    if xlim:
+        plt.xlim(x[0], x[-1])
     plot(x, y, suptitle, xlabel, ylabel, color, fill)
 
     if not filename is None:
@@ -49,7 +50,7 @@ def plotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter
     return filecounter
 
 def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
-                  color='blue', fill=False):
+                  color='blue', fill=False, xlim=True):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -63,7 +64,8 @@ def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, fileco
     @param fill: to fill the area beneath the curve.
     """
     plt.clf()
-    plt.xlim(x[0], x[-1])
+    if xlim:
+        plt.xlim(x[0], x[-1])
     for i in range(len(y)):
         plot(x, y[i], suptitle, xlabel, ylabel, color, fill)
 
