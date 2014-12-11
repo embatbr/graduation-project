@@ -12,7 +12,8 @@ FEATURES_DIR = '%sfeatures/' % BASES_DIR
 TEST_IMAGES_DIR = '../docs/paper/images/test/'
 
 
-def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False):
+def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
+         linestyle='-'):
     fig = plt.gcf()
     fig.suptitle(suptitle)
     plt.xlabel(xlabel)
@@ -21,7 +22,7 @@ def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False):
 
     if fill:
         plt.fill_between(x, y, color=color)
-    plt.plot(x, y, color=color)
+    plt.plot(x, y, color=color, linestyle=linestyle)
 
 def plotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
              color='blue', fill=False):
@@ -72,4 +73,13 @@ def multiplotfile(x, y, suptitle='', xlabel='', ylabel='', filename=None, fileco
 
     return filecounter
 
-#TODO criar função para plotar as features
+def plotpoints(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
+             color='blue'):
+    plt.clf()
+    plot(x, y, suptitle, xlabel, ylabel, color, False, ':')
+
+    if not filename is None:
+        plt.savefig('%s%05d.png' % (filename, filecounter))
+        return (filecounter + 1)
+
+    return filecounter

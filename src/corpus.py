@@ -74,7 +74,7 @@ def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
     else:
         return mfccs
 
-def read_speaker_features(numcep, numdeltas, speaker):
+def read_speaker_features(numcep, numdeltas, speaker, transpose=True):
     """Reads the features files from database for each speaker and concatenate
     in a single MFCCs matrix.
 
@@ -101,9 +101,11 @@ def read_speaker_features(numcep, numdeltas, speaker):
         else:
             mfccs = np.vstack((mfccs, mfcc))
 
-    return mfccs.T
+    if transpose:
+        return mfccs.T
+    return mfccs
 
-def background(numcep, numdeltas, gender=None):
+def background(numcep, numdeltas, gender=None, transpose=True):
     """Returns the concatenated MFCCs from dataset 'enroll_1'.
 
     @param numcep: number of cepstral coefficients (used to access the base).
@@ -122,28 +124,22 @@ def background(numcep, numdeltas, gender=None):
 
     mfccs = None
     for speaker in speakers:
-        pathspeaker = '%s/%s' % (enroll_1_path, speaker)
-        features = os.listdir(pathspeaker)
-        features.sort()
+        mfcc = read_speaker_features(numcep, numdeltas, speaker, False)
+        if mfccs is None:
+            mfccs = mfcc
+        else:
+            mfccs = np.vstack((mfccs, mfcc))
 
-        for feature in features:
-            featnum = int(feature[:2])
-            mfcc = read_features(numcep, numdeltas, 'enroll_1', speaker, featnum,
-                                 False)
-
-            if mfccs is None:
-                mfccs = mfcc
-            else:
-                mfccs = np.vstack((mfccs, mfcc))
-
-    return mfccs.T
+    if transpose:
+        return mfccs.T
+    return mfccs
 
 
 #TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile, plotpoints
 
 
     if not os.path.exists(TEST_IMAGES_DIR):
@@ -174,6 +170,12 @@ if __name__ == '__main__':
                                'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
                                'black')
 
+    #MFCCs[0] x MFCCs[1]
+    print('%s: MFCCs[0] x MFCCs[1]' % (voice, ))
+    filecounter = plotpoints(mfccs[0], mfccs[1], 'MFCC[0] x MFCC[1]\n%s' % (voice, ),
+                             'mfcc[0]', 'mfcc[1]', filename, filecounter, 'red')
+
+    #Reading and concatenating all features from 'm00'
     speaker = 'm00'
     mfccs = read_speaker_features(numcep, numdeltas, speaker)
     numframes = len(mfccs[0])
@@ -183,17 +185,23 @@ if __name__ == '__main__':
         filecounter = plotfile(frameindices, feat, 'MFCC[%d] %s' % (n, speaker),
                                'frame', 'mfcc[%d][frame]' % n, filename, filecounter)
 
+    #MFCCs[0] x MFCCs[1]
+    print('%s: MFCCs[0] x MFCCs[1]' % speaker)
+    filecounter = plotpoints(mfccs[0], mfccs[1], 'MFCC[0] x MFCC[1]\n%s' % speaker,
+                             'mfcc[0]', 'mfcc[1]', filename, filecounter, 'red')
+
     #Composing MFCCs for background
-#    genders = [None, 'f', 'm']
-#    bkgnames = ['unisex', 'female', 'male']
-#    for (gender, bkgname) in zip(genders, bkgnames):
-#        print('CREATING MFCCs for a background model %s' % bkgname)
-#        mfccsbkg = background(numcep, numdeltas, gender)
-#        numframes = len(mfccsbkg[0])
-#        frameindices = np.linspace(0, numframes, numframes, False)
-#        numcoeffs = numcep*(numdeltas + 1)
-#        print(mfccsbkg.shape)
-#        for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
-#            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
-#                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
-#                                   filename, filecounter, 'magenta')
+    genders = [None, 'f', 'm']
+    bkgnames = ['unisex', 'female', 'male']
+    colors = ['green', 'magenta', 'blue']
+    for (gender, bkgname, color) in zip(genders, bkgnames, colors):
+        print('CREATING MFCCs for a background model %s' % bkgname)
+        mfccsbkg = background(numcep, numdeltas, gender)
+        numframes = len(mfccsbkg[0])
+        frameindices = np.linspace(0, numframes, numframes, False)
+        numcoeffs = numcep*(numdeltas + 1)
+        print(mfccsbkg.shape)
+        for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
+            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
+                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
+                                   filename, filecounter, color)
