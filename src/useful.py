@@ -4,6 +4,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import math
+import gmm
 
 
 BASES_DIR = '../bases/'
@@ -79,6 +81,30 @@ def plotpoints(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
              color='blue'):
     plt.clf()
     plot(x, y, suptitle, xlabel, ylabel, color, False, ':')
+
+    if not filename is None:
+        plt.savefig('%s%05d.png' % (filename, filecounter))
+        return (filecounter + 1)
+
+    return filecounter
+
+def __gaussian__(x, mean, variance):
+    cte = 1 / math.sqrt(2*math.pi*variance)
+    power = - (1/2) * ((x - mean)**2) / (variance)
+    return (cte*np.exp(power))
+
+def plotgaussian(x, y, means, covmatrix, featnum, suptitle='', xlabel='', ylabel='',
+                 filename=None, filecounter=0):
+    plt.clf()
+    plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
+
+    #Plotting the gaussian curve with the given means and covmatrix
+    xvalues = np.linspace(np.amin(x), np.amax(x), len(x))
+    gauss = __gaussian__(xvalues, means[featnum], covmatrix[featnum][featnum])
+    gauss = (gauss - np.amin(gauss)) / (np.amax(gauss) - np.amin(gauss))
+    ymean = gmm.gaussian(means, means, covmatrix)
+    gauss = gauss * ymean
+    plot(xvalues, gauss, suptitle, xlabel, ylabel, 'red', False)
 
     if not filename is None:
         plt.savefig('%s%05d.png' % (filename, filecounter))
