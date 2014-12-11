@@ -275,15 +275,12 @@ if __name__ == '__main__':
     ###figure000
     filecounter = plotfile(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
                            filename, filecounter, 'red')
-    ###figure001
-    filecounter = plotfile(melfreq, np.log10(melfreq), 'Log-mel scale', 'm (Mel)',
-                           'log10[m]', filename, filecounter, 'red')
 
     #Filterbank
     fbank = filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
-    ###figure002
+    ###figure001
     filecounter = multiplotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
                                 'f (Hz)', 'filter[n][f]', filename, filecounter,
                                 'green')
@@ -292,11 +289,11 @@ if __name__ == '__main__':
     powpresig = sigproc.powspec(presignal, NFFT)
     filter_index = 20
     framedpowpresig = np.multiply(powpresig, fbank[filter_index])
-    ###figure003
+    ###figure002
     filecounter = plotfile(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
                            'f (Hz)', 'filter[%d]' % filter_index, filename,
                            filecounter, 'green')
-    ###figure004
+    ###figure003
     filecounter = plotfile(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
                            'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
                            filecounter, 'red', True)
@@ -307,7 +304,7 @@ if __name__ == '__main__':
     for f in fbank:
         fspec = np.multiply(powpresig, f)
         powpresigfull = np.maximum(powpresigfull, fspec)
-    ###figure005
+    ###figure004
     filecounter = plotfile(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
                            'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
                            True)
@@ -321,7 +318,7 @@ if __name__ == '__main__':
     numframes = len(energy)
     frameindices = np.linspace(0, numframes, numframes, False)
 
-    ###figure006
+    ###figure005
     filecounter = plotfile(frameindices, energy, 'Total energy per frame', 'frame',
                            'energy[frame]', filename, filecounter, 'red', True)
 
