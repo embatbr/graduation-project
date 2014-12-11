@@ -93,18 +93,20 @@ def __gaussian__(x, mean, variance):
     power = - (1/2) * ((x - mean)**2) / (variance)
     return (cte*np.exp(power))
 
-def plotgaussian(x, y, means, covmatrix, featnum, suptitle='', xlabel='', ylabel='',
-                 filename=None, filecounter=0):
+def plotgaussian(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0):
     plt.clf()
     plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
 
-    #Plotting the gaussian curve with the given means and covmatrix
-    xvalues = np.linspace(np.amin(x), np.amax(x), len(x))
-    gauss = __gaussian__(xvalues, means[featnum], covmatrix[featnum][featnum])
-    gauss = (gauss - np.amin(gauss)) / (np.amax(gauss) - np.amin(gauss))
-    ymean = gmm.gaussian(means, means, covmatrix)
-    gauss = gauss * ymean
-    plot(xvalues, gauss, suptitle, xlabel, ylabel, 'red', False)
+    if not filename is None:
+        plt.savefig('%s%05d.png' % (filename, filecounter))
+        return (filecounter + 1)
+
+    return filecounter
+
+def plotmultivargaussian(x, y, suptitle='', xlabel='', ylabel='', filename=None,
+                         filecounter=0):
+    plt.clf()
+    plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
 
     if not filename is None:
         plt.savefig('%s%05d.png' % (filename, filecounter))
