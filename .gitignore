@@ -4,4 +4,5 @@ docs/*.log
 docs/*.toc
 docs/paper/images/features/*
 docs/paper/images/sigproc/*
+docs/paper/images/corpus/*
 src/__pycache__/

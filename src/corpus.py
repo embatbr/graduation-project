@@ -62,7 +62,7 @@ def mit_features(winlen=0.02, winstep=0.01, numcep=13, numdeltas=2):
                 np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
 
 def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
-    """Reads a feature from dataset 'enroll_2' or 'imposter'.
+    """Reads a feature from a speaker.
 
     @returns: The features from the utterance given by (dataset, speaker, uttnum).
     """
@@ -73,3 +73,36 @@ def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
         return mfccs.transpose()
     else:
         return mfccs
+
+
+#TESTS
+if __name__ == '__main__':
+    import scipy.io.wavfile as wavf
+    import os, os.path, shutil
+    from useful import CORPORA_DIR, IMAGES_DIR, plotfile
+
+
+    IMAGES_CORPUS_DIR = '%scorpus/' % IMAGES_DIR
+
+    if os.path.exists(IMAGES_CORPUS_DIR):
+            shutil.rmtree(IMAGES_CORPUS_DIR)
+    os.mkdir(IMAGES_CORPUS_DIR)
+
+    filecounter = 0
+    filename = '%sfigure' % IMAGES_CORPUS_DIR
+
+    numcep = 13
+    numdeltas = 0
+    voice = ('enroll_2', 'f08', 54)
+    (enroll, speaker, speech) = voice
+
+    #Reading MFCCs from features base
+    mfccs = read_features(numcep, numdeltas, enroll, speaker, speech)
+    numframes = len(mfccs[0])
+    frameindices = np.linspace(0, numframes, numframes, False)
+    numcoeffs = numcep*(numdeltas + 1)
+    print(mfccs.shape)
+    for (feat, n) in zip(mfccs, range(numcoeffs)):
+        filecounter = plotfile(frameindices, feat, 'MFCC[%d]\n%s' % (n, voice),
+                               'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
+                               'black')
