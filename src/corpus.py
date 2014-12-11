@@ -59,20 +59,55 @@ def mit_features(winlen=0.02, winstep=0.01, numcep=13, numdeltas=2):
                 mfccs_deltas = features.mfcc_delta(signal, winlen, winstep, samplerate,
                                                    numcep, numdeltas=numdeltas)
                 mfccs_deltas = mfccs_deltas.transpose()
-                np.save('%s/%s' % (pathspeaker_feat, utt), mfccs_deltas)
+                np.save('%s/%s' % (pathspeaker_feat, utt[6:8]), mfccs_deltas)
 
 def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
     """Reads a feature from a speaker.
 
     @returns: The features from the utterance given by (dataset, speaker, uttnum).
     """
-    mfccs = np.load('%smit_%d_%d/%s/%s/phrase%02d_16k.wav.npy' % (FEATURES_DIR,
-                    numcep, numdeltas, dataset, speaker, uttnum))
+    mfccs = np.load('%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, numdeltas,
+                    dataset, speaker, uttnum))
 
     if transpose:
         return mfccs.transpose()
     else:
         return mfccs
+
+def background(numcep, numdeltas, gender=None):
+    """Returns the concatenated MFCCs from dataset 'enroll_1'.
+
+    @param numcep: number of cepstral coefficients (used to access the base).
+    @param numdeltas: order of deltas (used to access the base).
+    @param gender: tells the gender of the background ('f' or 'm'). By default
+    is None, what means both genders compose the background MFCCs.
+
+    @returns: a matrix of order (numcep x NUMFRAMESTOTAL) representing the MFCCs
+    for the background model.
+    """
+    enroll_1_path = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numcep, numdeltas)
+    speakers = os.listdir(enroll_1_path)
+    if not gender is None:
+        speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
+    speakers.sort()
+
+    mfccs = None
+    for speaker in speakers:
+        pathspeaker = '%s/%s' % (enroll_1_path, speaker)
+        features = os.listdir(pathspeaker)
+        features.sort()
+
+        for feature in features:
+            featnum = int(feature[:2])
+            mfcc = read_features(numcep, numdeltas, 'enroll_1', speaker, featnum,
+                                 False)
+
+            if mfccs is None:
+                mfccs = mfcc
+            else:
+                mfccs = np.vstack((mfccs, mfcc))
+
+    return mfccs.T
 
 
 #TESTS
@@ -106,3 +141,18 @@ if __name__ == '__main__':
         filecounter = plotfile(frameindices, feat, 'MFCC[%d]\n%s' % (n, voice),
                                'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
                                'black')
+
+    #Composing MFCCs for background
+    genders = [None, 'f', 'm']
+    bkgnames = ['unisex', 'female', 'male']
+    for (gender, bkgname) in zip(genders, bkgnames):
+        print('CREATING MFCCs for a background model %s' % bkgname)
+        mfccsbkg = background(numcep, numdeltas, gender)
+        numframes = len(mfccsbkg[0])
+        frameindices = np.linspace(0, numframes, numframes, False)
+        numcoeffs = numcep*(numdeltas + 1)
+        print(mfccsbkg.shape)
+        for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
+            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
+                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
+                                   filename, filecounter, 'magenta')
