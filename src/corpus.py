@@ -105,7 +105,7 @@ def read_speaker_features(numcep, numdeltas, speaker, transpose=True):
         return mfccs.T
     return mfccs
 
-def background(numcep, numdeltas, gender=None, transpose=True):
+def read_background_features(numcep, numdeltas, gender=None, transpose=True):
     """Returns the concatenated MFCCs from dataset 'enroll_1'.
 
     @param numcep: number of cepstral coefficients (used to access the base).
@@ -140,6 +140,7 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
     from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile, plotpoints
+    import math
 
 
     if not os.path.exists(TEST_IMAGES_DIR):
@@ -175,6 +176,13 @@ if __name__ == '__main__':
     filecounter = plotpoints(mfccs[0], mfccs[1], 'MFCC[0] x MFCC[1]\n%s' % (voice, ),
                              'mfcc[0]', 'mfcc[1]', filename, filecounter, 'red')
 
+    #gaussian
+    mean = np.mean(mfccs[0])
+    std = np.std(mfccs[0])
+    prob = (1/(math.sqrt(2*math.pi)*std)) * np.exp(-((mfccs[0]-mean)**2) / (2*std**2))
+    filecounter = plotpoints(mfccs[0], prob, 'MFCC[0]\n%s' % str(voice), 'frame',
+                             'mfcc[0][frame]', filename, filecounter)
+
     #Reading and concatenating all features from 'm00'
     speaker = 'm00'
     mfccs = read_speaker_features(numcep, numdeltas, speaker)
@@ -190,13 +198,20 @@ if __name__ == '__main__':
     filecounter = plotpoints(mfccs[0], mfccs[1], 'MFCC[0] x MFCC[1]\n%s' % speaker,
                              'mfcc[0]', 'mfcc[1]', filename, filecounter, 'red')
 
+    #gaussian
+    mean = np.mean(mfccs[0])
+    std = np.std(mfccs[0])
+    prob = (1/(math.sqrt(2*math.pi)*std)) * np.exp(-((mfccs[0]-mean)**2) / (2*std**2))
+    filecounter = plotpoints(mfccs[0], prob, 'MFCC[0]\n%s' % speaker, 'frame',
+                             'mfcc[0][frame]', filename, filecounter)
+
     #Composing MFCCs for background
     genders = [None, 'f', 'm']
     bkgnames = ['unisex', 'female', 'male']
     colors = ['green', 'magenta', 'blue']
     for (gender, bkgname, color) in zip(genders, bkgnames, colors):
         print('CREATING MFCCs for a background model %s' % bkgname)
-        mfccsbkg = background(numcep, numdeltas, gender)
+        mfccsbkg = read_background_features(numcep, numdeltas, gender)
         numframes = len(mfccsbkg[0])
         frameindices = np.linspace(0, numframes, numframes, False)
         numcoeffs = numcep*(numdeltas + 1)
@@ -205,3 +220,23 @@ if __name__ == '__main__':
             filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
                                    (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
                                    filename, filecounter, color)
+
+    #A 'mixture' of gaussians
+    mfccs_f08 = read_speaker_features(13, 0, 'f08', False)
+    mfccs_f08 = mfccs_f08.T[0]
+    mean = np.mean(mfccs_f08)
+    std = np.std(mfccs_f08)
+    prob_f08 = (1/(math.sqrt(2*math.pi)*std)) * np.exp(-((mfccs_f08-mean)**2) / (2*std**2))
+
+    mfccs_m00 = read_speaker_features(13, 0, 'm00', False)
+    mfccs_m00 = mfccs_m00.T[0]
+    mean = np.mean(mfccs_m00)
+    std = np.std(mfccs_m00)
+    prob_m00 = (1/(math.sqrt(2*math.pi)*std)) * np.exp(-((mfccs_m00-mean)**2) / (2*std**2))
+
+    print(type(prob_f08), type(prob_m00))
+    print(len(prob_f08), len(prob_m00))
+    prob = np.array(prob_f08.tolist() + prob_m00.tolist())
+    feats = np.array(mfccs_f08.tolist() + mfccs_m00.tolist())
+    filecounter = plotpoints(feats, prob, 'MFCC[0]\nf08 + m00', 'frame',
+                             'mfcc[0][frame]', filename, filecounter)
