@@ -4,6 +4,7 @@
 
 import numpy as np
 import math
+import random
 
 import corpus
 
@@ -31,12 +32,33 @@ def gaussian(features, means=np.array([0]), covariances=np.array([[1]])):
 
     return (cte * math.exp(power))
 
+def create_gmm(M, D):
+    """Creates a GMM with M mixtures and fed by a D-dimensional feature vector.
+
+    @param M: number of mixtures.
+    @param D: size of features (used to the means and covariances).
+
+    @returns: an untrained GMM.
+    """
+    weights = np.array([random.uniform(M/2, M) for _ in range(M)])
+    weights = weights / np.sum(weights)
+
+    gmm = list()
+    for weight in weights:
+        means = np.array([random.uniform(-M/2, M/2) for _ in range(D)])
+        variances = np.array([random.uniform(1, D/2) for _ in range(D)])
+        covmatrix = np.diag(variances)  #nodal-diagonal Covariance Matrix
+        mixture = (weight, means, covmatrix)
+        gmm.append(mixture)
+
+    return gmm
+
 
 #TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotpoints
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotpoints, plotgaussian, plotgmm
     import math
     import corpus
 
@@ -69,10 +91,10 @@ if __name__ == '__main__':
     print('#frames = %d' % numframes)
     pdfs = np.array([gaussian(features, means, covmatrix) for features in mfccs.T])
     for n in range(numcep):
-        (mu, sigma) = (means[n], covmatrix[n][n])
-        filecounter = plotpoints(mfccs[n], pdfs, 'MFCCs[%d] %s\nN(%f, %f)' %
-                                 (n, voice, mu, sigma), 'MFCCs[%d]' % n,
-                                 'gaussian', filename, filecounter)
+        (mean, variance) = (means[n], covmatrix[n][n])
+        filecounter = plotgaussian(mfccs[n], pdfs, mean, variance, 'MFCCs[%d] %s\nN(%f, %f)' %
+                                   (n, voice, mean, variance), 'MFCCs[%d]' % n,
+                                   'gaussian', filename, filecounter)
 
     #Multivariate plotting
     print('Multivariate plotting')
@@ -85,3 +107,13 @@ if __name__ == '__main__':
                                      (i, j, voice, mu_i, mu_j, sigma_i, sigma_j),
                                      'mfccs[%d]' % i, 'mfccs[%d]' % j, filename,
                                      filecounter, 'green')
+
+    Ms = [2**n for n in range(5, 12)]
+    numfeats = numcep*(numdeltas + 1)
+    for M in Ms:
+        print('Plotting GMM, M = %d' % M)
+        gmm = create_gmm(M, numfeats)
+        x = np.linspace(-(M + numfeats)/2, (M + numfeats)/2, 1000)
+        for featnum in range(numfeats):
+            filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
+                                  'x', 'pdf', filename, filecounter)

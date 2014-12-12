@@ -3,6 +3,7 @@
 
 
 import numpy as np
+import scipy.stats as stats
 import matplotlib.pyplot as plt
 import math
 
@@ -38,6 +39,7 @@ def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
     @param filecounter: composes the final filename.
     @param color: the color of line (and area filled).
     @param fill: to fill the area beneath the curve.
+    @param xlim: if True, limits the x-axis.
     """
     plt.clf()
     if xlim:
@@ -70,6 +72,73 @@ def plotpoints(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
     """
     plt.clf()
     plot(x, y, suptitle, xlabel, ylabel, color, False, ':')
+
+    if not filename is None:
+        plt.savefig('%s%05d.png' % (filename, filecounter))
+        return (filecounter + 1)
+
+    return filecounter
+
+def plotgaussian(x, y, mean, variance, suptitle='', xlabel='', ylabel='',
+                 filename=None, filecounter=0):
+    """Creates a Matplotlib figure and plots the @param y related to @param x as
+    points. It also draws the real and desired gaussians.
+
+    @param x: a numpy array.
+    @param y: a numpy array of the same size of @param x.
+    @param suptitle: the title of the figure.
+    @param xlabel: the label of the x axis.
+    @param ylabel: the label of the y axis.
+    @param filename: name of file to plot.
+    @param filecounter: composes the final filename.
+    """
+    plt.clf()
+    plot(x, y, suptitle, xlabel, ylabel, 'blue', False, ':')
+
+    #The gaussian given by 'x'
+    x = np.sort(x)
+    rgauss = stats.norm.pdf(x, np.mean(x), np.std(x))
+    rgauss = (np.amax(y) - np.amin(y)) * rgauss
+    plt.plot(x, rgauss, color='red')
+
+    #The gaussian given by 'mean' and 'variance'
+    x = np.sort(x)
+    dgauss = stats.norm.pdf(x, mean, variance**0.5)
+    dgauss = (np.amax(y) - np.amin(y)) * dgauss
+    plt.plot(x, dgauss, color='magenta')
+
+    if not filename is None:
+        plt.savefig('%s%05d.png' % (filename, filecounter))
+        return (filecounter + 1)
+
+    return filecounter
+
+def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
+            filecounter=0):
+    """Creates a Matplotlib figure and plots the GMM's gaussians weighted.
+
+    @param gmm: the GMM, a list of tuples (weight, means, covmatrix).
+    @param suptitle: the title of the figure.
+    @param xlabel: the label of the x axis.
+    @param ylabel: the label of the y axis.
+    @param filename: name of file to plot.
+    @param filecounter: composes the final filename.
+    """
+    plt.clf()
+    plt.grid(True)
+
+    gaussfull = 0
+    for (weight, means, covmatrix) in gmm:
+        mean = means[featnum]
+        variance = covmatrix[featnum][featnum]
+
+        x = np.sort(x)
+        gauss = stats.norm.pdf(x, mean, variance**0.5)
+        gauss = weight*gauss
+        gaussfull = gaussfull + gauss
+        plot(x, gauss, suptitle, xlabel, ylabel, 'red', linestyle='--')
+
+    plot(x, gaussfull, suptitle, xlabel, ylabel, 'blue')
 
     if not filename is None:
         plt.savefig('%s%05d.png' % (filename, filecounter))
