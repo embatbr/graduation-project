@@ -53,12 +53,41 @@ def create_gmm(M, D):
 
     return gmm
 
+def feed_gmm(gmm, features):
+    """Feeds the GMM with the given features.
+
+    @param gmm: the GMM used (a list of tuples (weight, means, covariances)).
+    @param features: a Dx1 vector of features.
+
+    @returns: the logarithm of the weighted sum of gaussians for gmm.
+    """
+    prob = 0
+    for mixture in gmm:
+        (weight, means, covariances) = mixture
+        prob = prob + weight*gaussian(features, means, covariances)
+
+    return prob
+
+def eval_gmm(gmm, mfccs):
+    """Feeds the GMM with a sequence of feature vectors.
+
+    @param gmm: the GMM used (a list of tuples (weight, means, covariances)).
+    @param features: a D x NUMFRAMES matrix of features.
+
+    @returns: the average sum of logarithm of the weighted sum of gaussians for
+    gmm for each feature vector.
+    """
+    numframes = len(mfccs.T)
+    probs = np.array([feed_gmm(gmm, features) for features in mfccs.T])
+    return (np.sum(np.log10(probs)) / numframes)
+
 
 #TESTS
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotpoints, plotgaussian, plotgmm
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotpoints, plotgaussian
+    from useful import plotgmm, plotfigure
     import math
     import corpus
 
@@ -77,6 +106,7 @@ if __name__ == '__main__':
 
     numcep = 13
     numdeltas = 0
+    numfeats = numcep*(numdeltas + 1)
     voice = ('enroll_1', 'f08', 54)
     (dataset, speaker, speech) = voice
 
@@ -109,7 +139,6 @@ if __name__ == '__main__':
                                      filecounter, 'green')
 
     Ms = [2**n for n in range(5, 12)]
-    numfeats = numcep*(numdeltas + 1)
     for M in Ms:
         print('Plotting GMM, M = %d' % M)
         gmm = create_gmm(M, numfeats)
@@ -117,3 +146,27 @@ if __name__ == '__main__':
         for featnum in range(numfeats):
             filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
                                   'x', 'pdf', filename, filecounter)
+
+    #Feeding GMM
+    print('Feeding GMM')
+    print(mfccs.shape)
+    M = 32
+    gmm = create_gmm(M, numfeats)
+    probs = list()
+    for features in mfccs.T:
+        prob = feed_gmm(gmm, features)
+        probs.append(prob)
+
+    probs = np.array(probs)
+    logprobs = np.log10(probs)
+    numframes = len(mfccs.T)
+    log_likelihood = np.sum(logprobs) / numframes
+    print('log p(X|lambda) = %f' % log_likelihood)
+    frameindices = np.linspace(0, numframes, numframes, False)
+    filecounter = plotfigure(frameindices, logprobs, 'Log of probability per frame',
+                             'frame', 'log', filename, filecounter)
+
+    #Evaluating GMM
+    print('Evaluating GMM')
+    log_likelihood = eval_gmm(gmm, mfccs)
+    print('log p(X|lambda) = %f' % log_likelihood)
