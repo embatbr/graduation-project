@@ -246,7 +246,7 @@ def mfcc_delta(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13,
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile, multiplotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
 
 
     if not os.path.exists(TEST_IMAGES_DIR):
@@ -284,9 +284,9 @@ if __name__ == '__main__':
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
     ###figure001
-    filecounter = multiplotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
-                                'f (Hz)', 'filter[n][f]', filename, filecounter,
-                                'green')
+    filecounter = plotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
+                           'f (Hz)', 'filter[n][f]', filename, filecounter,
+                           'green')
 
     #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
     powpresig = sigproc.powspec(presignal, NFFT)
