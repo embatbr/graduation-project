@@ -246,7 +246,7 @@ def mfcc_delta(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13,
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfigure
 
 
     if not os.path.exists(TEST_IMAGES_DIR):
@@ -276,30 +276,30 @@ if __name__ == '__main__':
     #Mel frequence plotting
     melfreq = hz2mel(freq)
     ###figure000
-    filecounter = plotfile(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
-                           filename, filecounter, 'red')
+    filecounter = plotfigure(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
+                             filename, filecounter, 'red')
 
     #Filterbank
     fbank = filterbank(samplerate, nfilt, NFFT)
     numfilters = len(fbank)
     print('#filters = %d' % numfilters)
     ###figure001
-    filecounter = plotfile(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
-                           'f (Hz)', 'filter[n][f]', filename, filecounter,
-                           'green')
+    filecounter = plotfigure(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
+                             'f (Hz)', 'filter[n][f]', filename, filecounter,
+                             'green')
 
     #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
     powpresig = sigproc.powspec(presignal, NFFT)
     filter_index = 20
     framedpowpresig = np.multiply(powpresig, fbank[filter_index])
     ###figure002
-    filecounter = plotfile(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
-                           'f (Hz)', 'filter[%d]' % filter_index, filename,
-                           filecounter, 'green')
+    filecounter = plotfigure(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
+                             'f (Hz)', 'filter[%d]' % filter_index, filename,
+                             filecounter, 'green')
     ###figure003
-    filecounter = plotfile(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
-                           'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
-                           filecounter, 'red', True)
+    filecounter = plotfigure(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
+                             'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
+                             filecounter, 'red', True)
 
     #|FFT|² of pre emphasized signal after filterbank
     powpresig = sigproc.powspec(presignal, NFFT)
@@ -308,9 +308,9 @@ if __name__ == '__main__':
         fspec = np.multiply(powpresig, f)
         powpresigfull = np.maximum(powpresigfull, fspec)
     ###figure004
-    filecounter = plotfile(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
-                           'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
-                           True)
+    filecounter = plotfigure(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
+                             'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
+                             True)
 
     winlen = 0.02
     winstep = 0.01
@@ -322,15 +322,15 @@ if __name__ == '__main__':
     frameindices = np.linspace(0, numframes, numframes, False)
 
     ###figure005
-    filecounter = plotfile(frameindices, energy, 'Total energy per frame', 'frame',
-                           'energy[frame]', filename, filecounter, 'red', True)
+    filecounter = plotfigure(frameindices, energy, 'Total energy per frame', 'frame',
+                             'energy[frame]', filename, filecounter, 'red', True)
 
     for (feat, n) in zip(feats.T, range(nfilt)):
-        filecounter = plotfile(frameindices, feat, 'Feature %d' % n, 'frame',
-                               'feature[frame]', filename, filecounter, 'magenta')
+        filecounter = plotfigure(frameindices, feat, 'Feature %d' % n, 'frame',
+                                 'feature[frame]', filename, filecounter, 'magenta')
         logfeat = np.log10(feat)
-        filecounter = plotfile(frameindices, logfeat, 'Log-feature %d' % n, 'frame',
-                               'log-feature[frame]', filename, filecounter, 'magenta')
+        filecounter = plotfigure(frameindices, logfeat, 'Log-feature %d' % n, 'frame',
+                                 'log-feature[frame]', filename, filecounter, 'magenta')
 
     numcep = 13
     ceplifter = 22
@@ -342,5 +342,5 @@ if __name__ == '__main__':
     print(mfccs.shape)
     numcoeffs = numcep*(numdeltas + 1)
     for (feat, n) in zip(mfccs, range(numcoeffs)):
-        filecounter = plotfile(frameindices, feat, 'MFCC[%d]' % n, 'frame',
-                               'mfcc[%d][frame]' % n, filename, filecounter, 'black')
+        filecounter = plotfigure(frameindices, feat, 'MFCC[%d]' % n, 'frame',
+                                 'mfcc[%d][frame]' % n, filename, filecounter, 'black')

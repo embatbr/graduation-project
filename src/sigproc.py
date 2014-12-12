@@ -92,7 +92,7 @@ def powspec(frames, NFFT=512):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfigure
 
 
     if not os.path.exists(TEST_IMAGES_DIR):
@@ -115,8 +115,8 @@ if __name__ == '__main__':
     numsamples = len(signal)
     time = np.linspace(0, numsamples/samplerate, numsamples, False)
     ###figure000
-    filecounter = plotfile(time, signal, '%s\n%d Hz' % (voice, samplerate),
-                           't (seconds)', 'signal[t]', filename, filecounter)
+    filecounter = plotfigure(time, signal, '%s\n%d Hz' % (voice, samplerate),
+                             't (seconds)', 'signal[t]', filename, filecounter)
 
     NFFT = 512
     numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
@@ -125,21 +125,21 @@ if __name__ == '__main__':
     #Magnitude of signal's spectrum
     magsig = magspec(signal, NFFT)
     ###figure001
-    filecounter = plotfile(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
-                           'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
+    filecounter = plotfigure(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
+                             'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
 
     #Squared magnitude of signal's spectrum
     powsig = powspec(signal, NFFT)
     ###figure002
-    filecounter = plotfile(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
-                           'f (Hz)', '|FFT[f]|²', filename, filecounter, 'red', True)
+    filecounter = plotfigure(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
+                             'f (Hz)', '|FFT[f]|²', filename, filecounter, 'red', True)
 
     #Pre emphasized signal with coefficient 0.97
     presignal = preemphasis(signal)
     ###figure003
-    filecounter = plotfile(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
-                           samplerate), 't (seconds)', 'presignal[t]', filename,
-                           filecounter)
+    filecounter = plotfigure(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
+                             samplerate), 't (seconds)', 'presignal[t]', filename,
+                             filecounter)
 
     #Inteisities of lower frequences reduced and of higher, increased
     #wavf.write('%s-%s-%02d-%dHz-preemph0.97.wav' % (enroll, speaker, speech, samplerate),
@@ -148,16 +148,16 @@ if __name__ == '__main__':
     #Magnitude of presignal's spectrum
     magpresig = magspec(presignal, NFFT)
     ###figure004
-    filecounter = plotfile(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
-                           (voice, samplerate), 'f (Hz)', '|FFT[f]|', filename,
-                           filecounter, 'red', True)
+    filecounter = plotfigure(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
+                             (voice, samplerate), 'f (Hz)', '|FFT[f]|', filename,
+                             filecounter, 'red', True)
 
     #Squared magnitude of presignal's spectrum
     powpresig = powspec(presignal, NFFT)
     ###figure005
-    filecounter = plotfile(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
-                           (voice, samplerate), 'f (Hz)', '|FFT[f]|²', filename,
-                           filecounter, 'red', True)
+    filecounter = plotfigure(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
+                             (voice, samplerate), 'f (Hz)', '|FFT[f]|²', filename,
+                             filecounter, 'red', True)
 
     #samples = sec * (samples/sec)
     framelen = 0.02
@@ -174,19 +174,19 @@ if __name__ == '__main__':
         frametime = np.linspace(i*framestep, (i*framestep + framelen),
                                 framelen*samplerate, False)
         #Framed pre emphasized signal using a Rect window
-        filecounter = plotfile(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Rect #%d' %
-                               (voice, samplerate, i), 't (seconds)',
-                               'presignal[t] * rect', filename, filecounter)
+        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Rect #%d' %
+                                 (voice, samplerate, i), 't (seconds)',
+                                 'presignal[t] * rect', filename, filecounter)
 
         #Magnitude of the framed spectrum
-        filecounter = plotfile(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|' %
-                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
-                               filename, filecounter, 'red', True)
+        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|' %
+                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+                                 filename, filecounter, 'red', True)
 
         #Squared magnitude of the framed spectrum
-        filecounter = plotfile(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|²' %
-                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
-                               filename, filecounter, 'red', True)
+        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|²' %
+                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+                                 filename, filecounter, 'red', True)
 
     #Framing with Hamming window
     frames = framing(presignal, framelen*samplerate, framestep*samplerate)
@@ -198,16 +198,16 @@ if __name__ == '__main__':
         frametime = np.linspace(i*framestep, (i*framestep + framelen),
                                 framelen*samplerate, False)
         #Framed pre emphasized signal using a Hamming window
-        filecounter = plotfile(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
-                               (voice, samplerate, i), 't (seconds)',
-                               'presignal[t] * hamming', filename, filecounter)
+        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
+                                 (voice, samplerate, i), 't (seconds)',
+                                 'presignal[t] * hamming', filename, filecounter)
 
         #Magnitude of the framed spectrum
-        filecounter = plotfile(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
-                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
-                               filename, filecounter, 'red', True)
+        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
+                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+                                 filename, filecounter, 'red', True)
 
         #Squared magnitude of the framed spectrum
-        filecounter = plotfile(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
-                               (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
-                               filename, filecounter, 'red', True)
+        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
+                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+                                 filename, filecounter, 'red', True)

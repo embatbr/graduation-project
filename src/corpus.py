@@ -139,7 +139,7 @@ def read_background_features(numcep, numdeltas, gender=None, transpose=True):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfile, plotpoints
+    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfigure, plotpoints
     import math
 
 
@@ -167,9 +167,9 @@ if __name__ == '__main__':
     numcoeffs = numcep*(numdeltas + 1)
     print(mfccs.shape)
     for (feat, n) in zip(mfccs, range(numcoeffs)):
-        filecounter = plotfile(frameindices, feat, 'MFCC[%d]\n%s' % (n, voice),
-                               'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
-                               'black')
+        filecounter = plotfigure(frameindices, feat, 'MFCC[%d]\n%s' % (n, voice),
+                                 'frame', 'mfcc[%d][frame]' % n, filename, filecounter,
+                                 'black')
 
     #MFCCs[0] x MFCCs[1]
     print('%s: MFCCs[0] x MFCCs[1]' % (voice, ))
@@ -190,8 +190,8 @@ if __name__ == '__main__':
     frameindices = np.linspace(0, numframes, numframes, False)
     print(mfccs.shape)
     for (feat, n) in zip(mfccs, range(numcoeffs)):
-        filecounter = plotfile(frameindices, feat, 'MFCC[%d] %s' % (n, speaker),
-                               'frame', 'mfcc[%d][frame]' % n, filename, filecounter)
+        filecounter = plotfigure(frameindices, feat, 'MFCC[%d] %s' % (n, speaker),
+                                 'frame', 'mfcc[%d][frame]' % n, filename, filecounter)
 
     #MFCCs[0] x MFCCs[1]
     print('%s: MFCCs[0] x MFCCs[1]' % speaker)
@@ -217,9 +217,9 @@ if __name__ == '__main__':
         numcoeffs = numcep*(numdeltas + 1)
         print(mfccsbkg.shape)
         for (feat, n) in zip(mfccsbkg, range(numcoeffs)):
-            filecounter = plotfile(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
-                                   (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
-                                   filename, filecounter, color)
+            filecounter = plotfigure(frameindices, feat, 'MFCC[%d]\nBackground: %s' %
+                                     (n, bkgname), 'frame', 'mfcc[%d][frame]' % n,
+                                     filename, filecounter, color)
 
     #A 'mixture' of gaussians
     mfccs_f08 = read_speaker_features(13, 0, 'f08', False)
@@ -234,8 +234,6 @@ if __name__ == '__main__':
     std = np.std(mfccs_m00)
     prob_m00 = (1/(math.sqrt(2*math.pi)*std)) * np.exp(-((mfccs_m00-mean)**2) / (2*std**2))
 
-    print(type(prob_f08), type(prob_m00))
-    print(len(prob_f08), len(prob_m00))
     prob = np.array(prob_f08.tolist() + prob_m00.tolist())
     feats = np.array(mfccs_f08.tolist() + mfccs_m00.tolist())
     filecounter = plotpoints(feats, prob, 'MFCC[0]\nf08 + m00', 'frame',

@@ -19,7 +19,7 @@ def gaussian(features, means=np.array([0]), covariances=np.array([[1]])):
     """
     D = len(features)
     determinant = np.linalg.det(covariances)
-    cte = 1 / ((2*math.pi)**(D/2) * determinant**(1/2))
+    cte = 1 / ((2*math.pi)**(D/2) * determinant**0.5)
     inverse = np.linalg.inv(covariances)
 
     #(x - mu)' * inverse * (x - mu)
@@ -27,7 +27,7 @@ def gaussian(features, means=np.array([0]), covariances=np.array([[1]])):
     A = np.array([(features - means).tolist()])
     power = np.dot(A, inverse)
     power = np.dot(power, A.T)
-    power = (-1/2)*power[0, 0]
+    power = -0.5*power[0, 0]
 
     return (cte * math.exp(power))
 
