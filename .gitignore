@@ -2,5 +2,5 @@ bases/
 docs/*.aux
 docs/*.log
 docs/*.toc
-docs/paper/images/test/*
+docs/paper/images/test/
 src/__pycache__/
