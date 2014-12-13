@@ -1,4 +1,5 @@
-bases/
+bases/corpora/
+bases/features/
 docs/*.aux
 docs/*.log
 docs/*.toc
