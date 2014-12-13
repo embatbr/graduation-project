@@ -11,6 +11,7 @@ import math
 BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
+GMMS_DIR = '%sgmms/' % BASES_DIR
 TEST_IMAGES_DIR = '../docs/paper/images/test/'
 
 
