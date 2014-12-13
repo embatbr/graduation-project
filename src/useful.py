@@ -16,6 +16,17 @@ TEST_IMAGES_DIR = '../docs/paper/images/test/'
 
 def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
          linestyle='-'):
+    """Plots the numpy array y related to numpy array x.
+
+    @param x: a numpy array.
+    @param y: a numpy array of the same size of @param x.
+    @param suptitle: the title of the figure.
+    @param xlabel: the label of the x axis.
+    @param ylabel: the label of the y axis.
+    @param color: the color of line (and area filled).
+    @param fill: to fill the area beneath the curve.
+    @param linestyle: the style of the line (dashed, dotted, etc.).
+    """
     fig = plt.gcf()
     fig.suptitle(suptitle)
     plt.xlabel(xlabel)
