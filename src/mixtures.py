@@ -104,7 +104,7 @@ def train_gmm(gmm, mfccs, threshold=0.01):
     @param gmm: the GMM used (a list of tuples (weight, means, covariances)).
     @param mfccs: a D x NUMFRAMES matrix of features.
     @param threshold: the difference between old and new probabilities must be
-    lower than this parameter.
+    lower than (or equal to) this parameter.
 
     @returns: the average sum of logarithm of the weighted sum of gaussians for
     gmm for each feature vector.
@@ -137,7 +137,7 @@ def train_gmm(gmm, mfccs, threshold=0.01):
         diff_perc = (oldprob - newprob) / oldprob
         print('%f\nnewprob > oldprob ? %s\ndiff_perc = %f' % (newprob, newprob > oldprob,
                                                               diff_perc))
-        if diff_perc < threshold:
+        if diff_perc <= threshold:
             print('RETURNING new_gmm')
             return new_gmm
 
