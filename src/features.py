@@ -246,13 +246,13 @@ def mfcc_delta(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13,
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfigure
+    from useful import CORPORA_DIR, TESTS_DIR, plotfigure
 
 
-    if not os.path.exists(TEST_IMAGES_DIR):
-        os.mkdir(TEST_IMAGES_DIR)
+    if not os.path.exists(TESTS_DIR):
+        os.mkdir(TESTS_DIR)
 
-    IMAGES_FEATURES_DIR = '%sfeatures/' % TEST_IMAGES_DIR
+    IMAGES_FEATURES_DIR = '%sfeatures/' % TESTS_DIR
 
     if os.path.exists(IMAGES_FEATURES_DIR):
             shutil.rmtree(IMAGES_FEATURES_DIR)

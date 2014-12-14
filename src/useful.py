@@ -13,7 +13,7 @@ CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
 GMMS_DIR = '%sgmms/' % BASES_DIR
 
-TEST_IMAGES_DIR = '../docs/paper/images/test/'
+TESTS_DIR = 'tests/'
 
 EXPERIMENTS_DIR = '../experiments/'
 IDENTIFY_DIR = '%sidentify/' % EXPERIMENTS_DIR
@@ -133,7 +133,7 @@ def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
             filecounter=0):
     """Creates a Matplotlib figure and plots the GMM's gaussians weighted.
 
-    @param gmm: the GMM, a list of tuples (weight, means, covmatrix).
+    @param gmm: the GMM, a list of tuples (weight, means, variances).
     @param suptitle: the title of the figure.
     @param xlabel: the label of the x axis.
     @param ylabel: the label of the y axis.
@@ -144,9 +144,9 @@ def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
     plt.grid(True)
 
     gaussfull = 0
-    for (weight, means, covmatrix) in gmm:
+    for (weight, means, variances) in gmm:
         mean = means[featnum]
-        variance = covmatrix[featnum][featnum]
+        variance = variances[featnum]
 
         x = np.sort(x)
         gauss = stats.norm.pdf(x, mean, variance**0.5)

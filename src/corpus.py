@@ -139,14 +139,14 @@ def read_background_features(numcep, numdeltas, gender=None, transpose=True):
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
-    from useful import CORPORA_DIR, TEST_IMAGES_DIR, plotfigure, plotpoints
+    from useful import CORPORA_DIR, TESTS_DIR, plotfigure, plotpoints
     import math
 
 
-    if not os.path.exists(TEST_IMAGES_DIR):
-        os.mkdir(TEST_IMAGES_DIR)
+    if not os.path.exists(TESTS_DIR):
+        os.mkdir(TESTS_DIR)
 
-    IMAGES_CORPUS_DIR = '%scorpus/' % TEST_IMAGES_DIR
+    IMAGES_CORPUS_DIR = '%scorpus/' % TESTS_DIR
 
     if os.path.exists(IMAGES_CORPUS_DIR):
             shutil.rmtree(IMAGES_CORPUS_DIR)
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     bkgnames = ['unisex', 'female', 'male']
     colors = ['green', 'magenta', 'blue']
     for (gender, bkgname, color) in zip(genders, bkgnames, colors):
-        print('CREATING MFCCs for a background model %s' % bkgname)
+        print('CREATING MFCCs for %s background model' % bkgname)
         mfccsbkg = read_background_features(numcep, numdeltas, gender)
         numframes = len(mfccsbkg[0])
         frameindices = np.linspace(0, numframes, numframes, False)
