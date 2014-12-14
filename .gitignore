@@ -3,5 +3,5 @@ bases/features/
 docs/*.aux
 docs/*.log
 docs/*.toc
-docs/paper/images/test/
 src/__pycache__/
+src/tests/
