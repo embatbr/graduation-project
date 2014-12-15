@@ -69,42 +69,37 @@ class GMM(object):
 
         return prob
 
+    def log_likelihood(self, mfccs):
+        """Feeds the GMM with a sequence of feature vectors.
 
-def eval_gmm(features, gmm):
-    """Feeds the GMM with the given features.
+        @param mfccs: a NUMFRAMES x D matrix of features (features over time).
 
-    @param gmm: the GMM used (a list of tuples (weight, means, variances)).
-    @param features: a Dx1 vector of features.
+        @returns: the average sum of logarithm of the weighted sum of gaussians
+        for gmm for each feature vector, aka, the log-likelihood.
+        """
+        numframes = len(mfccs)
+        logprobs = 0
 
-    @returns: the logarithm of the weighted sum of gaussians for gmm.
-    """
-    prob = 0
-    for mixture in gmm:
-        (weight, means, variances) = mixture
-        prob = prob + weight*gaussian(features, means, variances)
+        #TODO transformar o loop em uma operação totalmente vetorial
+        for features in mfccs:
+            prob = self.eval(features)
+            logprobs = logprobs + math.log10(prob)
 
-    return prob
+        return (logprobs / numframes)
 
-def loglikelihood_gmm(gmm, mfccs):
-    """Feeds the GMM with a sequence of feature vectors.
+    def train_gmm(self, mfccs, threshold=0.01):
+        """Train the given GMM with the sequence of given feature vectors.
 
-    @param gmm: the GMM used (a list of tuples (weight, means, variances)).
-    @param mfccs: a D x NUMFRAMES matrix of features.
+        @param gmm: the GMM used (a list of tuples (weight, means, variances)).
+        @param mfccs: a D x NUMFRAMES matrix of features.
+        @param threshold: the difference between old and new probabilities must be
+        lower than (or equal to) this parameter.
 
-    @returns: the average sum of logarithm of the weighted sum of gaussians for
-    gmm for each feature vector, aka, the log-likelihood.
-    """
-    numframes = len(mfccs.T)
-    logprobs = 0
-    i = 0
-    for features in mfccs.T:
-        if (i % 1000) == 0:
-            print('log-likelihood', i)
-        i += 1
-        prob = eval_gmm(features, gmm)
-        logprobs = logprobs + math.log10(prob)
-    return (logprobs / numframes)
-    #return (np.sum(np.log10(probs)) / numframes)
+        @returns: the average sum of logarithm of the weighted sum of gaussians for
+        gmm for each feature vector.
+        """
+        pass
+
 
 def prob_posterior_i(gmm_i, features, gmm):
     """Calculates the a posteriori probability for a tuple (weight_i, means_i, variances_i)
@@ -252,7 +247,7 @@ if __name__ == '__main__':
         prob = gmm.eval(features)
         probs.append(prob)
     t = time.time() - t
-    print('GMM evaluated. Time:', t, 'seconds')
+    print('GMM evaluated in', t, 'seconds')
     probs = np.array(probs)
     probs = np.log10(probs)
 
@@ -262,11 +257,14 @@ if __name__ == '__main__':
     filecounter = plotfigure(frameindices, probs, 'Log of probability per frame',
                              'frame', 'log', filename, filecounter)
 
-#    #log-likelihood of GMM
-#    print('log-likelihood of GMM')
-#    log_likelihood = loglikelihood_gmm(gmm, mfccs)
-#    print('log p(X|lambda) = %f' % log_likelihood)
-#
+    #log-likelihood of GMM
+    print('log-likelihood of GMM')
+    t = time.time()
+    log_likelihood = gmm.log_likelihood(mfccs)
+    t = time.time() - t
+    print('Log likelihood calculated in', t, 'seconds')
+    print('log p(X|lambda) = %f' % log_likelihood)
+
 #    #Training GMM
 #    print('Section: Training')
 #    speaker = 'f08'
