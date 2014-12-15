@@ -61,6 +61,7 @@ def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
     plt.clf()
     if xlim:
         plt.xlim(x[0], x[-1])
+
     if y.ndim == 1:
         plot(x, y, suptitle, xlabel, ylabel, color, fill)
     else:
@@ -143,6 +144,7 @@ def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
     """
     plt.clf()
     plt.grid(True)
+    plt.xlim(x[0], x[-1])
 
     gaussfull = 0
     for m in range(gmm.num_mixtures):

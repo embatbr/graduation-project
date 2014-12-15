@@ -51,12 +51,10 @@ class GMM(object):
         @returns: the weighted sum of gaussians for gmm.
         """
         D = self.num_features
-        M = self.num_mixtures
 
         #Constant
         determinant = np.prod(self.variances, axis=1)
         cte = (2*PI**D * determinant)**0.5
-        cte = 1 / cte
 
         #Exponent
         A = features - self.means
@@ -66,7 +64,7 @@ class GMM(object):
         power = -0.5*power
 
         #Probability
-        prob = (cte * np.exp(power))
+        prob = (np.exp(power) / cte)
         prob = np.dot(self.weights, prob)
 
         return prob
@@ -242,9 +240,9 @@ if __name__ == '__main__':
     print('Creating GMM (M = %d)...' % M)
     gmm = GMM(M, numfeats)
     print('GMM created!')
-    #for featnum in range(numfeats):
-    #    filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
-    #                          'x', 'pdf', filename, filecounter)
+    for featnum in range(numfeats):
+        filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
+                              'x', 'pdf', filename, filecounter)
 
     #Evaluating GMM
     print('Evaluating GMM...')
@@ -256,14 +254,14 @@ if __name__ == '__main__':
     t = time.time() - t
     print('GMM evaluated. Time:', t, 'seconds')
     probs = np.array(probs)
-    print(probs.shape)
+    probs = np.log10(probs)
 
-#    numframes = mfccs.shape[1]
-#    print('numframes = %d' % numframes)
-#    frameindices = np.linspace(0, numframes, numframes, False)
-#    filecounter = plotfigure(frameindices, probs, 'Log of probability per frame',
-#                             'frame', 'log', filename, filecounter)
-#
+    numframes = len(probs)
+    print('numframes = %d' % numframes)
+    frameindices = np.linspace(0, numframes, numframes, False)
+    filecounter = plotfigure(frameindices, probs, 'Log of probability per frame',
+                             'frame', 'log', filename, filecounter)
+
 #    #log-likelihood of GMM
 #    print('log-likelihood of GMM')
 #    log_likelihood = loglikelihood_gmm(gmm, mfccs)
