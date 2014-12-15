@@ -1,6 +1,20 @@
 #TG
 
 
+##TODO
+
+Melhorias no código:
+
+- Retirar o parâmetro "Transpose" dos métodos de leitura do módulo "corpus". Retornar os MFCCs sempre como uma matriz de ordem numframes x numcoeficientes.
+
+Verificar as seguintes ferramentas que podem melhorar a performance:
+
+- [Numba](https://github.com/numba/numba)
+- [MKL Optimizations](https://store.continuum.io/cshop/mkl-optimizations/)
+- [Question no stakoverflow](http://stackoverflow.com/questions/16178471/numpy-running-at-half-the-speed-of-matlab)
+- [Exemplo de GMM](http://nbviewer.ipython.org/github/tritemio/notebooks/blob/master/Mixture_Model_Fitting.ipynb)
+
+
 ##Proposta
 
 Refazer o projeto da disciplina *Processamento de Voz*, utilizando o artigo de
