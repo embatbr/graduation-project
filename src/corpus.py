@@ -70,7 +70,7 @@ def read_features(numcep, numdeltas, dataset, speaker, uttnum, transpose=True):
                     dataset, speaker, uttnum))
 
     if transpose:
-        return mfccs.transpose()
+        return mfccs.T
     else:
         return mfccs
 
@@ -105,21 +105,19 @@ def read_speaker_features(numcep, numdeltas, speaker, transpose=True):
         return mfccs.T
     return mfccs
 
-def read_background_features(numcep, numdeltas, gender=None, transpose=True):
+def read_background_features(numcep, numdeltas, gender, transpose=True):
     """Returns the concatenated MFCCs from dataset 'enroll_1'.
 
     @param numcep: number of cepstral coefficients (used to access the base).
     @param numdeltas: order of deltas (used to access the base).
-    @param gender: tells the gender of the background ('f' or 'm'). By default
-    is None, what means both genders compose the background MFCCs.
+    @param gender: tells the gender of the background ('f' or 'm').
 
     @returns: a matrix of order (numcep x NUMFRAMESTOTAL) representing the MFCCs
     for the background model.
     """
     enroll_1_path = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numcep, numdeltas)
     speakers = os.listdir(enroll_1_path)
-    if not gender is None:
-        speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
+    speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
     speakers.sort()
 
     mfccs = None
