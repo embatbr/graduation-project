@@ -8,57 +8,71 @@ import random
 
 
 PI = math.pi
-twoPI = 2*PI
 
 
-def gaussian(features, means=np.array([0]), variances=np.array([1])):
-    """A D-variate gaussian pdf.
-
-    @param features: Dx1 vector of features
-    @param means: Dx1 vector of means (one for each feature).
-    @param variances: Dx1 vector of variances (diagonal from covariance matrix).
-
-    @returns: the value (float) of the gaussian pdf for the given parameters.
+class GMM(object):
+    """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    D = len(features)
-    determinant = np.prod(variances)
-    cte = (twoPI**D * determinant)**0.5
-    cte = 1 / cte
 
-    #(x - mu)' * inverse * (x - mu)
-    A = features - means
-    inverse = 1 / variances
-    power = np.multiply(A, inverse)
-    power = np.dot(power, A)
-    power = -0.5*power
+    def __init__(self, M, D):
+        """Creates a GMM.
 
-    return (cte * math.exp(power))
+        @param M: number of mixtures (integer).
+        @param D: number of features (integer).
+        """
+        self.num_mixtures = M
+        self.num_features = D
 
-def create_gmm(M, D, mfccs):
-    """Creates a GMM with M mixtures and fed by a D-dimensional feature vector.
+        std = (0.5*(M/D)**0.5, (M/D)**0.5)
 
-    @param M: number of mixtures.
-    @param D: size of features (used to the means and variances).
+        self.weights = np.array([1/M for _ in range(M)])
+        self.means = list()
+        self.variances = list()
+        for m in range(M):
+            means = [random.uniform(-D, D) for _ in range(D)]
+            self.means.append(means)
+            variances = [random.uniform(std[0], std[1]) for _ in range(D)]
+            self.variances.append(variances)
 
-    @returns: an untrained GMM.
-    """
-    #Definining ranges for means and variances
-    a = np.amin(mfccs) - np.std(mfccs)
-    b = np.amax(mfccs) + np.std(mfccs)
-    c = np.std(mfccs)**2 - 1
-    d = c + 2
+        self.means = np.array(self.means)
+        self.variances = np.array(self.variances)
 
-    weights = np.array([random.uniform(0.1, 0.9) for _ in range(M)])
-    weights = weights / np.sum(weights)
-    gmm = list()
-    for weight in weights:
-        means = np.array([random.uniform(a, b) for _ in range(D)])
-        variances = np.array([random.uniform(c, d) for _ in range(D)])
-        gmm.append((weight, means, variances))
+    def get_mixture(self, m):
+        """@returns: the m-th mixture of the GMM (with 0 <= m < M).
+        """
+        return (self.weights[m], self.means[m], self.variances[m])
 
-    return gmm
+    #99.8% of reduction in time to compute, compared with the previous function
+    def eval(self, features):
+        """Feeds the GMM with the given features.
 
-def eval_gmm(gmm, features):
+        @param features: a Dx1 vector of features.
+
+        @returns: the weighted sum of gaussians for gmm.
+        """
+        D = self.num_features
+        M = self.num_mixtures
+
+        #Constant
+        determinant = np.prod(self.variances, axis=1)
+        cte = (2*PI**D * determinant)**0.5
+        cte = 1 / cte
+
+        #Exponent
+        A = features - self.means
+        power = np.divide(A, self.variances)
+        power = np.multiply(power, A)
+        power = np.sum(power, axis=1)
+        power = -0.5*power
+
+        #Probability
+        prob = (cte * np.exp(power))
+        prob = np.dot(self.weights, prob)
+
+        return prob
+
+
+def eval_gmm(features, gmm):
     """Feeds the GMM with the given features.
 
     @param gmm: the GMM used (a list of tuples (weight, means, variances)).
@@ -83,14 +97,13 @@ def loglikelihood_gmm(gmm, mfccs):
     gmm for each feature vector, aka, the log-likelihood.
     """
     numframes = len(mfccs.T)
-    #probs = np.array([eval_gmm(gmm, features) for features in mfccs.T])
     logprobs = 0
     i = 0
     for features in mfccs.T:
         if (i % 1000) == 0:
             print('log-likelihood', i)
         i += 1
-        prob = eval_gmm(gmm, features)
+        prob = eval_gmm(features, gmm)
         logprobs = logprobs + math.log10(prob)
     return (logprobs / numframes)
     #return (np.sum(np.log10(probs)) / numframes)
@@ -107,7 +120,7 @@ def prob_posterior_i(gmm_i, features, gmm):
     """
     (weight_i, means_i, variances_i) = gmm_i
     prior = gaussian(features, means_i, variances_i)
-    evidence = eval_gmm(gmm, features)
+    evidence = eval_gmm(features, gmm)
     return ((weight_i*prior) / evidence)
 
 def prob_posterior_array(gmm_i, mfccs, gmm):
@@ -197,6 +210,7 @@ if __name__ == '__main__':
     from useful import plotgmm, plotfigure
     import math
     import corpus
+    import time
 
 
     if not os.path.exists(TESTS_DIR):
@@ -218,62 +232,36 @@ if __name__ == '__main__':
     voice = ('enroll_1', speaker)
 
     #Reading MFCCs from features base
-    mfccs = corpus.read_speaker_features(numcep, numdeltas, speaker)
-    means = np.array([np.mean(feat) for feat in mfccs])
-    variances = np.array([np.std(feat)**2 for feat in mfccs])
-    print(mfccs.shape, len(means), len(variances))
+    mfccs = corpus.read_features(numcep, numdeltas, 'enroll_1', speaker, 54, False)
+    #mfccs = corpus.read_speaker_features(numcep, numdeltas, speaker, False)
+    #mfccs = corpus.read_background_features(numcep, numdeltas, 'm', False)
+    print('mfccs:', mfccs.shape)
+    x = np.linspace(-numfeats, numfeats, 1000)
 
-    a = np.amin(mfccs) - 3*np.std(mfccs)
-    b = np.amax(mfccs) + 3*np.std(mfccs)
-    x = np.linspace(a, b, 1000)
+    M = 32
+    print('Creating GMM (M = %d)...' % M)
+    gmm = GMM(M, numfeats)
+    print('GMM created!')
+    #for featnum in range(numfeats):
+    #    filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
+    #                          'x', 'pdf', filename, filecounter)
 
-    print('Gaussians')
-    numframes = len(mfccs.T)
-    print('#frames = %d' % numframes)
-    pdfs = np.array([gaussian(features, means, variances) for features in mfccs.T])
-    for n in range(numcep):
-        (mean, variance) = (means[n], variances[n])
-        filecounter = plotgaussian(mfccs[n], pdfs, mean, variance, 'MFCCs[%d] %s\nN(%f, %f)' %
-                                   (n, voice, mean, variance), 'MFCCs[%d]' % n,
-                                   'gaussian', filename, filecounter)
+    #Evaluating GMM
+    print('Evaluating GMM...')
+    t = time.time()
+    probs = list()
+    for features in mfccs:
+        prob = gmm.eval(features)
+        probs.append(prob)
+    t = time.time() - t
+    print('GMM evaluated. Time:', t, 'seconds')
+    probs = np.array(probs)
+    print(probs.shape)
 
-#    #Multivariate plotting
-#    print('Multivariate plotting')
-#    for i in range(numcep):
-#        (mu_i, sigma2_i) = (means[i], variances[i])
-#        for j in range(i + 1, numcep):
-#            (mu_j, sigma2_j) = (means[j], variances[j])
-#            filecounter = plotpoints(mfccs[i], mfccs[j],
-#                                     'MFCCs[%d] x MFCCs[%d] %s\nN([%f, %f], [%f, %f])' %
-#                                     (i, j, voice, mu_i, mu_j, sigma2_i, sigma2_j),
-#                                     'mfccs[%d]' % i, 'mfccs[%d]' % j, filename,
-#                                     filecounter, 'green')
-#
-#    Ms = [2**n for n in range(3, 9)]
-#    print('Plotting GMMs with %d <= M <= %d' % (Ms[0], Ms[-1]))
-#    for M in Ms:
-#        print('M = %d' % M)
-#        gmm = create_gmm(M, numfeats, mfccs)
-#        for featnum in range(numfeats):
-#            filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
-#                                  'x', 'pdf', filename, filecounter)
-#
-#    #Evaluating GMM
-#    print('Evaluating GMM')
-#    print(mfccs.shape)
-#    M = 32
-#    gmm = create_gmm(M, numfeats, mfccs)
-#    probs = list()
-#    for features in mfccs.T:
-#        prob = eval_gmm(gmm, features)
-#        probs.append(prob)
-#
-#    probs = np.array(probs)
-#    logprobs = np.log10(probs)
-#    log_likelihood = np.sum(logprobs) / numframes
-#    print('log p(X|lambda) = %f' % log_likelihood)
+#    numframes = mfccs.shape[1]
+#    print('numframes = %d' % numframes)
 #    frameindices = np.linspace(0, numframes, numframes, False)
-#    filecounter = plotfigure(frameindices, logprobs, 'Log of probability per frame',
+#    filecounter = plotfigure(frameindices, probs, 'Log of probability per frame',
 #                             'frame', 'log', filename, filecounter)
 #
 #    #log-likelihood of GMM

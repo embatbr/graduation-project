@@ -6,6 +6,7 @@ import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import math
+import mixtures
 
 
 BASES_DIR = '../bases/'
@@ -144,7 +145,8 @@ def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
     plt.grid(True)
 
     gaussfull = 0
-    for (weight, means, variances) in gmm:
+    for m in range(gmm.num_mixtures):
+        (weight, means, variances) = gmm.get_mixture(m)
         mean = means[featnum]
         variance = variances[featnum]
 
