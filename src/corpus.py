@@ -9,6 +9,8 @@ import numpy as np
 from useful import CORPORA_DIR, FEATURES_DIR
 import features
 
+#TODO reirar os 'transpose=True' e deixar tudo retornando MFCCs de ordem NUMFRAMES x NUMFEATURES
+
 
 def mit_features(winlen=0.02, winstep=0.01, numcep=13, numdeltas=2):
     """Extracts features from base MIT. The features are saved in a directory with

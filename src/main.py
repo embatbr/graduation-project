@@ -1,3 +1,5 @@
+#!/usr/bin/python3.4
+
 """Module to execute all important things from project.
 """
 
@@ -40,7 +42,7 @@ if command == 'train-ubm':
     numcep = 13
     numdeltaslist =[0, 1, 2]
     genders = ['f', 'm']
-    M = 32#1024
+    M = 1024
 
     for numdeltas in numdeltaslist:
         print('numdeltas = %d' % numdeltas)
@@ -50,17 +52,18 @@ if command == 'train-ubm':
 
         for gender in genders:
             print('gender = %s' % gender)
-            mfccs = corpus.read_background_features(numcep, numdeltas, gender)
-            print('mfccs.shape = %s\nUBM created, M = %d' % (str(mfccs.shape), M))
-            untrained_ubm = mixtures.create_gmm(M, numfeats, mfccs)
+            mfccs = corpus.read_background_features(numcep, numdeltas, gender, False)
+            print('mfccs.shape = %s\nUBM (%s) created, M = %d' % (str(mfccs.shape),
+                                                                  gender, M))
+            ubm = mixtures.GMM(M, mfccs.T)
             t = time.time()
-            trained_ubm = mixtures.train_gmm(untrained_ubm, mfccs)
+            ubm.train(mfccs)
             t = time.time() - t
             print('UBM trained in %f seconds' % t)
 
-            ubmpath = '%smit_%d_%d/ubm_%s_%d.gmm' % (GMMS_DIR, numcep, numdeltas,
-                                                     gender, M)
+            ubmpath = '%s/ubm_%s_%d.gmm' % (gmmspath, gender, M)
             ubmfile = open(ubmpath, 'wb')
-            pickle.dump(trained_ubm, ubmfile)
+            pickle.dump(ubm, ubmfile)
+            ubmfile.close()
 
         print()
