@@ -156,7 +156,7 @@ def plotgmm(x, gmm, featnum, suptitle='', xlabel='', ylabel='', filename=None,
         gauss = stats.norm.pdf(x, mean, variance**0.5)
         gauss = weight*gauss
         gaussfull = gaussfull + gauss
-        plot(x, gauss, suptitle, xlabel, ylabel, 'red', linestyle='--')
+        plot(x, gauss, suptitle, xlabel, ylabel, 'red')
 
     plot(x, gaussfull, suptitle, xlabel, ylabel, 'blue')
 

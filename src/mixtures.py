@@ -14,36 +14,40 @@ class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
 
-    def __init__(self, M, D):
+    def __init__(self, num_mixtures, mfccs):
         """Creates a GMM.
 
-        @param M: number of mixtures (integer).
-        @param D: number of features (integer).
+        @param num_mixtures: number of mixtures (integer).
+        @param mfccs: the features over time used to train the GMM. This parameter
+        allows the GMM to be more accurate representation of the features.
         """
-        self.num_mixtures = M
-        self.num_features = D
+        self.num_mixtures = num_mixtures
+        self.num_features = len(mfccs)
 
-        std = (0.5*(M/D)**0.5, (M/D)**0.5)
+        self.weights = list()
+        self.meansvec = list()
+        self.variancesvec = list()
 
-        self.weights = np.array([1/M for _ in range(M)])
-        self.means = list()
-        self.variances = list()
-        for m in range(M):
-            means = [random.uniform(-D, D) for _ in range(D)]
-            self.means.append(means)
-            variances = [random.uniform(std[0], std[1]) for _ in range(D)]
-            self.variances.append(variances)
+        mean = np.mean(mfccs, axis=1)
+        variance = np.std(mfccs, axis=1)**2
+        D = self.num_features
+        for m in range(self.num_mixtures):
+            self.weights.append(math.fabs(random.choice(mean)) * random.choice(variance))
+            self.meansvec.append([random.choice(mean) * random.uniform(-10, 10) for _ in range(D)])
+            self.variancesvec.append([random.choice(variance) for _ in range(D)])
 
-        self.means = np.array(self.means)
-        self.variances = np.array(self.variances)
+        self.weights = np.array(self.weights)
+        self.weights = self.weights / np.sum(self.weights)
+        self.meansvec = np.array(self.meansvec)
+        self.variancesvec = np.array(self.variancesvec)
 
     def get_mixture(self, m):
         """@returns: the m-th mixture of the GMM (with 0 <= m < M).
         """
-        return (self.weights[m], self.means[m], self.variances[m])
+        return (self.weights[m], self.meansvec[m], self.variancesvec[m])
 
-    #99.8% of reduction in time to compute, compared with the previous function
-    def eval(self, features):
+    #99.8% of reduction in time to compute, compared with the version with loop
+    def eval(self, features, func=np.dot):
         """Feeds the GMM with the given features.
 
         @param features: a Dx1 vector of features.
@@ -53,21 +57,19 @@ class GMM(object):
         D = self.num_features
 
         #Constant
-        determinant = np.prod(self.variances, axis=1)
+        determinant = np.prod(self.variancesvec, axis=1)
         cte = (2*PI**D * determinant)**0.5
 
         #Exponent
-        A = features - self.means
-        power = np.divide(A, self.variances)
+        A = features - self.meansvec
+        power = np.divide(A, self.variancesvec)
         power = np.multiply(power, A)
         power = np.sum(power, axis=1)
         power = -0.5*power
 
         #Probability
         prob = (np.exp(power) / cte)
-        prob = np.dot(self.weights, prob)
-
-        return prob
+        return func(self.weights, prob)
 
     def log_likelihood(self, mfccs):
         """Feeds the GMM with a sequence of feature vectors.
@@ -87,7 +89,7 @@ class GMM(object):
 
         return (logprobs / numframes)
 
-    def train_gmm(self, mfccs, threshold=0.01):
+    def train(self, mfccs, threshold=0.01):
         """Train the given GMM with the sequence of given feature vectors.
 
         @param gmm: the GMM used (a list of tuples (weight, means, variances)).
@@ -98,7 +100,60 @@ class GMM(object):
         @returns: the average sum of logarithm of the weighted sum of gaussians for
         gmm for each feature vector.
         """
-        pass
+        #The new GMM; optimization to avoid create new arrays every iteration
+        new_weights = np.zeros(self.weights.shape)
+        new_meansvec = np.zeros(self.meansvec.shape)
+        new_variancesvec = np.zeros(self.variancesvec.shape)
+
+        T = len(mfccs)
+        one_Tth = 1/T
+        #posteriors = np.zeros((self.num_mixtures, T, self.num_mixtures))
+        posteriors = np.zeros((T, self.num_mixtures))
+
+        iteration = 1 #DEBUG
+        run = True
+        while run:
+            print('GMM.train(), iter = %d' % iteration)
+            iteration += 1
+
+            #TODO verificar se este for pode ser substituído por uma operação
+            #matricial
+            for i in range(self.num_mixtures):
+                weight = self.weights[i]
+                means = self.meansvec[i]
+                variances = self.variancesvec[i]
+
+                for t in range(T):
+                    features = mfccs[t]
+                    evaluated = self.eval(features)
+                    posteriors[t] = self.eval(features, np.multiply) / evaluated
+
+                #Summation from t=1 until t=T
+                summed_posteriors = weight * np.sum(posteriors, axis=0)
+
+                #Updating i-th weight
+                new_weights[i] = one_Tth * summed_posteriors[i]
+
+                #Updating i-th meansvec
+                new_meansvec[i] = self.meansvec[i] #np.dot(posteriors[:, i], mfccs) / summed_posteriors[i]
+
+                #For now, meansvec and variancesvec are the same
+                new_variancesvec[i] = self.variancesvec[i]
+
+            #Testing convergence
+            print('CALCULATING oldprob')
+            oldprob = self.log_likelihood(mfccs)
+            #Updating weights, meansvec and variancesvec
+            self.weights = new_weights
+            self.meansvec = new_meansvec
+            self.variancesvec = new_variancesvec
+            print('%f\nCALCULATING newprob' % oldprob)
+            newprob = self.log_likelihood(mfccs)
+            reduction = (oldprob - newprob) / oldprob
+            print('%f\nnewprob > oldprob ? %s\nreduction = %f' % (newprob, newprob > oldprob,
+                                                                  reduction))
+            if reduction <= threshold:
+                run = False
 
 
 def prob_posterior_i(gmm_i, features, gmm):
@@ -229,59 +284,42 @@ if __name__ == '__main__':
     #mfccs = corpus.read_speaker_features(numcep, numdeltas, speaker, False)
     #mfccs = corpus.read_background_features(numcep, numdeltas, 'm', False)
     print('mfccs:', mfccs.shape)
-    x = np.linspace(-numfeats, numfeats, 1000)
+    x = np.linspace(-200, 200, 1000)
 
     M = 32
     print('Creating GMM (M = %d)...' % M)
-    gmm = GMM(M, numfeats)
-    print('GMM created!')
+    t = time.time()
+    gmm = GMM(M, mfccs.T)
+    t = time.time() - t
+    print('GMM created in %f seconds' % t)
     for featnum in range(numfeats):
-        filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d]' % (M, featnum),
-                              'x', 'pdf', filename, filecounter)
+        filecounter = plotgmm(x, gmm, featnum, 'Untrained, M = %d, GMM[%d]' %
+                              (M, featnum), 'x', 'pdf', filename, filecounter)
+    print('Untrained GMM plotted')
 
-    #Evaluating GMM
-    print('Evaluating GMM...')
-    t = time.time()
-    probs = list()
-    for features in mfccs:
-        prob = gmm.eval(features)
-        probs.append(prob)
-    t = time.time() - t
-    print('GMM evaluated in', t, 'seconds')
-    probs = np.array(probs)
-    probs = np.log10(probs)
-
-    numframes = len(probs)
-    print('numframes = %d' % numframes)
-    frameindices = np.linspace(0, numframes, numframes, False)
-    filecounter = plotfigure(frameindices, probs, 'Log of probability per frame',
-                             'frame', 'log', filename, filecounter)
-
-    #log-likelihood of GMM
-    print('log-likelihood of GMM')
-    t = time.time()
-    log_likelihood = gmm.log_likelihood(mfccs)
-    t = time.time() - t
-    print('Log likelihood calculated in', t, 'seconds')
-    print('log p(X|lambda) = %f' % log_likelihood)
-
-#    #Training GMM
-#    print('Section: Training')
-#    speaker = 'f08'
-#    mfccs = corpus.read_features(numcep, numdeltas, 'enroll_1', speaker, 54)
-#    print(mfccs.shape)
-#    a = np.amin(mfccs) - 3*np.std(mfccs)
-#    b = np.amax(mfccs) + 3*np.std(mfccs)
-#    x = np.linspace(a, b, 1000)
+#    #Evaluating GMM
+#    print('Evaluating GMM with a %d-dimensional feature vector...' % numfeats)
+#    t = time.time()
+#    features = mfccs[0]
+#    prob = gmm.eval(features)
+#    t = time.time() - t
+#    print('GMM evaluated in %f seconds' % t)
 #
-#    M = 32
-#    print('creating GMM (M = %d)...' % M)
-#    gmm = create_gmm(M, numfeats, mfccs)
-#    print('training GMM...')
-#    new_gmm = train_gmm(gmm, mfccs)
-#    print('GMM trained!')
-#    for featnum in range(numfeats):
-#        filecounter = plotgmm(x, gmm, featnum, 'M = %d, GMM[%d], Untrained\n%s' %
-#                              (M, featnum, speaker), 'x', 'pdf', filename, filecounter)
-#        filecounter = plotgmm(x, new_gmm, featnum, 'M = %d, GMM[%d], Trained\n%s' %
-#                              (M, featnum, speaker), 'x', 'pdf', filename, filecounter)
+#    #log-likelihood of GMM
+#    print('log-likelihood of GMM')
+#    t = time.time()
+#    log_likelihood = gmm.log_likelihood(mfccs)
+#    t = time.time() - t
+#    print('Log likelihood calculated in %f seconds' % t)
+#    print('log p(X|lambda) = %f' % log_likelihood)
+
+    #GMM training
+    print('training GMM...')
+    t = time.time()
+    gmm.train(mfccs)
+    t = time.time() - t
+    print('GMM trained in %f seconds' % t)
+    for featnum in range(numfeats):
+        filecounter = plotgmm(x, gmm, featnum, 'Trained, M = %d, GMM[%d]' %
+                              (M, featnum), 'x', 'pdf', filename, filecounter)
+    print('Trained GMM plotted')
