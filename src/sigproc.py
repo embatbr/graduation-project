@@ -4,7 +4,7 @@ is similar to the "inspiration". I just read his work, copy what I understood an
 improved some parts.
 
 It includes routines for basic signal processing, such as framing and computing
-magnitude and squared magnitude spectrum of framed signal.
+magnitude and squared magnitude of spectrum of framed signal.
 """
 
 
@@ -13,22 +13,23 @@ import math
 
 
 def preemphasis(signal, preemph=0.97):
-    """Performs pre emphasis on the input signal.
+    """Performs pre emphasis on the input signal. The formula for the pre emphasized
+    signal y is y[n] = x[n] - preemph*x[n-1].
 
     @param signal: The signal to filter.
     @param preemph: The pre emphasis coefficient. 0 is no filter. Default is 0.97.
 
-    @returns: the highpass filtered signal.
+    @returns: the filtered signal.
     """
     return np.append(signal[0], signal[1 : ] - preemph*signal[ : -1])
 
-def framing(signal, framelen, framestep, winfunc=lambda x:np.hamming(x)):
+def framing(signal, framelen=320, framestep=160, winfunc=lambda x:np.hamming(x)):
     """Divides a signal into overlapping frames.
 
-    @param signal: the audio signal to frame.
+    @param signal: the audio signal to divide in frames.
     @param framelen: length of each frame measured in samples.
     @param framestep: number of samples after the start of the previous frame
-    that the next frame should begin (in samples).
+    that the next frame should begin.
     @param winfunc: the analysis window to apply to each frame. By default it's
     the rectangular window.
 
@@ -98,14 +99,14 @@ if __name__ == '__main__':
     if not os.path.exists(TESTS_DIR):
         os.mkdir(TESTS_DIR)
 
-    IMAGES_SIGPROC_DIR = '%ssigproc/' % TESTS_DIR
+    TEST_SIGPROC_DIR = '%ssigproc/' % TESTS_DIR
 
-    if os.path.exists(IMAGES_SIGPROC_DIR):
-            shutil.rmtree(IMAGES_SIGPROC_DIR)
-    os.mkdir(IMAGES_SIGPROC_DIR)
+    if os.path.exists(TEST_SIGPROC_DIR):
+            shutil.rmtree(TEST_SIGPROC_DIR)
+    os.mkdir(TEST_SIGPROC_DIR)
 
     filecounter = 0
-    filename = '%sfigure' % IMAGES_SIGPROC_DIR
+    filename = '%sfigure' % TEST_SIGPROC_DIR
 
     #Reading signal from base and plotting
     voice = ('enroll_2', 'f08', 54)

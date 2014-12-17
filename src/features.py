@@ -23,7 +23,7 @@ def hz2mel(hz):
     @returns: a value in Mels. If an array was passed in, an identical sized array
     is returned.
     """
-    return (2595 * np.log10(1 + hz/700.0))
+    return (2595 * np.log10(1 + hz/700))
 
 def mel2hz(mel):
     """Convert a value in Mels to Hertz
@@ -34,7 +34,7 @@ def mel2hz(mel):
     @returns: a value in Hertz. If an array was passed in, an identical sized
     array is returned.
     """
-    return (700 * (10**(mel/2595.0) - 1))
+    return (700 * (10**(mel/2595) - 1))
 
 def filterbank(samplerate=16000, nfilt=26, NFFT=512):
     """Computes a Mel-filterbank. The filters are stored in the rows, the columns
@@ -56,15 +56,15 @@ def filterbank(samplerate=16000, nfilt=26, NFFT=512):
     bin = np.floor((NFFT + 1) * hzpoints / samplerate)  #'bin', from FFT bin = 'caixa' de FFT
 
     fbank = np.zeros((nfilt, math.floor(NFFT/2 + 1)))
-    for m in range(0, nfilt):
-        bin_m = int(bin[m])         # f(m - 1)
-        bin_m_1 = int(bin[m + 1])   # f(m)
-        bin_m_2 = int(bin[m + 2])   # f(m + 1)
+    for m in range(nfilt):
+        f_m_minus_1 = int(bin[m])       # f(m - 1)
+        f_m = int(bin[m + 1])           # f(m)
+        f_m_plus_1 = int(bin[m + 2])    # f(m + 1)
 
-        # for (k < bin_m) and (k > bin_m_2), fbank[m, k] is already ZERO
-        for k in range(bin_m, bin_m_1):
+        # for (k < f_m_minus_1) and (k > f_m_plus_1), fbank[m, k] is already ZERO
+        for k in range(f_m_minus_1, f_m):
             fbank[m, k] = (k - bin[m]) / (bin[m + 1] - bin[m])
-        for k in range(bin_m_1, bin_m_2):
+        for k in range(f_m, f_m_plus_1):
             fbank[m, k] = (bin[m + 2] - k) / (bin[m + 2] - bin[m + 1])
 
     return fbank
@@ -82,8 +82,6 @@ def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000, nfilt=26,
     @param samplerate: the samplerate of the signal we are working with.
     @param nfilt: the number of filters in the filterbank, default 26.
     @param NFFT: the FFT size. Default is 512.
-    @param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    @param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is no
     filter. Default is 0.97.
 
@@ -97,8 +95,8 @@ def filtersignal(signal, winlen=0.02, winstep=0.01, samplerate=16000, nfilt=26,
     powframedsignal = sigproc.powspec(framedsignal, NFFT)
     fbank = filterbank(samplerate, nfilt, NFFT)
 
-    feats = np.dot(powframedsignal, fbank.T)       # feats[n] = np.dot(powframedsignal, fbank[n])
-    energy = np.sum(powframedsignal, 1)            # this stores the total energy in each frame
+    feats = np.dot(powframedsignal, fbank.T)    # feats[n] = np.dot(powframedsignal, fbank[n])
+    energy = np.sum(powframedsignal, axis=1)    # this stores the total energy in each frame
 
     return (feats, energy)
 
@@ -118,7 +116,6 @@ def lifter(cepstra, L=22):
         lift = 1 + (L/2)*np.sin(np.pi * n / L)
         return (lift*cepstra)
     else:
-        # values of L <= 0, do nothing
         return cepstra
 
 def mfcc(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13, nfilt=26,
@@ -140,7 +137,7 @@ def mfcc(signal, winlen=0.02, winstep=0.01, samplerate=16000, numcep=13, nfilt=2
     @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
     lifter. Default is 22.
     @param appendEnergy: if this is true, the zeroth cepstral coefficient is
-    replaced with the log of the total frame energy.
+    replaced by the log of the total frame energy.
 
     @returns: A numpy array of size (numcep x NUMFRAMES) (transposed) containing
     features. Each row holds 1 feature (with NUMFRAMES "timestamps") and each
@@ -252,26 +249,33 @@ if __name__ == '__main__':
     if not os.path.exists(TESTS_DIR):
         os.mkdir(TESTS_DIR)
 
-    IMAGES_FEATURES_DIR = '%sfeatures/' % TESTS_DIR
+    TEST_FEATURES_DIR = '%sfeatures/' % TESTS_DIR
 
-    if os.path.exists(IMAGES_FEATURES_DIR):
-            shutil.rmtree(IMAGES_FEATURES_DIR)
-    os.mkdir(IMAGES_FEATURES_DIR)
+    if os.path.exists(TEST_FEATURES_DIR):
+            shutil.rmtree(TEST_FEATURES_DIR)
+    os.mkdir(TEST_FEATURES_DIR)
 
     filecounter = 0
-    filename = '%sfigure' % IMAGES_FEATURES_DIR
+    filename = '%sfigure' % TEST_FEATURES_DIR
 
     #Reading signal from base and plotting (signal and preemphasized signal)
     voice = ('enroll_2', 'f08', 54)
     (enroll, speaker, speech) = voice
     speechname = '%smit/%s/%s/phrase%02d_16k.wav' % (CORPORA_DIR, enroll, speaker, speech)
     (samplerate, signal) = wavf.read(speechname)
-    presignal = sigproc.preemphasis(signal)     #coeff = 0.97
+    presignal = sigproc.preemphasis(signal)     #preemph = 0.97
 
     NFFT = 512
     numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
     freq = np.linspace(0, samplerate/2, numfftbins)
     nfilt = 26
+
+    #Mel frequence plotting
+    freqhuman = np.linspace(20, 20000, 19980)
+    melfreqhuman = hz2mel(freqhuman)
+    ###figure000
+    filecounter = plotfigure(freqhuman, melfreqhuman, 'Human hearing range in Mels',
+                             'f (Hz)', 'mel[f]', filename, filecounter, 'red')
 
     #Mel frequence plotting
     melfreq = hz2mel(freq)
@@ -316,8 +320,7 @@ if __name__ == '__main__':
     winstep = 0.01
 
     #Filterbanked signal
-    fbankedsignal = filtersignal(signal, winlen, winstep, samplerate, nfilt, NFFT)
-    (feats, energy) = fbankedsignal
+    (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt, NFFT)
     numframes = len(energy)
     frameindices = np.linspace(0, numframes, numframes, False)
 
@@ -344,3 +347,14 @@ if __name__ == '__main__':
     for (feat, n) in zip(mfccs, range(numcoeffs)):
         filecounter = plotfigure(frameindices, feat, 'MFCC[%d]' % n, 'frame',
                                  'mfcc[%d][frame]' % n, filename, filecounter, 'black')
+
+    #Lifter
+    L = 22
+    logfeats = np.log10(feats)
+    dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
+    (_, ncoeff) = np.shape(dctlogfeats)
+    n = np.arange(ncoeff)
+    lift = 1 + (L/2)*np.sin(np.pi * n / L)
+    coeff = np.linspace(1, numcep, numcep)
+    filecounter = plotfigure(coeff, lift, 'Lifter (L = %d)' % L, 'coeff (cepstral)',
+                             'lift[coeff]', filename, filecounter, 'green')
