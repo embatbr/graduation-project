@@ -1,3 +1,3 @@
 rm *.aux *.lof *.log *.lot *.toc
-pdflatex tg.tex
+pdflatex main.tex
 rm *.aux *.lof *.log *.lot *.toc
