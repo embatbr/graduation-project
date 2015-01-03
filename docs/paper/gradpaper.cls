@@ -14,7 +14,7 @@
 \ExecuteOptions{en}
 \ProcessOptions
 
-\LoadClass[12pt,a4paper]{report}
+\LoadClass[12pt,a4paper]{book}
 
 
 %% PACKAGES
