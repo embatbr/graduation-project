@@ -77,10 +77,6 @@ class GMM(object):
         #TODO transformar o loop em uma operação totalmente vetorial
         for features in mfccs:
             prob = self.eval(features)
-            #if prob == 0.0:
-            #    logprobs = logprobs + (-323)
-            #else:
-            #    logprobs = logprobs + math.log10(prob)
             logprobs = logprobs + math.log10(prob)
 
         return (logprobs / numframes)
@@ -119,7 +115,6 @@ class GMM(object):
                 post = self.eval(features, np.multiply)
                 post = np.multiply(self.weights, post) / evaluated
                 posteriors[t] = np.array(post, copy=False)
-            posteriors[posteriors == 0.0] = 1e-323
 
             #Summation from t=1 until t=T
             summed_posteriors = np.sum(posteriors, axis=0)
@@ -136,11 +131,9 @@ class GMM(object):
                 new_meansvec[i] = np.dot(posteriors[:, i], mfccs)
                 new_meansvec[i] = new_meansvec[i] / summed_posteriors[i]
 
-                #For now, meansvec and variancesvec are the same
-                new_variancesvec[i] = self.variancesvec[i]
-                #Atualizãcao abaixo está dando pau...
-                #new_variancesvec[i] = np.dot(posteriors[:, i], mfccs**2)
-                #new_variancesvec[i] = new_variancesvec[i] - new_meansvec[i]**2
+                #Atualizãçao abaixo está dando pau...
+                new_variancesvec[i] = np.dot(posteriors[:, i], mfccs**2)
+                new_variancesvec[i] = new_variancesvec[i] - new_meansvec[i]**2
 
             #Testing convergence
             print('CALCULATING oldprob')
