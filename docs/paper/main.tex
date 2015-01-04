@@ -1,74 +1,140 @@
-\documentclass[12pt]{report}
+\documentclass[12pt,twoside]{report}
 
 \usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
 \usepackage{graphicx}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{blindtext}  %TODO remove; just for tests
+\usepackage[sorting=none]{biblatex}
 
-\graphicspath{ {images/} }
+
+% PRE CONFIGURATIONS
+
+\graphicspath{{images/}}
+\addbibresource{references.bib}
+\pagestyle{fancy}
+\bibliography{references}
+
+
+%GLOBAL DEFINITIONS
+
+\gdef\papertitle{Improvements in Gaussian Mixture Models Speaker Verification using
+Fractional Covariance Matrix}
+\gdef\universityname{Universidade Federal de Pernambuco}
+\gdef\centername{Centro de Informática}
+\gdef\authorname{Eduardo Martins Barros de Albuquerque Tenório}
+
 
 \title{
-    {Improvements in a Gaussian Mixture Models Speaker Verification using
-Fractional Covariance Matrix}
-    \\
-    {\large Universidade Federal de Pernambuco}
-    \\
-    {\large Centro de Informática}
-    \\
     {\includegraphics{ufpelogo.png}}
     \\
-    {\includegraphics{cinlogo.png}}
+    {\large \universityname}
+    \\
+    {\large \centername}
+    \vfill
+    \textbf{\papertitle}
+    \vfill
 }
-\author{Eduardo Martins Barros de Albuquerque Tenório}
-\date{\today}%TODO colocar data da defesa (Day Month Year)
+\author{\authorname}
+\date{\normalsize\vfill \today}%TODO colocar data da defesa (Day Month Year)
 
 
 \begin{document}
 \maketitle
 
 
-%Front matter
+%FRONTMATTER
 
 \chapter*{Abstract}
-Abstract goes here
+TODO EDITAR Abstract goes here
 
 \chapter*{Dedication}
-To mum and dad
+TODO EDITAR To mum and dad
 
 \chapter*{Declaration}
-I declare that..
+TODO EDITAR I declare that..
 
 \chapter*{Acknowledgements}
-I want to thank...
+I am thankful to my parents, for the support and patience during the graduation,
+\\To my adviser, Tsang Ing Ren, for the guidance,
+\\To Cleice Souza, for the previous readings and help.
 
 \tableofcontents
 
 
-%Main body
+%MIDDLEMATTER
 
 \chapter{Introduction}
 \input{chapters/introduction}
+%TODO remove; just for tests
+\blindtext
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
-\chapter{Title}
 \input{chapters/chapter02}
+%TODO remove; just for tests
+\blindtext[2]\autocite{stevenb.davispaulmermelstein1980}
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
 \chapter{Title}
 \input{chapters/chapter03}
+%TODO remove; just for tests
+\blindtext[2]
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
 \chapter{Title}
 \input{chapters/chapter04}
+%TODO remove; just for tests
+\blindtext[2]
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
 \chapter{Title}
 \input{chapters/chapter05}
+%TODO remove; just for tests
+\blindtext[2]
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
 \chapter{Title}
 \input{chapters/chapter06}
+%TODO remove; just for tests
+\blindtext[2]
+\section{section-title}
+\blindtext[3]
+\section{section-title}
+\blindtext[3]
 
 \chapter{Conclusion}
 \input{chapters/conclusion}
+%TODO remove; just for tests
+\blindtext
+\blindtext[3]
+\blindtext[3]
 
 
-%End matter
+%BACKMATTER
 
 \appendix
 \chapter{Appendix Title}
 \input{chapters/appendix}
+%TODO remove; just for tests
+\blindtext
+\blindtext
+
+\printbibliography
+
 \end{document}

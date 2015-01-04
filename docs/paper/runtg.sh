@@ -1,3 +1,9 @@
-rm *.aux *.lof *.log *.lot *.toc
-pdflatex main.tex
-rm *.aux *.lof *.log *.lot *.toc
+FILENAME="main"
+REMOVE="rm $FILENAME.aux $FILENAME.lof $FILENAME.log $FILENAME.lot $FILENAME.toc \
+$FILENAME.run.xml $FILENAME-blx.bib $FILENAME.bbl $FILENAME.blg"
+
+$REMOVE
+pdflatex $FILENAME.tex
+bibtex $FILENAME.aux
+pdflatex $FILENAME.tex
+$REMOVE
