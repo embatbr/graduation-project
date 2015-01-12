@@ -1,15 +1,27 @@
 \chapter{Feature Extraction}
 
-TODO referenciar Davis and Mermelstein \autocite{stevenb.davispaulmermelstein1980},
-mostrando que seus experimentos colocam o MFCC como uma técnica de representação
-de características melhor que as demais (LFCC, LPC, RC e LPCC).
+The feature extraction process transforms the speech signal in a sequence of vectors
+representing the unique characteristics of the speaker's vocal tract. According
+to \autocite{wolf.1972}, an ideal characteristic must be:
 
-TODO durante a escrita, refazer os ``main" dos módulos Python. Deixar somente o
-necessário e gerar como output as figuras utilizadas (como o banco de filtros,
-a escala mel e etc.).
+\begin{itemize}\itemsep0pt
+    \item of high inter-speaker and low intra-speaker variability;
+    \item robust in the presence of noise and distortion;
+    \item frequent and natural in the speech;
+    \item easy to measure and extract;
+    \item difficult to be artificially produced;
+    \item not affected by health issues and long term vocal variations.
+\end{itemize}
+
+
+\section{The Mel Scale}
 
 
 \section{Mel Frequency Cepstral Coefficient}
 
+TODO referenciar Davis and Mermelstein \autocite{davis.mermelstein.1980},
+mostrando que seus experimentos colocam o MFCC como uma técnica de representação
+de características melhor que as demais (LFCC, LPC, RC e LPCC).
 
-\subsection{The Mel Scale}
+
+\section{Energy}
