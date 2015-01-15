@@ -1,27 +1,52 @@
 \chapter{Feature Extraction}
 
-The feature extraction process transforms the speech signal in a sequence of vectors
-representing the unique characteristics of the speaker's vocal tract. According
-to \autocite{wolf.1972}, an ideal characteristic must be:
+As an acoustic wave propagated through space over time, the speech signal is not
+appropriate to be used by the speaker verification system. In order to deliver
+better outcomes, a good parametric representation must be provided to the system.
+This task is performed by the feature extraction process, which transforms a speech
+signal into a sequence of characterized measurements (features). The usual objectives
+in selecting a representation are (1) to compress the speech data by eliminating
+information not pertinent to the phonetic analysis of the data, and (2) to enhance
+those aspects of the signal that contribute significantly to the detection of
+phonetic differences \autocite{davis.mermelstein.1980}. According to \autocite{wolf.1972}
+the ideal features should:
 
-\begin{itemize}\itemsep0pt
-    \item of high inter-speaker and low intra-speaker variability;
-    \item robust in the presence of noise and distortion;
-    \item frequent and natural in the speech;
-    \item easy to measure and extract;
-    \item difficult to be artificially produced;
-    \item not affected by health issues and long term vocal variations.
+\begin{itemize}\itemsep0pt\parskip0pt
+    \item occur naturally and frequently in normal speech;
+    \item be easily measurable;
+    \item vary as much as possible among speakers, but be as consistent as possible
+    for each speaker;
+    \item not change overtime or be affected by the speaker's health;
+    \item not be affected by reasonable background noise nor depend on specific
+    transmission characteristics;
+    \item not be modifiable by conscious effort of the speaker, or, at least, be
+    unlikely to be affected by attempts to disguise the voice.
 \end{itemize}
 
+Features may be categorized based on vocal tract or behavioral aspects, divided
+in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high
+level \autocite{pinheiro.2013}. Short-time spectral features usually are calculated
+using millisecond length windows and describe the voice spectral envelope, composed
+of supralaryngeal properties of the vocal tract, e.g. timbre. Prosodic and
+spectro-temporal occur over time, e.g. rhythm and intonation, and high level features
+occur during the conversation, e.g. accents.
 
-\section{The Mel Scale}
+The parametric representations evaluated in \autocite{davis.mermelstein.1980} may
+be divided into those based on the Fourier spectrum, Mel-Frequency Cepstrum
+Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and those
+based on the Linear Prediction Spectrum, Linear Prediction Coefficients (LPC),
+Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC).
+The better evaluated parametric representation was the MFCC, with minimum and
+maximum accuracy of 90.2\% and 99.4\% respectively, leading to its choice as the
+parametric representation in this work.
 
 
 \section{Mel Frequency Cepstral Coefficient}
 
-TODO referenciar Davis and Mermelstein \autocite{davis.mermelstein.1980},
-mostrando que seus experimentos colocam o MFCC como uma técnica de representação
-de características melhor que as demais (LFCC, LPC, RC e LPCC).
+TODO explicar brevemente o MFCC e quais suas vantagens
 
 
-\section{Energy}
+\subsection{The Mel Scale}
+
+
+\subsection{Extraction Process}

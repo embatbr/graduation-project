@@ -114,101 +114,103 @@ if __name__ == '__main__':
     (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' %
                                      (CORPORA_DIR, enroll, speaker, speech))
     numsamples = len(signal)
-    time = np.linspace(0, numsamples/samplerate, numsamples, False)
+    duration = numsamples/samplerate
+    time = np.linspace(1/samplerate, duration, numsamples)
     ###figure000
-    filecounter = plotfigure(time, signal, '%s\n%d Hz' % (voice, samplerate),
-                             't (seconds)', 'signal[t]', filename, filecounter)
+    filecounter = plotfigure(time, signal, 'Duration: %.3f sec\nSamplerate: %d Hz' %
+                             (duration, samplerate), 't (seconds)', 'signal[t]',
+                             filename, filecounter, ylim=True)
 
-    NFFT = 512
-    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
-    freq = np.linspace(0, samplerate/2, numfftbins)
-
-    #Magnitude of signal's spectrum
-    magsig = magspec(signal, NFFT)
-    ###figure001
-    filecounter = plotfigure(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
-                             'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
-
-    #Squared magnitude of signal's spectrum
-    powsig = powspec(signal, NFFT)
-    ###figure002
-    filecounter = plotfigure(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
-                             'f (Hz)', '|FFT[f]|²', filename, filecounter, 'red', True)
-
-    #Pre emphasized signal with coefficient 0.97
-    presignal = preemphasis(signal)
-    ###figure003
-    filecounter = plotfigure(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
-                             samplerate), 't (seconds)', 'presignal[t]', filename,
-                             filecounter)
-
-    #Inteisities of lower frequences reduced and of higher, increased
-    #wavf.write('%s-%s-%02d-%dHz-preemph0.97.wav' % (enroll, speaker, speech, samplerate),
-    #           samplerate, np.int16(presignal))
-
-    #Magnitude of presignal's spectrum
-    magpresig = magspec(presignal, NFFT)
-    ###figure004
-    filecounter = plotfigure(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
-                             (voice, samplerate), 'f (Hz)', '|FFT[f]|', filename,
-                             filecounter, 'red', True)
-
-    #Squared magnitude of presignal's spectrum
-    powpresig = powspec(presignal, NFFT)
-    ###figure005
-    filecounter = plotfigure(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
-                             (voice, samplerate), 'f (Hz)', '|FFT[f]|²', filename,
-                             filecounter, 'red', True)
-
-    #samples = sec * (samples/sec)
-    framelen = 0.02
-    framestep = 0.01
-
-    #Framing with rectangular window
-    frames = framing(presignal, framelen*samplerate, framestep*samplerate,
-                     winfunc=lambda x:np.ones((1, x)))
-    magframes = magspec(frames, NFFT)
-    powframes = powspec(frames, NFFT)
-    numframes = len(frames)
-    print('Framing with rectangular window\n#frames = %d' % numframes)
-    for i in range(0, numframes):
-        frametime = np.linspace(i*framestep, (i*framestep + framelen),
-                                framelen*samplerate, False)
-        #Framed pre emphasized signal using a Rect window
-        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Rect #%d' %
-                                 (voice, samplerate, i), 't (seconds)',
-                                 'presignal[t] * rect', filename, filecounter)
-
-        #Magnitude of the framed spectrum
-        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|' %
-                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
-                                 filename, filecounter, 'red', True)
-
-        #Squared magnitude of the framed spectrum
-        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|²' %
-                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
-                                 filename, filecounter, 'red', True)
-
-    #Framing with Hamming window
-    frames = framing(presignal, framelen*samplerate, framestep*samplerate)
-    magframes = magspec(frames, NFFT)
-    powframes = powspec(frames, NFFT)
-    numframes = len(frames)
-    print('Framing with Hamming window\n#frames = %d' % numframes)
-    for i in range(0, numframes):
-        frametime = np.linspace(i*framestep, (i*framestep + framelen),
-                                framelen*samplerate, False)
-        #Framed pre emphasized signal using a Hamming window
-        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
-                                 (voice, samplerate, i), 't (seconds)',
-                                 'presignal[t] * hamming', filename, filecounter)
-
-        #Magnitude of the framed spectrum
-        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
-                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
-                                 filename, filecounter, 'red', True)
-
-        #Squared magnitude of the framed spectrum
-        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
-                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
-                                 filename, filecounter, 'red', True)
+#    NFFT = 512
+#    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
+#    freq = np.linspace(0, samplerate/2, numfftbins)
+#
+#    #Magnitude of signal's spectrum
+#    magsig = magspec(signal, NFFT)
+#    ###figure001
+#    filecounter = plotfigure(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
+#                             'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
+#
+#    #Squared magnitude of signal's spectrum
+#    powsig = powspec(signal, NFFT)
+#    ###figure002
+#    filecounter = plotfigure(freq, powsig, '%s\n%d Hz, |FFT|²' % (voice, samplerate),
+#                             'f (Hz)', '|FFT[f]|²', filename, filecounter, 'red', True)
+#
+#    #Pre emphasized signal with coefficient 0.97
+#    presignal = preemphasis(signal)
+#    ###figure003
+#    filecounter = plotfigure(time, presignal, '%s\n%d Hz, preemph 0.97' % (voice,
+#                             samplerate), 't (seconds)', 'presignal[t]', filename,
+#                             filecounter)
+#
+#    #Inteisities of lower frequences reduced and of higher, increased
+#    #wavf.write('%s-%s-%02d-%dHz-preemph0.97.wav' % (enroll, speaker, speech, samplerate),
+#    #           samplerate, np.int16(presignal))
+#
+#    #Magnitude of presignal's spectrum
+#    magpresig = magspec(presignal, NFFT)
+#    ###figure004
+#    filecounter = plotfigure(freq, magpresig, '%s\n%d Hz, preemph 0.97, |FFT|' %
+#                             (voice, samplerate), 'f (Hz)', '|FFT[f]|', filename,
+#                             filecounter, 'red', True)
+#
+#    #Squared magnitude of presignal's spectrum
+#    powpresig = powspec(presignal, NFFT)
+#    ###figure005
+#    filecounter = plotfigure(freq, powpresig, '%s\n%d Hz, preemph 0.97, |FFT|²' %
+#                             (voice, samplerate), 'f (Hz)', '|FFT[f]|²', filename,
+#                             filecounter, 'red', True)
+#
+#    #samples = sec * (samples/sec)
+#    framelen = 0.02
+#    framestep = 0.01
+#
+#    #Framing with rectangular window
+#    frames = framing(presignal, framelen*samplerate, framestep*samplerate,
+#                     winfunc=lambda x:np.ones((1, x)))
+#    magframes = magspec(frames, NFFT)
+#    powframes = powspec(frames, NFFT)
+#    numframes = len(frames)
+#    print('Framing with rectangular window\n#frames = %d' % numframes)
+#    for i in range(0, numframes):
+#        frametime = np.linspace(i*framestep, (i*framestep + framelen),
+#                                framelen*samplerate, False)
+#        #Framed pre emphasized signal using a Rect window
+#        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Rect #%d' %
+#                                 (voice, samplerate, i), 't (seconds)',
+#                                 'presignal[t] * rect', filename, filecounter)
+#
+#        #Magnitude of the framed spectrum
+#        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|' %
+#                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+#                                 filename, filecounter, 'red', True)
+#
+#        #Squared magnitude of the framed spectrum
+#        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Rect #%d)|²' %
+#                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+#                                 filename, filecounter, 'red', True)
+#
+#    #Framing with Hamming window
+#    frames = framing(presignal, framelen*samplerate, framestep*samplerate)
+#    magframes = magspec(frames, NFFT)
+#    powframes = powspec(frames, NFFT)
+#    numframes = len(frames)
+#    print('Framing with Hamming window\n#frames = %d' % numframes)
+#    for i in range(0, numframes):
+#        frametime = np.linspace(i*framestep, (i*framestep + framelen),
+#                                framelen*samplerate, False)
+#        #Framed pre emphasized signal using a Hamming window
+#        filecounter = plotfigure(frametime, frames[i], '%s\n%d Hz, preemph 0.97, Hamming #%d' %
+#                                 (voice, samplerate, i), 't (seconds)',
+#                                 'presignal[t] * hamming', filename, filecounter)
+#
+#        #Magnitude of the framed spectrum
+#        filecounter = plotfigure(freq, magframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|' %
+#                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|',
+#                                 filename, filecounter, 'red', True)
+#
+#        #Squared magnitude of the framed spectrum
+#        filecounter = plotfigure(freq, powframes[i], '%s\n%d Hz, preemph 0.97, |FFT(Hamming #%d)|²' %
+#                                 (voice, samplerate, i), 'f (Hz)', '|FFT[f]|²',
+#                                 filename, filecounter, 'red', True)

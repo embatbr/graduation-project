@@ -44,7 +44,7 @@ def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
     plt.plot(x, y, color=color, linestyle=linestyle)
 
 def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
-               color='blue', fill=False, xlim=True):
+               color='blue', fill=False, xlim=True, ylim=False):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -64,6 +64,10 @@ def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
 
     if y.ndim == 1:
         plot(x, y, suptitle, xlabel, ylabel, color, fill)
+        if ylim:
+            ymin = np.amin(y)
+            ymax = np.amax(y)
+            plt.ylim(ymin, ymax)
     else:
         for yval in y:
             plot(x, yval, suptitle, xlabel, ylabel, color, fill)
