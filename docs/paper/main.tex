@@ -2,16 +2,19 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+\usepackage{csquotes}
 \usepackage{graphicx}
 \usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
 \usepackage{fancyhdr}
-\usepackage[sorting=none]{biblatex}
+\usepackage[backend=bibtex,sorting=none]{biblatex}
+\usepackage{mathtools}
 
 
 % PRE CONFIGURATIONS
 
 \graphicspath{{images/}}
 \addbibresource{references.bib}
+\setlength{\headheight}{14.5pt}
 \pagestyle{fancy}
 \fancyhead[RO,LE]{}
 \bibliography{references}
@@ -19,7 +22,9 @@
 
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
-\newcommand{\captiontext}[1]{\small{#1}}
+\newcommand{\equationref}[1]{Eq. \ref{eq:#1}}
+\newcommand{\captiontext}[1]{\footnotesize{#1}}
+\newcommand{\qut}[1]{``#1"}
 
 
 %GLOBAL DEFINITIONS

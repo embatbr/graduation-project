@@ -271,90 +271,83 @@ if __name__ == '__main__':
     nfilt = 26
 
     #Mel frequence plotting
-    freqhuman = np.linspace(20, 20000, 19980)
-    melfreqhuman = hz2mel(freqhuman)
-    ###figure000
-    filecounter = plotfigure(freqhuman, melfreqhuman, 'Human hearing range in Mels',
-                             'f (Hz)', 'mel[f]', filename, filecounter, 'red')
-
-    #Mel frequence plotting
     melfreq = hz2mel(freq)
     ###figure000
     filecounter = plotfigure(freq, melfreq, 'Mel scale', 'f (Hz)', 'mel[f]',
                              filename, filecounter, 'red')
 
-    #Filterbank
-    fbank = filterbank(samplerate, nfilt, NFFT)
-    numfilters = len(fbank)
-    print('#filters = %d' % numfilters)
-    ###figure001
-    filecounter = plotfigure(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
-                             'f (Hz)', 'filter[n][f]', filename, filecounter,
-                             'green')
-
-    #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
-    powpresig = sigproc.powspec(presignal, NFFT)
-    filter_index = 20
-    framedpowpresig = np.multiply(powpresig, fbank[filter_index])
-    ###figure002
-    filecounter = plotfigure(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
-                             'f (Hz)', 'filter[%d]' % filter_index, filename,
-                             filecounter, 'green')
-    ###figure003
-    filecounter = plotfigure(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
-                             'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
-                             filecounter, 'red', True)
-
-    #|FFT|² of pre emphasized signal after filterbank
-    powpresig = sigproc.powspec(presignal, NFFT)
-    powpresigfull = np.zeros(len(powpresig))
-    for f in fbank:
-        fspec = np.multiply(powpresig, f)
-        powpresigfull = np.maximum(powpresigfull, fspec)
-    ###figure004
-    filecounter = plotfigure(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
-                             'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
-                             True)
-
-    winlen = 0.02
-    winstep = 0.01
-
-    #Filterbanked signal
-    (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt, NFFT)
-    numframes = len(energy)
-    frameindices = np.linspace(0, numframes, numframes, False)
-
-    ###figure005
-    filecounter = plotfigure(frameindices, energy, 'Total energy per frame', 'frame',
-                             'energy[frame]', filename, filecounter, 'red', True)
-
-    for (feat, n) in zip(feats.T, range(nfilt)):
-        filecounter = plotfigure(frameindices, feat, 'Feature %d' % n, 'frame',
-                                 'feature[frame]', filename, filecounter, 'magenta')
-        logfeat = np.log10(feat)
-        filecounter = plotfigure(frameindices, logfeat, 'Log-feature %d' % n, 'frame',
-                                 'log-feature[frame]', filename, filecounter, 'magenta')
-
-    numcep = 13
-    ceplifter = 22
-    numdeltas = 2
-
-    #Calculatin the MFCC (similar to everything done until now, but with more!)
-    mfccs = mfcc_delta(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT,
-                       numdeltas=numdeltas)
-    print(mfccs.shape)
-    numcoeffs = numcep*(numdeltas + 1)
-    for (feat, n) in zip(mfccs, range(numcoeffs)):
-        filecounter = plotfigure(frameindices, feat, 'MFCC[%d]' % n, 'frame',
-                                 'mfcc[%d][frame]' % n, filename, filecounter, 'black')
-
-    #Lifter
-    L = 22
-    logfeats = np.log10(feats)
-    dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
-    (_, ncoeff) = np.shape(dctlogfeats)
-    n = np.arange(ncoeff)
-    lift = 1 + (L/2)*np.sin(np.pi * n / L)
-    coeff = np.linspace(1, numcep, numcep)
-    filecounter = plotfigure(coeff, lift, 'Lifter (L = %d)' % L, 'coeff (cepstral)',
-                             'lift[coeff]', filename, filecounter, 'green')
+#    #Filterbank
+#    fbank = filterbank(samplerate, nfilt, NFFT)
+#    numfilters = len(fbank)
+#    print('#filters = %d' % numfilters)
+#    ###figure001
+#    filecounter = plotfigure(freq, fbank, '%d-filterbank, NFFT = %d' % (nfilt, NFFT),
+#                             'f (Hz)', 'filter[n][f]', filename, filecounter,
+#                             'green')
+#
+#    #Pre emphasized signal's squared magnitude of spectrum after 21st filter (index 20)
+#    powpresig = sigproc.powspec(presignal, NFFT)
+#    filter_index = 20
+#    framedpowpresig = np.multiply(powpresig, fbank[filter_index])
+#    ###figure002
+#    filecounter = plotfigure(freq, fbank[filter_index], 'Filter[%d]' % filter_index,
+#                             'f (Hz)', 'filter[%d]' % filter_index, filename,
+#                             filecounter, 'green')
+#    ###figure003
+#    filecounter = plotfigure(freq, framedpowpresig, '|FFT * filter[%d]|²' % filter_index,
+#                             'f (Hz)', '|FFT * filter[%d]|²' % filter_index, filename,
+#                             filecounter, 'red', True)
+#
+#    #|FFT|² of pre emphasized signal after filterbank
+#    powpresig = sigproc.powspec(presignal, NFFT)
+#    powpresigfull = np.zeros(len(powpresig))
+#    for f in fbank:
+#        fspec = np.multiply(powpresig, f)
+#        powpresigfull = np.maximum(powpresigfull, fspec)
+#    ###figure004
+#    filecounter = plotfigure(freq, powpresigfull, '|FFT|² * %d-filterbank' % nfilt,
+#                             'f (Hz)', 'powspec[f]', filename, filecounter, 'red',
+#                             True)
+#
+#    winlen = 0.02
+#    winstep = 0.01
+#
+#    #Filterbanked signal
+#    (feats, energy) = filtersignal(signal, winlen, winstep, samplerate, nfilt, NFFT)
+#    numframes = len(energy)
+#    frameindices = np.linspace(0, numframes, numframes, False)
+#
+#    ###figure005
+#    filecounter = plotfigure(frameindices, energy, 'Total energy per frame', 'frame',
+#                             'energy[frame]', filename, filecounter, 'red', True)
+#
+#    for (feat, n) in zip(feats.T, range(nfilt)):
+#        filecounter = plotfigure(frameindices, feat, 'Feature %d' % n, 'frame',
+#                                 'feature[frame]', filename, filecounter, 'magenta')
+#        logfeat = np.log10(feat)
+#        filecounter = plotfigure(frameindices, logfeat, 'Log-feature %d' % n, 'frame',
+#                                 'log-feature[frame]', filename, filecounter, 'magenta')
+#
+#    numcep = 13
+#    ceplifter = 22
+#    numdeltas = 2
+#
+#    #Calculatin the MFCC (similar to everything done until now, but with more!)
+#    mfccs = mfcc_delta(signal, winlen, winstep, samplerate, numcep, nfilt, NFFT,
+#                       numdeltas=numdeltas)
+#    print(mfccs.shape)
+#    numcoeffs = numcep*(numdeltas + 1)
+#    for (feat, n) in zip(mfccs, range(numcoeffs)):
+#        filecounter = plotfigure(frameindices, feat, 'MFCC[%d]' % n, 'frame',
+#                                 'mfcc[%d][frame]' % n, filename, filecounter, 'black')
+#
+#    #Lifter
+#    L = 22
+#    logfeats = np.log10(feats)
+#    dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : numcep]
+#    (_, ncoeff) = np.shape(dctlogfeats)
+#    n = np.arange(ncoeff)
+#    lift = 1 + (L/2)*np.sin(np.pi * n / L)
+#    coeff = np.linspace(1, numcep, numcep)
+#    filecounter = plotfigure(coeff, lift, 'Lifter (L = %d)' % L, 'coeff (cepstral)',
+#                             'lift[coeff]', filename, filecounter, 'green')
