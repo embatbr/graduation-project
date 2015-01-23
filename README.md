@@ -13,6 +13,7 @@ the same thing.
 - Reference cochlea's image (from web).
 - Change text references from "according to [1]" to "according to Author at [1]" (or
 something similar).
+- Compare features extracted by MFCC written here vs. MFCC from Matlab Tool Box.
 
 
 ##Dates
