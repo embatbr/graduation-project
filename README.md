@@ -13,3 +13,8 @@ the same thing.
 - Reference cochlea's image (from web).
 - Change text references from "according to [1]" to "according to Author at [1]" (or
 something similar).
+
+
+##Dates
+
+- Defense: 2015-03-03 probabibly.
