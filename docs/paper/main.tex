@@ -6,8 +6,9 @@
 \usepackage{graphicx}
 \usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
 \usepackage{fancyhdr}
-\usepackage[backend=bibtex,sorting=none]{biblatex}
+\usepackage[backend=bibtex,sorting=none,citestyle=numeric-comp]{biblatex}
 \usepackage{mathtools}
+\usepackage[font={small}]{caption}
 
 
 % PRE CONFIGURATIONS
@@ -23,14 +24,11 @@
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
 \newcommand{\equationref}[1]{Eq. \ref{eq:#1}}
-\newcommand{\captiontext}[1]{\footnotesize{#1}}
-\newcommand{\qut}[1]{``#1"}
 
 
 %GLOBAL DEFINITIONS
 
-\gdef\papertitle{Improvements in a Gaussian Mixture Models based Speaker Verification
-System using Fractional Covariance Matrix}
+\gdef\papertitle{Fractional Gaussian Mixture Models for Speaker Verification}
 \gdef\universityname{Universidade Federal de Pernambuco}
 \gdef\centername{Centro de Informática}
 \gdef\authorname{Eduardo Martins Barros de Albuquerque Tenório}
