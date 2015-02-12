@@ -8,16 +8,24 @@
 \usepackage{fancyhdr}
 \usepackage[backend=bibtex,sorting=none,citestyle=numeric-comp]{biblatex}
 \usepackage{mathtools}
+\usepackage{amsmath}
 \usepackage[font={small}]{caption}
+\usepackage{bm}
+\usepackage{titlesec}
 
 
 % PRE CONFIGURATIONS
 
+\titleformat{\chapter}
+  {\normalfont\LARGE\bfseries}{\thechapter.}{1em}{}
 \graphicspath{{images/}}
 \addbibresource{references.bib}
 \setlength{\headheight}{14.5pt}
 \pagestyle{fancy}
 \fancyhead[RO,LE]{}
+\fancyhead[LO]{\thechapter.\space\leftmark}
+\fancyhead[RE]{\rightmark}
+\renewcommand{\chaptermark}[1]{\markboth{\uppercase{#1}}{}}
 \bibliography{references}
 
 
@@ -28,10 +36,11 @@
 
 %GLOBAL DEFINITIONS
 
-\gdef\papertitle{Fractional Gaussian Mixture Models for Speaker Verification}
+\gdef\papertitle{Fractional Gaussian Mixture Model for Speaker Verification}
 \gdef\universityname{Universidade Federal de Pernambuco}
 \gdef\centername{Centro de Informática}
 \gdef\authorname{Eduardo Martins Barros de Albuquerque Tenório}
+\gdef\defensedate{March 3, 2015}
 
 
 \title{
@@ -45,35 +54,69 @@
     \vfill
 }
 \author{\authorname}
-\date{\normalsize\vfill \today}%TODO colocar data da defesa (Day Month Year)
+\date{\normalsize\vfill \defensedate}
 
 
 \begin{document}
+\pagenumbering{gobble}
 \maketitle
 
 
 %FRONTMATTER
 
-\chapter*{Abstract}
-TODO EDITAR Abstract goes here
-
-\chapter*{Dedication}
-TODO EDITAR To mum and dad
-
 \chapter*{Declaration}
-TODO EDITAR I declare that..
+This paper is a presentation of my original research work, as partial requirement to acquire the degree of Computer Engineer. Wherever contributions of others are involved, every effort is made to indicate this clearly, with due reference to the literature, and acknowledgement of collaborative research and discussions.
+\vskip\baselineskip
+\noindent The work was done under the guidance of Professor Tsang Ing Ren, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
+
+\vskip5\baselineskip
+\begin{flushright}
+\rule{0.75\textwidth}{1pt}
+\vskip\baselineskip
+Eduardo Martins Barros de Albuquerque Tenório
+\end{flushright}
+
+\vskip2\baselineskip
+\noindent In my capacity as supervisor of the candidate’s paper, I certify that the above statements are true to the best of my knowledge.
+
+\vskip5\baselineskip
+\begin{flushright}
+\rule{0.75\textwidth}{1pt}
+\vskip\baselineskip
+Tsang Ing Ren
+\end{flushright}
+
+\vfill
+\begin{center}
+\defensedate
+\end{center}
 
 \chapter*{Acknowledgements}
 I am thankful to my parents, for the support and patience during the graduation,
-\\To my adviser, Tsang Ing Ren, for the guidance,
-\\To Cleice Souza, for the previous readings and help.
+\\
+To my adviser, Tsang Ing Ren, for the guidance,
+\\
+To Cleice Souza, for the previous readings and help.
+
+\chapter*{}
+\vfill
+\begin{flushright}
+    \textit{Live long and prosper}\\
+    \vskip\baselineskip
+    Vulcan salute
+\end{flushright}
+\vfill
+
+\chapter*{Abstract}
+TODO escrever o abstract após terminar tudo (após a conclusão)
 
 \tableofcontents
-
+\pagenumbering{roman}
 
 %MIDDLEMATTER
 
 \input{chapters/introduction}
+\pagenumbering{arabic}
 
 \input{chapters/chapter02}
 
