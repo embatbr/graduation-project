@@ -1,9 +1,9 @@
-\documentclass[12pt,twoside]{report}
+\documentclass[12pt,twoside,openright]{report}
 
+%\usepackage{mathptmx}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
-\usepackage{csquotes}
-\usepackage{graphicx}
+\usepackage[pdftex]{graphicx}
 \usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
 \usepackage{fancyhdr}
 \usepackage[backend=bibtex,sorting=none,citestyle=numeric-comp]{biblatex}
@@ -12,6 +12,7 @@
 \usepackage[font={small}]{caption}
 \usepackage{bm}
 \usepackage{titlesec}
+\usepackage{emptypage}
 
 
 % PRE CONFIGURATIONS
@@ -32,6 +33,14 @@
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
 \newcommand{\equationref}[1]{Eq. \ref{eq:#1}}
+
+%MATH COMMANDS
+\newcommand{\dvec}[1]{\boldsymbol{#1}}
+\newcommand{\dhatvec}[1]{\boldsymbol{\hat{#1}}}
+\newcommand{\prob}[1]{P(#1)}
+\newcommand{\postprob}[2]{P(#1|#2)}
+\newcommand{\pdf}[1]{p(#1)}
+\newcommand{\postpdf}[2]{p(#1|#2)}
 
 
 %GLOBAL DEFINITIONS
@@ -65,7 +74,7 @@
 %FRONTMATTER
 
 \chapter*{Declaration}
-This paper is a presentation of my original research work, as partial requirement to acquire the degree of Computer Engineer. Wherever contributions of others are involved, every effort is made to indicate this clearly, with due reference to the literature, and acknowledgement of collaborative research and discussions.
+This paper is a presentation of my original research work, as partial requirement to acquire the bachelor's degree in Computer Engineer. Wherever contributions of others are involved, every effort is made to indicate this clearly, with due reference to the literature, and acknowledgement of collaborative research and discussions.
 \vskip\baselineskip
 \noindent The work was done under the guidance of Professor Tsang Ing Ren, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
 
@@ -112,6 +121,7 @@ TODO escrever o abstract após terminar tudo (após a conclusão)
 
 \tableofcontents
 \pagenumbering{roman}
+
 
 %MIDDLEMATTER
 
