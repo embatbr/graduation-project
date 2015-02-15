@@ -14,6 +14,7 @@ the same thing.
 - Change text references from "according to [1]" to "according to Author at [1]" (or
 something similar).
 - Compare features extracted by MFCC written here vs. MFCC from Matlab Tool Box.
+- Check if is necessary to divide "enroll_1" in training and validation sets.
 
 
 ##Dates
