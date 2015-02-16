@@ -1,6 +1,6 @@
 #TG
 
-This monograph is a partial requirement to acquire the degree of Computer Engineer by Universidade Federal de Pernambuco. The name TG refers to Trabalho de Graduação, free translated as Graduation Work. The more proper translation founded was *Final Term Paper*.
+This monograph is a partial requirement to acquire the degree of Computer Engineer by Universidade Federal de Pernambuco. The name TG refers to Trabalho de Graduação, free translated as Graduation Work. The most appropriate translation founded was *Final Term Paper*.
 
 
 ##TODO
