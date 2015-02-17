@@ -1,13 +1,33 @@
 \chapter{Speaker Recognition Systems}
 
-The process of voice recognition lies on the field of pattern classification, with the speaker and his or her utterance (a speech signal) as inputs for a classifier and a decision as output. This decision may be, given a utterance $\boldsymbol{Y}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users, ``choose the most likely $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$ who produced $\boldsymbol{Y}$". This is a case of speaker identification and the output is a $\mathcal{S}_i$, for $i = 1, ..., S$. Another type of decision is ``determine if $\mathcal{S}$, who produced $\boldsymbol{Y}$, is the claimed $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$". This is a speaker verification decision, with a binary output (True or False).
+The process of voice recognition lies on the field of pattern classification, with the speaker and his or her utterance (a speech signal) as inputs for a classifier and a decision as output. This decision may be, given a utterance $\boldsymbol{Y}$ produced by a speaker $\mathcal{S}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users,
 
-[TODO desenvolver PELO MENOS mais UM parágrafo aqui]
+\begin{equation}
+    \mathcal{S} = \arg\max_i P(\mathcal{S}_i|\boldsymbol{Y}).
+    \label{eq:decision_speaker_identification}
+\end{equation}
 
-\section{Speaker Identification}
+\noindent This is a case of speaker identification and the output is a $\mathcal{S}$ from $\boldsymbol{\mathcal{S}}$. Another type of decision is
 
-\section{Speaker Verification}
+\begin{equation}
+    \mathcal{S} == \mathcal{S}_i, \text{ if } P(\mathcal{S}_i|\boldsymbol{Y}) \geq \alpha.
+    \label{eq:decision_speaker_verification}
+\end{equation}
 
-\subsection{Likelihood Ratio}
+\noindent This is a speaker verification decision, with a binary output (True or False), given a claimed $\mathcal{S}_j$ from $\boldsymbol{\mathcal{S}}$ and a threshold $\alpha$. This chapter (and indirectly the whole document) is about the type of decision given by \equationref{decision_speaker_verification}.
+
+\section{Basic Concepts}
+
+\subsection{Utterance}
+
+\subsection{Dependency x Independency}
+
+\section{Likelihood Ratio Test}
 
 TODO basear-se na seção 2 do artigo ``Speaker Verification Using Adapted Gaussian Mixture Models".
+
+\section{Basic Speaker Verification Architecture}
+
+\subsection{Training Phase}
+
+\subsection{Test Phase}
