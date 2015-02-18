@@ -111,32 +111,17 @@ if __name__ == '__main__':
 
     #Reading signal from base and plotting
 
-    phrases = [1, 2, 3, 7]
-    i = 1
-    for phrase in phrases:
-        (samplerate, signal) = wavf.read('%smit/enroll_1/f00/phrase%02d_16k.wav' %
-                                         (CORPORA_DIR, phrase))
-        numsamples = len(signal)
-        duration = numsamples/samplerate
-        time = np.linspace(1/samplerate, duration, numsamples)
-
-        position = 220 + i
-        i = i + 1
-        pl.subplot(position)
-        pl.plot(time, signal)
+    (samplerate, signal) = wavf.read('%smit/enroll_1/f00/phrase01_16k.wav' %
+                                     CORPORA_DIR)
+    numsamples = len(signal)
+    duration = numsamples/samplerate
+    time = np.linspace(1/samplerate, duration, numsamples)
+    pl.subplot(211)
+    pl.plot(time, signal)
+    pl.xlabel('seconds')
 
     pl.show()
 
-#    NFFT = 512
-#    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT
-#    freq = np.linspace(0, samplerate/2, numfftbins)
-#
-#    #Magnitude of signal's spectrum
-#    magsig = magspec(signal, NFFT)
-#    ###figure001
-#    filecounter = plotfigure(freq, magsig, '%s\n%d Hz, |FFT|' % (voice, samplerate),
-#                             'f (Hz)', '|FFT[f]|', filename, filecounter, 'red', True)
-#
 #    #Squared magnitude of signal's spectrum
 #    powsig = powspec(signal, NFFT)
 #    ###figure002

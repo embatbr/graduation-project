@@ -36,6 +36,7 @@
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
 \newcommand{\equationref}[1]{Eq. \ref{eq:#1}}
+\newcommand{\chapterref}[1]{Chapter \ref{ch:#1}}
 
 %MATH COMMANDS
 \newcommand{\dvec}[1]{\boldsymbol{#1}}
@@ -44,6 +45,15 @@
 \newcommand{\postprob}[2]{P(#1|#2)}
 \newcommand{\pdf}[1]{p(#1)}
 \newcommand{\postpdf}[2]{p(#1|#2)}
+\newcommand{\verifytest}[2]
+{
+    \left\{
+        \begin{array}{ll}
+            \geq #1, & \text{accept } #2,\\
+            < #1, & \text{reject } #2.
+        \end{array}
+    \right.
+}
 
 
 %GLOBAL DEFINITIONS
