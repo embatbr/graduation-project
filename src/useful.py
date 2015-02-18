@@ -21,7 +21,7 @@ IDENTIFY_DIR = '%sidentify/' % EXPERIMENTS_DIR
 
 
 def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
-         linestyle='-'):
+         linestyle='-', grid=True):
     """Plots the numpy array y related to numpy array x.
 
     @param x: a numpy array.
@@ -37,14 +37,14 @@ def plot(x, y, suptitle='', xlabel='', ylabel='', color='blue', fill=False,
     fig.suptitle(suptitle)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.grid(True)
+    plt.grid(grid)
 
     if fill:
         plt.fill_between(x, y, color=color)
     plt.plot(x, y, color=color, linestyle=linestyle)
 
 def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecounter=0,
-               color='blue', fill=False, xlim=True, ylim=False):
+               color='blue', fill=False, xlim=True, ylim=False, grid=True):
     """Creates a Matplotlib figure and plots the @param y related to @param x.
 
     @param x: a numpy array.
@@ -63,14 +63,14 @@ def plotfigure(x, y, suptitle='', xlabel='', ylabel='', filename=None, filecount
         plt.xlim(x[0], x[-1])
 
     if y.ndim == 1:
-        plot(x, y, suptitle, xlabel, ylabel, color, fill)
+        plot(x, y, suptitle, xlabel, ylabel, color, fill, grid=grid)
         if ylim:
             ymin = np.amin(y)
             ymax = np.amax(y)
             plt.ylim(ymin, ymax)
     else:
         for yval in y:
-            plot(x, yval, suptitle, xlabel, ylabel, color, fill)
+            plot(x, yval, suptitle, xlabel, ylabel, color, fill, grid=grid)
 
     if not filename is None:
         plt.savefig('%s%05d.png' % (filename, filecounter))

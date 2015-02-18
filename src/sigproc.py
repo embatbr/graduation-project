@@ -94,6 +94,7 @@ if __name__ == '__main__':
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
     from useful import CORPORA_DIR, TESTS_DIR, plotfigure
+    import pylab as pl
 
 
     if not os.path.exists(TESTS_DIR):
@@ -109,17 +110,22 @@ if __name__ == '__main__':
     filename = '%sfigure' % TEST_SIGPROC_DIR
 
     #Reading signal from base and plotting
-    voice = ('enroll_2', 'f08', 54)
-    (enroll, speaker, speech) = voice
-    (samplerate, signal) = wavf.read('%smit/%s/%s/phrase%02d_16k.wav' %
-                                     (CORPORA_DIR, enroll, speaker, speech))
-    numsamples = len(signal)
-    duration = numsamples/samplerate
-    time = np.linspace(1/samplerate, duration, numsamples)
-    ###figure000
-    filecounter = plotfigure(time, signal, 'Duration: %.3f sec\nSamplerate: %d Hz' %
-                             (duration, samplerate), 't (seconds)', 'signal[t]',
-                             filename, filecounter, ylim=True)
+
+    phrases = [1, 2, 3, 7]
+    i = 1
+    for phrase in phrases:
+        (samplerate, signal) = wavf.read('%smit/enroll_1/f00/phrase%02d_16k.wav' %
+                                         (CORPORA_DIR, phrase))
+        numsamples = len(signal)
+        duration = numsamples/samplerate
+        time = np.linspace(1/samplerate, duration, numsamples)
+
+        position = 220 + i
+        i = i + 1
+        pl.subplot(position)
+        pl.plot(time, signal)
+
+    pl.show()
 
 #    NFFT = 512
 #    numfftbins = math.floor(NFFT/2 + 1)    #fft bins == 'caixas' de FFT

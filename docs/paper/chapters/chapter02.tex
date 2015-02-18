@@ -14,11 +14,24 @@ The process of voice recognition lies on the field of pattern classification, wi
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent This is a speaker verification decision, with a binary output (True or False), given a claimed $\mathcal{S}_j$ from $\boldsymbol{\mathcal{S}}$ and a threshold $\alpha$. This chapter (and indirectly the whole document) is about the type of decision given by \equationref{decision_speaker_verification}.
+\noindent This is a speaker verification decision, with a binary output (true or false, accept or reject, belongs or not to the class $\mathcal{S}_i$), given a $\mathcal{S}$ who produced $\boldsymbol{Y}$, a claimed identity $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$ and a threshold $\alpha$ for acceptance. This chapter (and indirectly the whole document) is about the type of decision from \equationref{decision_speaker_verification}.
 
 \section{Basic Concepts}
 
+Before continuing, it is necessary to clarify important basic concepts for speaker verification, such as \textbf{utterance}, \textbf{features} and \textbf{dependency} of the spoken text.
+
 \subsection{Utterance}
+
+An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but here speech signal will be associated to an utterance recorded and digitalized. An example of utterances as speech signals is shown in \figureref{speech_signals}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{speech_signals}
+    \caption{Speech signals for utterances ``karen livescu" (SE), ``mint chocolate chip" (SD), ``carol owens" (IE) and ``mary miller" (ID).}
+    \label{fig:speech_signals}
+\end{figure}
+
+\subsection{Features}
 
 \subsection{Dependency x Independency}
 
