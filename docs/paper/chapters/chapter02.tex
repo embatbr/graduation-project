@@ -1,59 +1,108 @@
 \chapter{Speaker Recognition Systems}
 \label{ch:speaker-recognition-system}
 
-The process of voice recognition lies on the field of pattern classification, with the speaker and his or her utterance (a speech signal) as inputs for a classifier and a decision as output. This decision may be, given an utterance $\boldsymbol{Y}$ produced by a speaker $\mathcal{S}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users,
+The process of voice recognition lies on the field of pattern classification, with the speaker and his or her utterance (a speech signal) as inputs for a classifier and a decision as output. This decision may be, given a speech signal $\boldsymbol{Y}$ produced by a speaker $\mathcal{S}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users,
 
 \begin{equation}
-    \mathcal{S} \gets \mathcal{S}_i \text{, if } i = \arg\max_j P(\mathcal{S}_j|\boldsymbol{Y}).
+    \text{classify } \mathcal{S} \text{ as } \mathcal{S}_i \text{ if } i = \arg\max_j P(\mathcal{S}_j|\boldsymbol{Y}).
     \label{eq:decision_speaker_identification}
 \end{equation}
 
 \noindent This is a case of speaker identification and the output is a $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$. Another type of decision is
 
 \begin{equation}
-    \text{if } P(\mathcal{S}_i|\boldsymbol{Y}) \verifytest{\alpha}{\mathcal{S}}
+    \text{if } P(\mathcal{S}_i|\boldsymbol{Y}) \verifytestB{\alpha}{\mathcal{S} \text{ as } \mathcal{S}_i}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent This is a speaker verification decision, with a binary output, given a $\mathcal{S}$ who produced $\boldsymbol{Y}$, a claimed identity $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$ and a threshold of acceptance $\alpha$. This chapter (and indirectly the whole document) is about the type of decision seen in \equationref{decision_speaker_verification}.
+\noindent a speaker verification decision, with a binary output, given a $\mathcal{S}$ who produced $\boldsymbol{Y}$, a claimed identity $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$ and a threshold of acceptance $\alpha$. This chapter (and indirectly the whole document) is about the type of decision seen in \equationref{decision_speaker_verification}.
 
 \section{Basic Concepts}
 
 \subsection{Utterance}
 
-An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but here speech signal will be associated to an utterance recorded, digitalized and ready to be processed. An example is shown in \figureref{speech_signal}.
+An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but from herenow speech signal will be associated to an utterance recorded, digitalized and ready to be processed. An example is shown in \figureref{speech_signal}.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{speech_signal}
-    \caption{Speech signal for utterance ``karen livescu" \cite{woo.park.hazen.2006}.}
+    \caption{Speech signal for utterance ``karen livescu", from the MIT dataset \cite{woo.park.hazen.2006}.}
     \label{fig:speech_signal}
 \end{figure}
 
 \subsection{Features}
 
-The raw speech signal is unfit for usage by a recognition system. For a correct processing, the unique features from the speaker's vocal tract are extracted, reducing the number of variables the system needs to deal with (leading to a simpler implementation) and performing a better evaluation (and avoiding the curse of dimensionality). This extraction is executed by the MFCC algorithm, explained in \chapterref{feature-extraction}. Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy" in the features \cite{davis.mermelstein.1980, rabiner.schafer.2007}.
+The raw speech signal is unfit for usage by a recognition system. For a correct processing, the unique features from the speaker's vocal tract are extracted, reducing the number of variables the system needs to deal with (leading to a simpler implementation) and performing a better evaluation (and avoiding the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy" in the features \cite{davis.mermelstein.1980, rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
 
 \subsection{Dependency x Independency}
 
-When designing a speaker recognition system, one of the most important aspects to consider is the type of text dependency it will have. In a text-dependent system the choice of what to say is made at design time, with different degrees of freedom. The testing utterance must be a subset of the training set. A simpler version may require that the same text be spoken during the model's training and testing phases, while a more sophisticated one may allow the speaker to say just a few words from a sentence or even speak them out of order. The most common acoustic model used for this system is the HMM, with the unit modeled and the number of states depending heavily on the type of application \cite{hebert.2008}.
+When designing a speaker recognition system, one of the most important aspects to consider is the type of dependency to text it will have. In a text-dependent system the choice of what to say is made at design time, with different degrees of freedom. The testing utterance must be a subset of the training set. A simpler version may require that the same text be spoken during the model's training and testing phases, while a more sophisticated one may allow the speaker to say just a few words from a sentence or even speak them out of order. The most common acoustic model used for this system is the HMM, with the unit modeled and the number of states depending heavily on the application \cite{hebert.2008}.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{speaker-recognition-2}
-    \caption{Speaker-recognition systems for identification and verification \cite{reynolds.1995}.}
+    \caption{Speaker-recognition systems for (a) identification and (b) verification \cite{reynolds.1995a}.}
     \label{fig:speaker-recognition-2}
 \end{figure}
 
-Text-independent recognition is less problematic than the previous one for several reasons. First, the designer does not need to worry about what the speaker will say, since it is a vocal sound. The recognition is performed around the unique features of each vocal tract, shown when the person speaks. Second, for being free of time constraints, a HMM of single state (i.e. a GMM) fits well for the task \cite{hebert.2008}. Third, the ability to apply text-independent verification to unconstrained speech encourages the use of audio recorded from a wide variety of sources (e.g., speaker indexing of broadcast audio or forensic matching of law-enforcement microphone recordings) \cite{reynolds.campbell.2008}.
+Text-independent recognition is less problematic than the previous one for several reasons. First, the designer does not need to worry about what the speaker will say, since it is a vocal sound. The recognition is performed over the unique features of each vocal tract, shown when the person speaks. Second, for being free of time constraints, a HMM of single state (i.e. a GMM) fits well for the task \cite{hebert.2008}. Third, the ability to apply text-independent verification to unconstrained speech encourages the use of audio recorded from a wide variety of sources (e.g., speaker indexing of broadcast audio or forensic matching of law-enforcement microphone recordings) \cite{reynolds.campbell.2008}.
 
-As stated in \sectionref{speaker-recognition}, the focus of this paper is in text-independent speaker verification, and due to that it is necessary to understand what is the likelihood ratio test and how the models are trained and tested (more detailed in \chapterref{gmm}).
+As stated in \sectionref{speaker-recognition}, the focus of this paper is in text-independent speaker verification, and due to that it is necessary to understand what is the likelihood ratio test and how the models are trained and tested.
+
+\section{Basic Speaker Verification Architecture}
+
+The architecture of a speaker verification system is pretty basic. Given a speech signal from a speaker $\mathcal{S}$ who claims to be a particular speaker $\mathcal{S}_i$ from a set of enrolled speakers $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$, the strength of his or her claim resides on how similar the features $\boldsymbol{X}$, extracted from the speech $\boldsymbol{Y}$ produce by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system (see \equationref{decision_speaker_verification}). However a subset of enrolled speakers may have vocal similarities, leading to a misclassification of one enrolled speaker as another (a false positive). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a background composed of the other enrolled speakers.
 
 \subsection{Likelihood Ratio Test}
 
-TODO basear-se na seção 2 do artigo ``Speaker Verification Using Adapted Gaussian Mixture Models" e na seção 38.2 de ``Text-Independent Speaker Recognition".
+Given the speech signal $\boldsymbol{Y}$, and assuming it was produced by only one speaker, the detection task can be restated as a basic test between two hypotesis \cite{reynolds.1995b}:
 
-\section{Basic Speaker Verification Architecture}
+\begin{description}\itemsep0pt
+    \item $H_0$: $\boldsymbol{Y}$ is from the claimed speaker $\mathcal{S}_i$;
+    \item $H_1$: $\boldsymbol{Y}$ is \underline{not} from the claimed speaker $\mathcal{S}_i$.
+\end{description}
+
+\noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both posterior probabilities $P(H_0|\boldsymbol{Y})$ and $P(H_1|\boldsymbol{Y})$,
+
+\begin{equation}
+    \frac{P(H_0|\boldsymbol{Y})}{P(H_1|\boldsymbol{Y})} \verifytestB{\theta}{H_0}
+    \label{eq:likelihood-ratio-test}
+\end{equation}
+
+\noindent where the decision threshold for accepting or rejecting $H_0$ is $\theta$. Applying Bayes' rule
+
+\begin{equation}
+    P(H_i|\boldsymbol{Y}) = \frac{p(\boldsymbol{Y}|H_i)P(H_i)}{p(\boldsymbol{Y})},
+    \label{eq:bayes-for-hypotesis}
+\end{equation}
+
+\noindent and considering all hypotesis equally probable \textit{a priori}, \equationref{likelihood-ratio-test} can be simplified to
+
+\begin{equation}
+    \frac{p(\boldsymbol{Y}|H_0)}{p(\boldsymbol{Y}|H_1)} \verifytestB{\theta}{H_0}
+    \label{eq:likelihood-ratio-test-2}
+\end{equation}
+
+\noindent where $p(\boldsymbol{Y}|H_i), i = 0, 1,$ is the probability density function for the hypothesis $H_i$ evaluated for the observed speech segment $\boldsymbol{Y}$. \figureref{likelihood-ratio-detector} shows the basic components found in speaker verification systems based on likelihood ratios. The front-end processing module extracts features $\boldsymbol{X} = \{\boldsymbol{x}_1, ..., \boldsymbol{x}_T\}$ (where $\boldsymbol{x}_t$ is the feature indexed at discrete time $t \in [1, 2, ..., T]$) from the speech signal $\boldsymbol{Y}$, and feeds it to the models for the hypotesized speaker and the background. The hypotesis $H_0$ and $H_1$ are represented mathematically by models detoned $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$, respectively. The likelihood equation from \equationref{likelihood-ratio-test-2} is be better represented as
+
+\begin{equation}
+    \frac{p(\boldsymbol{X}|\lambda_{hyp})}{p(\boldsymbol{X}|\lambda_{\overline{hyp}})} \verifytest{\theta}{\mathcal{S} \text{ as } \mathcal{S}_i}
+    \label{eq:likelihood-ratio-test-3}
+\end{equation}
+
+The division seen in \equationref{likelihood-ratio-test-3} can be transformed in a subtraction by the application of the logarithm function. Since the logarithm is monotonically increasing, the behavior of the likelihood ratio is maintained, and \equationref{likelihood-ratio-test-3} is replaced by the log-likelihood ratio
+
+\begin{equation}
+    \Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{hyp}) - \log p(\boldsymbol{X}|\lambda_{\overline{hyp}})
+    \label{eq:log-likelihood-ratio}
+\end{equation}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{likelihood-ratio-detector}
+    \caption{Likelihood ratio-based speaker detection system \cite{bimbot.et.al.2004}.}
+    \label{fig:likelihood-ratio-detector}
+\end{figure}
 
 \subsection{Training Phase}
 
