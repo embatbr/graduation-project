@@ -14,10 +14,10 @@ import pickle
 import time
 
 
-command = sys.argv[1]
+commands = sys.argv[1:]
 
 #Extract the MFCCs from base MIT and put in the correct format.
-if command == 'extract-features':
+if 'extract-features' in commands:
     if os.path.exists(FEATURES_DIR):
         shutil.rmtree(FEATURES_DIR)
     os.mkdir(FEATURES_DIR)
@@ -32,10 +32,52 @@ if command == 'extract-features':
         corpus.mit_features(winlen, winstep, numcep, numdeltas)
 
 
-if command == 'train-ubm':
-    if os.path.exists(GMMS_DIR):
-        shutil.rmtree(GMMS_DIR)
-    os.mkdir(GMMS_DIR)
+if 'train-gmms' in commands:
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
+
+    print('GMM TRAINING')
+
+    numcep = 13
+    numdeltaslist =[0, 1, 2]
+    datasets = ['enroll_1', 'enroll_2', 'imposter']
+    M = 8
+
+    for numdeltas in numdeltaslist:
+        print('numdeltas = %d' % numdeltas)
+        GMMSPATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, numdeltas)
+        if not os.path.exists(GMMSPATH):
+            os.mkdir(GMMSPATH)
+        numfeats = numcep*(numdeltas + 1)
+
+        for dataset in datasets:
+            DATASETPATH = '%smit_%d_%d/%s/' % (FEATURES_DIR, numcep, numdeltas,
+                                               dataset)
+            speakers = os.listdir(DATASETPATH)
+            speakers.sort()
+
+            for speaker in speakers:
+                mfccs = corpus.read_speaker_features(numcep, numdeltas, speaker)
+                print(mfccs.shape)
+
+                gmm = mixtures.GMM(M, mfccs)
+                t = time.time()
+                gmm.train(mfccs.T)
+                t = time.time() - t
+                print('GMM trained in %f seconds' % t)
+
+                gmmpath = '%s/%s_%d.gmm' % (GMMSPATH, speaker, M)
+                gmmfile = open(gmmpath, 'wb')
+                pickle.dump(gmm, gmmfile)
+                gmmfile.close()
+
+            print()
+
+
+
+if 'train-ubm' in commands:
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
 
     print('UBM TRAINING')
 
@@ -46,8 +88,9 @@ if command == 'train-ubm':
 
     for numdeltas in numdeltaslist:
         print('numdeltas = %d' % numdeltas)
-        gmmspath = '%smit_%d_%d/' % (GMMS_DIR, numcep, numdeltas)
-        os.mkdir(gmmspath)
+        GMMSPATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, numdeltas)
+        if not os.path.exists(GMMSPATH):
+            os.mkdir(GMMSPATH)
         numfeats = numcep*(numdeltas + 1)
 
         for gender in genders:
@@ -61,9 +104,13 @@ if command == 'train-ubm':
             t = time.time() - t
             print('UBM trained in %f seconds' % t)
 
-            ubmpath = '%s/ubm_%s_%d.gmm' % (gmmspath, gender, M)
+            ubmpath = '%s/ubm_%s_%d.gmm' % (GMMSPATH, gender, M)
             ubmfile = open(ubmpath, 'wb')
             pickle.dump(ubm, ubmfile)
             ubmfile.close()
 
         print()
+
+
+if 'adap-gmms-from-ubm' in commands:
+    pass
