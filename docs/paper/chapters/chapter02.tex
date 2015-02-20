@@ -1,7 +1,7 @@
 \chapter{Speaker Recognition Systems}
 \label{ch:speaker-recognition-system}
 
-The process of voice recognition lies on the field of pattern classification, with the speaker and his or her utterance (a speech signal) as inputs for a classifier and a decision as output. This decision may be, given a speech signal $\boldsymbol{Y}$ produced by a speaker $\mathcal{S}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users,
+The process of voice recognition lies on the field of pattern classification, with the speaker's utterance (a speech signal) as input for a classifier and a decision as output. This decision may be, given a speech signal $\boldsymbol{Y}$ produced by a speaker $\mathcal{S}$ and a set $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of known users,
 
 \begin{equation}
     \text{classify } \mathcal{S} \text{ as } \mathcal{S}_i \text{ if } i = \arg\max_j P(\mathcal{S}_j|\boldsymbol{Y}).
@@ -51,7 +51,7 @@ As stated in \sectionref{speaker-recognition}, the focus of this paper is in tex
 
 \section{Basic Speaker Verification Architecture}
 
-The architecture of a speaker verification system is pretty basic. Given a speech signal from a speaker $\mathcal{S}$ who claims to be a particular speaker $\mathcal{S}_i$ from a set of enrolled speakers $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$, the strength of his or her claim resides on how similar the features $\boldsymbol{X}$, extracted from the speech $\boldsymbol{Y}$ produce by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system (see \equationref{decision_speaker_verification}). However a subset of enrolled speakers may have vocal similarities, leading to a misclassification of one enrolled speaker as another (a false positive). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a background composed of the other enrolled speakers.
+The architecture of a speaker verification system is pretty basic. Given a speech signal from a speaker $\mathcal{S}$ who claims to be a particular speaker $\mathcal{S}_i$ from a set of enrolled speakers $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$, the strength of his or her claim resides on how similar the features $\boldsymbol{X}$, extracted from the speech $\boldsymbol{Y}$ produce by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system (see \equationref{decision_speaker_verification}). However a subset of enrolled speakers may have vocal similarities, leading to a misclassification of one enrolled speaker as another (a false positive). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a background composed of all other enrolled speakers.
 
 \subsection{Likelihood Ratio Test}
 
@@ -96,6 +96,8 @@ The division seen in \equationref{likelihood-ratio-test-3} can be transformed in
     \Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{hyp}) - \log p(\boldsymbol{X}|\lambda_{\overline{hyp}})
     \label{eq:log-likelihood-ratio}
 \end{equation}
+
+\noindent The more likely $\mathcal{S}$ is of $\lambda_{hyp}$, given $\boldsymbol{X}$, and the less likely $\mathcal{S}$ is of $\lambda_{\underline{hyp}}$, given $\boldsymbol{X}$, easier is to accept $\mathcal{S}$ as the claimed $\mathcal{S}_i$.
 
 \begin{figure}[ht]
     \centering
