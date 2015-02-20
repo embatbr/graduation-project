@@ -55,7 +55,7 @@ The architecture of a speaker verification system is pretty basic. Given a speec
 
 \subsection{Likelihood Ratio Test}
 
-Given the speech signal $\boldsymbol{Y}$, and assuming it was produced by only one speaker, the detection task can be restated as a basic test between two hypotesis \cite{reynolds.1995b}:
+Given the speech signal $\boldsymbol{Y}$, and assuming it was produced by only one speaker, the detection task can be restated as a basic test between two hypoteses \cite{reynolds.1995b}:
 
 \begin{description}\itemsep0pt
     \item $H_0$: $\boldsymbol{Y}$ is from the claimed speaker $\mathcal{S}_i$;
@@ -76,14 +76,14 @@ Given the speech signal $\boldsymbol{Y}$, and assuming it was produced by only o
     \label{eq:bayes-for-hypotesis}
 \end{equation}
 
-\noindent and considering all hypotesis equally probable \textit{a priori}, \equationref{likelihood-ratio-test} can be simplified to
+\noindent and considering all hypoteses equally probable \textit{a priori}, \equationref{likelihood-ratio-test} can be simplified to
 
 \begin{equation}
     \frac{p(\boldsymbol{Y}|H_0)}{p(\boldsymbol{Y}|H_1)} \verifytestB{\theta}{H_0}
     \label{eq:likelihood-ratio-test-2}
 \end{equation}
 
-\noindent where $p(\boldsymbol{Y}|H_i), i = 0, 1,$ is the probability density function for the hypothesis $H_i$ evaluated for the observed speech segment $\boldsymbol{Y}$. \figureref{likelihood-ratio-detector} shows the basic components found in speaker verification systems based on likelihood ratios. The front-end processing module extracts features $\boldsymbol{X} = \{\boldsymbol{x}_1, ..., \boldsymbol{x}_T\}$ (where $\boldsymbol{x}_t$ is the feature indexed at discrete time $t \in [1, 2, ..., T]$) from the speech signal $\boldsymbol{Y}$, and feeds it to the models for the hypotesized speaker and the background. The hypotesis $H_0$ and $H_1$ are represented mathematically by models detoned $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$, respectively. The likelihood equation from \equationref{likelihood-ratio-test-2} is be better represented as
+\noindent where $p(\boldsymbol{Y}|H_i), i = 0, 1,$ is the probability density function for the hypothesis $H_i$ evaluated for the observed speech segment $\boldsymbol{Y}$. \figureref{likelihood-ratio-detector} shows the basic components found in speaker verification systems based on likelihood ratios. The front-end processing module extracts features $\boldsymbol{X} = \{\boldsymbol{x}_1, ..., \boldsymbol{x}_T\}$ (where $\boldsymbol{x}_t$ is the feature indexed at discrete time $t \in [1, 2, ..., T]$) from the speech signal $\boldsymbol{Y}$, and feeds it to the models for the hypotesized speaker and the background. The hypoteses $H_0$ and $H_1$ are represented mathematically by models detoned $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$, respectively. The likelihood equation from \equationref{likelihood-ratio-test-2} is be better represented as
 
 \begin{equation}
     \frac{p(\boldsymbol{X}|\lambda_{hyp})}{p(\boldsymbol{X}|\lambda_{\overline{hyp}})} \verifytest{\theta}{\mathcal{S} \text{ as } \mathcal{S}_i}
