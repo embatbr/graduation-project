@@ -51,7 +51,7 @@ As stated in \sectionref{speaker-recognition}, the focus of this paper is in tex
 
 \section{Basic Speaker Verification Architecture}
 
-The architecture of a speaker verification system is pretty basic. Given a speech signal from a speaker $\mathcal{S}$ who claims to be a particular speaker $\mathcal{S}_i$ from a set of enrolled speakers $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$, the strength of his or her claim resides on how similar the features $\boldsymbol{X}$, extracted from the speech $\boldsymbol{Y}$ produce by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system (see \equationref{decision_speaker_verification}). However a subset of enrolled speakers may have vocal similarities, leading to a misclassification of one enrolled speaker as another (a false positive). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a background composed of all other enrolled speakers.
+The architecture of a speaker verification system is pretty basic. Given a speech signal from a speaker $\mathcal{S}$ who claims to be a particular speaker $\mathcal{S}_i$ from a set of enrolled speakers $\boldsymbol{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$, the strength of the claim resides on how similar the features $\boldsymbol{X}$, extracted from the speech $\boldsymbol{Y}$ produce by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system (see \equationref{decision_speaker_verification}). However a subset of enrolled speakers may have vocal similarities, leading to a misclassification of one enrolled speaker as another (a false positive). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a background composed of all other enrolled speakers.
 
 \subsection{Likelihood Ratio Test}
 
@@ -97,7 +97,7 @@ The division seen in \equationref{likelihood-ratio-test-3} can be transformed in
     \label{eq:log-likelihood-ratio}
 \end{equation}
 
-\noindent The more likely $\mathcal{S}$ is of $\lambda_{hyp}$, given $\boldsymbol{X}$, and the less likely $\mathcal{S}$ is of $\lambda_{\underline{hyp}}$, given $\boldsymbol{X}$, easier is to accept $\mathcal{S}$ as the claimed $\mathcal{S}_i$.
+\noindent The more likely $\mathcal{S}$ is of $\lambda_{hyp}$ and the less likely $\mathcal{S}$ is of $\lambda_{\overline{hyp}}$ easier is to accept $\mathcal{S}$ as the claimed $\mathcal{S}_i$.
 
 \begin{figure}[ht]
     \centering
@@ -108,4 +108,56 @@ The division seen in \equationref{likelihood-ratio-test-3} can be transformed in
 
 \subsection{Training Phase}
 
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-verification-training}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{speaker-verification-training}
+    \caption{The statistical model of $\mathcal{S}$ is created from the features $\boldsymbol{X}$ \cite{bimbot.et.al.2004}.}
+    \label{fig:speaker-verification-training}
+\end{figure}
+
+\noindent Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used to train it (i.e., estimate $p(\boldsymbol{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_i$. For $\lambda_{\overline{hyp}}$ the same process is executed, considering it a representation of another speaker (i.e., the \emph{mirror} of $\mathcal{S}_i$).
+
+The model $\lambda_{\overline{hyp}}$ is not well-defined. It is composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_i$. One popular approach to deal with this difficulty is to define the likelihood of $\lambda_{\overline{hyp}}$ as
+
+\begin{equation}
+    p(\boldsymbol{X}|\lambda_{\overline{hyp}}) = \mathcal{F}[p(\boldsymbol{X}|\lambda_1), ..., p(\boldsymbol{X}|\lambda_S)],
+    \label{eq:log-likelihood-ratio}
+\end{equation}
+
+\noindent where $\mathcal{F}$ is a function of all likelihoods of set $\boldsymbol{\mathcal{S}}$ (except $\mathcal{S}_i$), such as mean or maximum. In various contexts, this set of other speakers has been called likelihood ratio sets, cohorts, and background speakers \cite{reynolds.quatieri.dunn.2000}.
+
+Another popular approach is to create only one model for $\lambda_{\overline{hyp}}$, containing features extracted from speeches of all enrolled speakers (even the claimed $\mathcal{S}_i$). The weight of $\mathcal{S}_i$ in $\lambda_{\overline{hyp}}$ is reduced due to the presence of all other speakers from $\boldsymbol{\mathcal{S}}$. This model is named \textbf{Universal Background Model} (UBM) and is denoted by $\lambda_{bkg}$. \equationref{likelihood-ratio-test-3} is rewritten as
+
+\begin{equation}
+    \frac{p(\boldsymbol{X}|\lambda_{hyp})}{p(\boldsymbol{X}|\lambda_{bkg})} \verifytest{\theta}{\mathcal{S} \text{ as } \mathcal{S}_i}
+    \label{eq:likelihood-ratio-test-4}
+\end{equation}
+
+\noindent The UBM is explained in details in \chapterref{gmm}.
+
 \subsection{Test Phase}
+
+As seen in \equationref{likelihood-ratio-test-4}, the decision process is based on a function \emph{Score} calculated from the likelihood ratio of $p(\boldsymbol{X}|\lambda_{hyp})$ and $p(\boldsymbol{X}|\lambda_{bkg})$. Being the vector of features $\boldsymbol{X} = \{\boldsymbol{x}_1, ..., \boldsymbol{x}_T\}$, with all $\boldsymbol{x}_t$ independent of the others, the likelihood of a model $\lambda$ given $\boldsymbol{X}$ can be written as
+
+\begin{equation}
+    p(\boldsymbol{X}|\lambda) = \prod_{t=1}^T p(\boldsymbol{x}_t|\lambda).
+    \label{eq:likelihood-prod}
+\end{equation}
+
+\noindent Using the logarithm function, \equationref{likelihood-prod} becomes
+
+\begin{equation}
+    \log p(\boldsymbol{X}|\lambda) = \frac{1}{T} \sum_{t=1}^T \log p(\boldsymbol{x}_t|\lambda),
+    \label{eq:log-likelihood-sum}
+\end{equation}
+
+\noindent where the term $\frac{1}{T}$ is used to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{likelihood-ratio-test-4} becomes a subtraction
+
+\begin{equation}
+    \text{\emph{Score}}(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{hyp}) - \log p(\boldsymbol{X}|\lambda_{bkg}),
+    \label{eq:score_of_X}
+\end{equation}
+
+\noindent with \emph{Score}$(\boldsymbol{X})$ being compared to $\log\theta$ and maintaining the same rule from \equationref{likelihood-ratio-test-4}.
