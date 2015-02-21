@@ -146,8 +146,54 @@ def filterbank(samplerate, nfilt=26, NFFT=512):
 
     return fbank
 
+def lifter(cepstra, L=22):
+    """Apply a lifter (filter for cepstrum) to the matrix of cepstra. This has
+    the effect of increase the magnitude of the high frequency DCT coeffs.
+
+    @param cepstra: the matrix of mel-cepstra, with size numframes*numcep.
+    @param L: the liftering coefficient to use. Default is 22. L <= 0 disables
+    lifter.
+
+    @return: the liftered cepstra.
+    """
+    if L > 0:
+        (nframes, ncoeff) = np.shape(cepstra)
+        n = np.arange(ncoeff)
+        lift = 1 + (L/2)*np.sin(np.pi * n / L)
+        return (lift*cepstra)
+    else:
+        return cepstra
+
 def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
-         numcep=13, appendEnergy=True):
+         numcep=13, ceplifter=22, appendEnergy=True):
+    """Extracts features from an audio signal using the MFCC algorithm.
+
+    @param signal: the audio signal from which to extract the features. Should
+    be an N*1 array
+    @param winlen: the length of the analysis window in seconds.
+    @param winstep: the step between successive windows in seconds.
+    @param samplerate: the samplerate of the signal we are working with.
+    @param nfilt: the number of filters in the filterbank. Default 26.
+    @param NFFT: the FFT size. Default is 512.
+    @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
+    no filter. Default is 0.97.
+    @param numcep: the number of cepstrum to return, default 13
+    @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
+    lifter. Default is 22.
+    @param appendEnergy: if this is true, the zeroth cepstral coefficient is
+    replaced by the log of the frame energy.
+
+    @returns: A numpy array of size NUMFRAMES x numcep containing features.
+    Each row holds 1 numcep-dimensional vector and each column holds 1 feature
+    over time. Ex:
+
+    |f_1_1 f_1_2 ... f_1_c|
+    |f_2_1 f_2_2 ... f_2_c|
+    |...                  |
+    |f_T_1 f_T_2 ... f_T_c|
+
+    where 'c' is the number of features and 'T' the number of frames.
+    """
     presignal = preemphasis(signal, preemph)
     frames = framesignal(presignal, winlen*samplerate, winstep*samplerate)
     powframes = powspec(frames, NFFT)
@@ -156,14 +202,14 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     feats = np.dot(powframes, fbank.T)
     feats = np.where(feats < ZERO, ZERO, feats) # avoid problems with log
 
-    feats = 10*np.log10(feats) #TODO checar se é em dB (10log_10) ou log_e
+    feats = np.log(feats) #TODO checar se é em dB (10log_10) ou log_e
     # type = 2 or type = 3? TODO escrever uma DCT?
     feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : 13]
-    #TODO checar se precisa realmente do lifter
+    feats = lifter(feats, ceplifter)
     if appendEnergy:
         energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
         energy = np.where(energy < ZERO, ZERO, energy)
-        energy = 10*np.log10(energy) #TODO checar se é em dB (10log_10) ou log_e
+        energy = np.log(energy) #TODO checar se é em dB (10log_10) ou log_e
         feats[ : , 0] = energy
 
     return feats
@@ -186,6 +232,7 @@ if __name__ == '__main__':
     time = np.linspace(1/samplerate, duration, numsamples)
 
     # Test for function 'preemphasis'
+    # figure 1
     emph_signal = preemphasis(signal)
     pl.subplot(211)
     pl.grid(True)
@@ -195,7 +242,7 @@ if __name__ == '__main__':
     pl.plot(time, emph_signal)
 
     # Test for functions 'framesignal', 'magspec' and 'powspec'
-    pl.figure()
+    pl.figure() # figure 2
     framelen = samplerate*0.020
     framestep = samplerate*0.010
     indices = np.arange(0, framelen)
@@ -221,7 +268,7 @@ if __name__ == '__main__':
         pl.plot(powframe)
 
     # Showing some frames
-    pl.figure()
+    pl.figure() # figure 3
     indices = np.arange(0, framelen)
     positions = np.arange(1, 5)
     for (frame, position) in zip(frames[50 : 54], positions):
@@ -232,7 +279,7 @@ if __name__ == '__main__':
         indices = indices + framestep
 
     # Test for functions 'hz2mel' and 'mel2hz'
-    pl.figure()
+    pl.figure() # figure 4
     freqs = np.linspace(0, samplerate/2, 1 + samplerate/2)
     mels = hz2mel(freqs)
     pl.grid(True)
@@ -240,28 +287,29 @@ if __name__ == '__main__':
     pl.plot(mels, mel2hz(mels), 'b')
 
     # Test for function 'filterbank'
-    pl.figure()
+    pl.figure()  # figure 5
     fbank = filterbank(samplerate)
     freqs = np.linspace(0, samplerate/2, len(fbank[0]))
     for f in fbank:
         pl.plot(freqs, f, color='orange')
 
-    # Plotting the dot product of 'powframes' with 'fbank', and the log applied
-    pl.figure()
+    # Plotting the dot product of 'powframes' with 'fbank', with the log applied
+    pl.figure() # figure 6
     feats = np.dot(powframes, fbank.T)
     pl.plot(feats)
-    pl.figure()
+    pl.figure() # figure 7
     logfeats = np.log(feats)
     pl.plot(logfeats)
-    pl.figure()
+    pl.figure()  # figure 8
     dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : 13]
     pl.plot(dctlogfeats)
 
     # Test for function 'mfcc'
-    pl.figure()
+    pl.figure() # figure 9
     winlen = 0.02
     winstep = 0.01
     feats = mfcc(signal, winlen, winstep, samplerate)
     pl.plot(feats)
+    print(feats.shape)
 
     pl.show()
