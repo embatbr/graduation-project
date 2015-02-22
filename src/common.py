@@ -1,3 +1,7 @@
+"""Module for functions and variables used in other modules.
+"""
+
+
 import numpy as np
 
 

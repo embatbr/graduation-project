@@ -165,7 +165,7 @@ def lifter(cepstra, L=22):
         return cepstra
 
 def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
-         numcep=13, ceplifter=22, appendEnergy=True):
+         numcep=13, ceplifter=22, appendEnergy=True, numdeltas=0, N=2):
     """Extracts features from an audio signal using the MFCC algorithm.
 
     @param signal: the audio signal from which to extract the features. Should
@@ -212,7 +212,41 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
         energy = np.log(energy) #TODO checar se é em dB (10log_10) ou log_e
         feats[ : , 0] = energy
 
+    while numdeltas > 0:
+        feats = append_deltas(feats, numcep, N)
+        numdeltas = numdeltas - 1
+
     return feats
+
+def append_deltas(feats, numcep, N=2):
+    """Calculates and appends the deltas for the last 'numcep' features from
+    frames 'feats[:]'. OBS: this method only calculates 1st order deltas. To
+    higher orders, use it recursively.
+
+    @param feats: the original features.
+    @param numcep: the number of cepstral coefficients (added at the end of each
+    frame 'feats[:]').
+    @param N: complexity of delta. Default 2.
+
+    @returns: a new array containing the original features with deltas appended.
+    """
+    numfeats = len(feats[0, :])
+    numframes = len(feats)
+    new_feats = np.zeros((numframes, numfeats + numcep))
+    new_feats[:, : numfeats] = feats[:,:]    #copy old features
+
+    denom = 2 * sum([n*n for n in range(1, N + 1)])
+    for t in range(numframes):
+        delta = np.zeros(numcep)
+        for n in range(1, N + 1):
+            after = feats[t + n, numfeats - numcep :] if ((t + n) < numframes) else 0
+            before = feats[t - n, numfeats - numcep :] if ((t - n) >= 0) else 0
+
+            delta = delta + n*(after - before)
+
+        new_feats[t, numfeats :] = delta / denom
+
+    return new_feats
 
 
 #TESTS
@@ -310,6 +344,16 @@ if __name__ == '__main__':
     winstep = 0.01
     feats = mfcc(signal, winlen, winstep, samplerate)
     pl.plot(feats)
-    print(feats.shape)
+
+    # Test for function 'mfcc' with 'numdeltas = 2'
+    pl.figure() # figure 10
+    winlen = 0.02
+    winstep = 0.01
+    feats = mfcc(signal, winlen, winstep, samplerate, numdeltas=2)
+    pl.plot(feats)
+    pl.figure() # figure 11
+    pl.plot(feats[:, 13 : 26])
+    pl.figure() # figure 12
+    pl.plot(feats[:, 26 :])
 
     pl.show()
