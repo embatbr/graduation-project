@@ -10,7 +10,7 @@ from common import CORPORA_DIR, FEATURES_DIR
 from features import mfcc
 
 
-def extract_mit_features(winlen, winstep, numcep, delta_order=0):
+def extract_mit(winlen, winstep, numcep, delta_order=0):
     """Extracts features from base MIT. The features are saved in a directory with
     name given by '../bases/features/mit_<numcep>_<delta_order>'.
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     numcep = 13
-    extract_mit_features(winlen, winstep, numcep)
+    extract_mit(winlen, winstep, numcep)
 
     # Reading speech signal
     (samplerate, signal) = wavf.read('%smit/enroll_1/f00/phrase02_16k.wav' %
