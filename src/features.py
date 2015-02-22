@@ -164,60 +164,6 @@ def lifter(cepstra, L=22):
     else:
         return cepstra
 
-def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
-         numcep=13, ceplifter=22, appendEnergy=True, numdeltas=0, N=2):
-    """Extracts features from an audio signal using the MFCC algorithm.
-
-    @param signal: the audio signal from which to extract the features. Should
-    be an N*1 array
-    @param winlen: the length of the analysis window in seconds.
-    @param winstep: the step between successive windows in seconds.
-    @param samplerate: the samplerate of the signal we are working with.
-    @param nfilt: the number of filters in the filterbank. Default 26.
-    @param NFFT: the FFT size. Default is 512.
-    @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
-    no filter. Default is 0.97.
-    @param numcep: the number of cepstrum to return, default 13
-    @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
-    lifter. Default is 22.
-    @param appendEnergy: if this is true, the zeroth cepstral coefficient is
-    replaced by the log of the frame energy.
-
-    @returns: A numpy array of size NUMFRAMES x numcep containing features.
-    Each row holds 1 numcep-dimensional vector and each column holds 1 feature
-    over time. Ex:
-
-    |f_1_1 f_1_2 ... f_1_c|
-    |f_2_1 f_2_2 ... f_2_c|
-    |...                  |
-    |f_T_1 f_T_2 ... f_T_c|
-
-    where 'c' is the number of features and 'T' the number of frames.
-    """
-    presignal = preemphasis(signal, preemph)
-    frames = framesignal(presignal, winlen*samplerate, winstep*samplerate)
-    powframes = powspec(frames, NFFT)
-    fbank = filterbank(samplerate, nfilt, NFFT)
-
-    feats = np.dot(powframes, fbank.T)
-    feats = np.where(feats < ZERO, ZERO, feats) # avoid problems with log
-
-    feats = np.log(feats) #TODO checar se é em dB (10log_10) ou log_e
-    # type = 2 or type = 3? TODO escrever uma DCT?
-    feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : 13]
-    feats = lifter(feats, ceplifter)
-    if appendEnergy:
-        energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
-        energy = np.where(energy < ZERO, ZERO, energy)
-        energy = np.log(energy) #TODO checar se é em dB (10log_10) ou log_e
-        feats[ : , 0] = energy
-
-    while numdeltas > 0:
-        feats = append_deltas(feats, numcep, N)
-        numdeltas = numdeltas - 1
-
-    return feats
-
 def append_deltas(feats, numcep, N=2):
     """Calculates and appends the deltas for the last 'numcep' features from
     frames 'feats[:]'. OBS: this method only calculates 1st order deltas. To
@@ -247,6 +193,62 @@ def append_deltas(feats, numcep, N=2):
         new_feats[t, numfeats :] = delta / denom
 
     return new_feats
+
+def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
+         numcep=13, ceplifter=22, append_energy=True, delta_order=0, N=2):
+    """Extracts features from an audio signal using the MFCC algorithm.
+
+    @param signal: the audio signal from which to extract the features. Should
+    be an N*1 array
+    @param winlen: the length of the analysis window in seconds.
+    @param winstep: the step between successive windows in seconds.
+    @param samplerate: the samplerate of the signal we are working with.
+    @param nfilt: the number of filters in the filterbank. Default 26.
+    @param NFFT: the FFT size. Default is 512.
+    @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
+    no filter. Default is 0.97.
+    @param numcep: the number of cepstrum to return, default 13
+    @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
+    lifter. Default is 22.
+    @param append_energy: if this is true, the zeroth cepstral coefficient is
+    replaced by the log of the frame energy.
+    @param delta_order: the number of delta calculations. Default 0 (no delta).
+    @param N: complexity of delta. Default 2.
+
+    @returns: A numpy array of size NUMFRAMES x numfeats containing features.
+    Each row holds a numfeats-dimensional vector and each column holds 1 feature
+    over time, where numfeats = (1 + delta_order)*numcep. Ex:
+
+    |f_1_1 f_1_2 ... f_1_c|
+    |f_2_1 f_2_2 ... f_2_c|
+    |...                  |
+    |f_T_1 f_T_2 ... f_T_c|
+
+    where 'c' is the number of features and 'T' the number of frames.
+    """
+    presignal = preemphasis(signal, preemph)
+    frames = framesignal(presignal, winlen*samplerate, winstep*samplerate)
+    powframes = powspec(frames, NFFT)
+    fbank = filterbank(samplerate, nfilt, NFFT)
+
+    feats = np.dot(powframes, fbank.T)
+    feats = np.where(feats < ZERO, ZERO, feats) # avoid problems with log
+
+    feats = np.log(feats) #TODO checar se é em dB (10log_10) ou log_e
+    # type = 2 or type = 3? TODO escrever uma DCT?
+    feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : 13]
+    feats = lifter(feats, ceplifter)
+    if append_energy:
+        energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
+        energy = np.where(energy < ZERO, ZERO, energy)
+        energy = np.log(energy) #TODO checar se é em dB (10log_10) ou log_e
+        feats[ : , 0] = energy
+
+    while delta_order > 0:
+        feats = append_deltas(feats, numcep, N)
+        delta_order = delta_order - 1
+
+    return feats
 
 
 #TESTS
@@ -345,11 +347,11 @@ if __name__ == '__main__':
     feats = mfcc(signal, winlen, winstep, samplerate)
     pl.plot(feats)
 
-    # Test for function 'mfcc' with 'numdeltas = 2'
+    # Test for function 'mfcc' with 'delta_order = 2'
     pl.figure() # figure 10
     winlen = 0.02
     winstep = 0.01
-    feats = mfcc(signal, winlen, winstep, samplerate, numdeltas=2)
+    feats = mfcc(signal, winlen, winstep, samplerate, delta_order=2)
     pl.plot(feats)
     pl.figure() # figure 11
     pl.plot(feats[:, 13 : 26])
