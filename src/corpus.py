@@ -67,6 +67,34 @@ def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
 
     return feats
 
+def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
+    """Reads the features files from database for each speaker and concatenate
+    in a single matrix of features.
+
+    @param numcep: number of cepstral coefficients (used to access the base).
+    @param delta_order: order of deltas (used to access the base).
+    @param speaker: the speaker to read the features.
+
+    @returns: a matrix of order NUMFRAMESTOTAL x numcep representing the speaker's
+    features.
+    """
+    PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
+                                          dataset, speaker)
+    features = os.listdir(PATH_SPEAKER)
+    features.sort()
+    feats = None
+
+    for feature in features:
+        featnum = int(feature[:2])
+        feat = read_mit_features(numcep, delta_order, dataset, speaker, featnum)
+
+        if feats is None:
+            feats = feat
+        else:
+            feats = np.vstack((feats, feat))
+
+    return feats
+
 
 #TESTS
 if __name__ == '__main__':
