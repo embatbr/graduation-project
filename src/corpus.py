@@ -98,17 +98,21 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
 
 #TESTS
 if __name__ == '__main__':
+    import sys
     import scipy.io.wavfile as wavf
     import os, os.path, shutil
     import pylab as pl
 
     from common import CORPORA_DIR
 
+    commands = sys.argv[1:]
+
 
     winlen = 0.02
     winstep = 0.01
     numcep = 13
-    extract_mit(winlen, winstep, numcep)
+    if 'extract_mit' in commands:
+        extract_mit(winlen, winstep, numcep)
 
     # Reading speech signal
     (samplerate, signal) = wavf.read('%smit/enroll_1/f00/phrase02_16k.wav' %
@@ -129,5 +133,13 @@ if __name__ == '__main__':
 
     equal = 'Yes' if np.array_equal(feats, featsf) else 'No'
     print('Equal? %s.' % equal)
+
+    pl.figure()
+    for i in range(6):
+        position = 231 + i
+        pl.subplot(position)
+        pl.plot(feats[:, i], feats[:, i + 1], '.')
+        pl.xlabel('feature %d' % i)
+        pl.ylabel('feature %d' % (i + 1))
 
     pl.show()
