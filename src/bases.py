@@ -95,6 +95,33 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
 
     return featsvec
 
+def read_mit_background_features(numcep, delta_order, gender):
+    """Returns the concatenated MFCCs of a gender from dataset 'enroll_1'.
+
+    @param numcep: number of cepstral coefficients (used to access the base).
+    @param delta_order: order of deltas (used to access the base).
+    @param gender: tells the gender of the background ('f' or 'm').
+
+    @returns: a matrix of order NUM_FRAMES_TOTAL x numcep representing the MFCCs
+    for the background model.
+    """
+    ENROLL_1_PATH = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numcep, delta_order)
+    speakers = os.listdir(ENROLL_1_PATH)
+    speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
+    speakers.sort()
+
+    featsvec = None
+    for speaker in speakers:
+        feats = read_mit_speaker_features(numcep, delta_order, 'enroll_1', speaker)
+        if featsvec is None:
+            featsvec = feats
+        else:
+            featsvec = np.vstack((featsvec, feats))
+
+    print(featsvec.shape)
+
+    return featsvec
+
 
 #TESTS
 if __name__ == '__main__':
@@ -141,5 +168,8 @@ if __name__ == '__main__':
         pl.plot(featsvec[:, i], featsvec[:, i + 1], '.')
         pl.xlabel('feature %d' % i)
         pl.ylabel('feature %d' % (i + 1))
+
+    read_mit_background_features(numcep, 0, 'f')
+    read_mit_background_features(numcep, 0, 'm')
 
     pl.show()
