@@ -133,6 +133,7 @@ class GMM(object):
 
                 #Atualizãçao abaixo está dando pau...
                 new_variancesvec[i] = np.dot(posteriors[:, i], mfccs**2)
+                #note: faltou dividir por 'summed_posteriors[i]'
                 new_variancesvec[i] = new_variancesvec[i] - new_meansvec[i]**2
 
             #Testing convergence

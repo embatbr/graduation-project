@@ -67,10 +67,10 @@ if 'train-gmms' in commands:
                 t = time.time() - t
                 print('GMM trained in %f seconds' % t)
 
-                gmmpath = '%s/%s_%d.gmm' % (GMMSPATH, speaker, M)
-                gmmfile = open(gmmpath, 'wb')
-                pickle.dump(gmm, gmmfile)
-                gmmfile.close()
+                #gmmpath = '%s/%s_%d.gmm' % (GMMSPATH, speaker, M)
+                #gmmfile = open(gmmpath, 'wb')
+                #pickle.dump(gmm, gmmfile)
+                #gmmfile.close()
 
             print()
 
