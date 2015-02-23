@@ -53,19 +53,19 @@ def extract_mit(winlen, winstep, numcep, delta_order=0):
             for utt in utterances:
                 PATH_UTT = '%s/%s' % (PATH_SPEAKER, utt)
                 (samplerate, signal) = wavf.read(PATH_UTT)
-                feats = mfcc(signal, winlen, winstep, samplerate, numcep=numcep,
+                featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep,
                              delta_order=delta_order)
-                np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[6:8]), feats)
+                np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[6:8]), featsvec)
 
 def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
     """Reads a feature from a speaker.
 
     @returns: The features from the utterance given by (dataset, speaker, uttnum).
     """
-    feats = np.load('%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
-                    dataset, speaker, uttnum))
+    featsvec = np.load('%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
+                        dataset, speaker, uttnum))
 
-    return feats
+    return featsvec
 
 def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
     """Reads the features files from database for each speaker and concatenate
@@ -82,18 +82,18 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
                                           dataset, speaker)
     features = os.listdir(PATH_SPEAKER)
     features.sort()
-    feats = None
+    featsvec = None
 
     for feature in features:
         featnum = int(feature[:2])
         feat = read_mit_features(numcep, delta_order, dataset, speaker, featnum)
 
-        if feats is None:
-            feats = feat
+        if featsvec is None:
+            featsvec = feat
         else:
-            feats = np.vstack((feats, feat))
+            featsvec = np.vstack((featsvec, feat))
 
-    return feats
+    return featsvec
 
 
 #TESTS
@@ -122,23 +122,23 @@ if __name__ == '__main__':
     time = np.linspace(1/samplerate, duration, numsamples)
 
     # figure 1
-    feats = mfcc(signal, winlen, winstep, samplerate)
+    featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep)
     pl.subplot(211)
     pl.grid(True)
-    pl.plot(feats)
+    pl.plot(featsvec)
     featsf = read_mit_features(numcep, 0, 'enroll_1', 'f00', 2)
     pl.subplot(212)
     pl.grid(True)
     pl.plot(featsf)
 
-    equal = 'Yes' if np.array_equal(feats, featsf) else 'No'
+    equal = 'Yes' if np.array_equal(featsvec, featsf) else 'No'
     print('Equal? %s.' % equal)
 
     pl.figure()
     for i in range(6):
         position = 231 + i
         pl.subplot(position)
-        pl.plot(feats[:, i], feats[:, i + 1], '.')
+        pl.plot(featsvec[:, i], featsvec[:, i + 1], '.')
         pl.xlabel('feature %d' % i)
         pl.ylabel('feature %d' % (i + 1))
 
