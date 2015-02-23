@@ -164,29 +164,29 @@ def lifter(cepstra, L=22):
     else:
         return cepstra
 
-def append_deltas(feats, numcep, N=2):
+def append_deltas(featsvec, numcep, N=2):
     """Calculates and appends the deltas for the last 'numcep' features from
-    frames 'feats[:]'. OBS: this method only calculates 1st order deltas. To
+    frames 'featsvec[:]'. OBS: this method only calculates 1st order deltas. To
     higher orders, use it recursively.
 
-    @param feats: the original features.
+    @param featsvec: the original features.
     @param numcep: the number of cepstral coefficients (added at the end of each
-    frame 'feats[:]').
+    frame 'featsvec[:]').
     @param N: complexity of delta. Default 2.
 
     @returns: a new array containing the original features with deltas appended.
     """
-    numfeats = len(feats[0, :])
-    numframes = len(feats)
+    numfeats = len(featsvec[0, :])
+    numframes = len(featsvec)
     new_feats = np.zeros((numframes, numfeats + numcep))
-    new_feats[:, : numfeats] = feats[:,:]    #copy old features
+    new_feats[:, : numfeats] = featsvec[:,:]    #copy old features
 
     denom = 2 * sum([n*n for n in range(1, N + 1)])
     for t in range(numframes):
         delta = np.zeros(numcep)
         for n in range(1, N + 1):
-            after = feats[t + n, numfeats - numcep :] if ((t + n) < numframes) else 0
-            before = feats[t - n, numfeats - numcep :] if ((t - n) >= 0) else 0
+            after = featsvec[t + n, numfeats - numcep :] if ((t + n) < numframes) else 0
+            before = featsvec[t - n, numfeats - numcep :] if ((t - n) >= 0) else 0
 
             delta = delta + n*(after - before)
 
@@ -231,24 +231,24 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     powframes = powspec(frames, NFFT)
     fbank = filterbank(samplerate, nfilt, NFFT)
 
-    feats = np.dot(powframes, fbank.T)
-    feats = np.where(feats < ZERO, ZERO, feats) # avoid problems with log
-
-    feats = np.log(feats) #TODO checar se é em dB (10log_10) ou log_e
+    featsvec = np.dot(powframes, fbank.T)
+    featsvec = np.where(featsvec < ZERO, ZERO, featsvec) # avoid problems with log
+    featsvec = np.log(featsvec)
     # type = 2 or type = 3? TODO escrever uma DCT?
-    feats = dct(feats, type=2, axis=1, norm='ortho')[ : , : 13]
-    feats = lifter(feats, ceplifter)
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
+    featsvec = lifter(featsvec, ceplifter)
+
     if append_energy:
         energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
         energy = np.where(energy < ZERO, ZERO, energy)
-        energy = np.log(energy) #TODO checar se é em dB (10log_10) ou log_e
-        feats[ : , 0] = energy
+        energy = np.log(energy)
+        featsvec[ : , 0] = energy
 
     while delta_order > 0:
-        feats = append_deltas(feats, numcep, N)
+        featsvec = append_deltas(featsvec, numcep, N)
         delta_order = delta_order - 1
 
-    return feats
+    return featsvec
 
 
 #TESTS
@@ -331,10 +331,10 @@ if __name__ == '__main__':
 
     # Plotting the dot product of 'powframes' with 'fbank', with the log applied
     pl.figure() # figure 6
-    feats = np.dot(powframes, fbank.T)
-    pl.plot(feats)
+    featsvec = np.dot(powframes, fbank.T)
+    pl.plot(featsvec)
     pl.figure() # figure 7
-    logfeats = np.log(feats)
+    logfeats = np.log(featsvec)
     pl.plot(logfeats)
     pl.figure()  # figure 8
     dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : 13]
@@ -344,18 +344,18 @@ if __name__ == '__main__':
     pl.figure() # figure 9
     winlen = 0.02
     winstep = 0.01
-    feats = mfcc(signal, winlen, winstep, samplerate)
-    pl.plot(feats)
+    featsvec = mfcc(signal, winlen, winstep, samplerate)
+    pl.plot(featsvec)
 
     # Test for function 'mfcc' with 'delta_order = 2'
     pl.figure() # figure 10
     winlen = 0.02
     winstep = 0.01
-    feats = mfcc(signal, winlen, winstep, samplerate, delta_order=2)
-    pl.plot(feats)
+    featsvec = mfcc(signal, winlen, winstep, samplerate, delta_order=2)
+    pl.plot(featsvec)
     pl.figure() # figure 11
-    pl.plot(feats[:, 13 : 26])
+    pl.plot(featsvec[:, 13 : 26])
     pl.figure() # figure 12
-    pl.plot(feats[:, 26 :])
+    pl.plot(featsvec[:, 26 :])
 
     pl.show()
