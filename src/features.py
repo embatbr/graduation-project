@@ -2,16 +2,15 @@
 
 This module was made "from scratch" using the codes provided by James Lyons
 at the url "github.com/jameslyons/python_speech_features". Most part of the code
-is similar to the "inspiration". I just read his work, copy what I understood and
-improved some parts.
+is similar to the "inspiration" (aka it's the same). I just read his work, copy
+what I understood and improved some parts.
 """
 
 
 import numpy as np
 import math
 from scipy.fftpack import dct
-
-from common import ZERO
+from common import EPS
 
 
 def preemphasis(signal, preemph=0.97):
@@ -226,13 +225,13 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     where 'c' is the number of features and 'T' the number of frames.
     """
-    presignal = preemphasis(signal, preemph)
-    frames = framesignal(presignal, winlen*samplerate, winstep*samplerate)
+    emph_signal = preemphasis(signal, preemph)
+    frames = framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
     powframes = powspec(frames, NFFT)
     fbank = filterbank(samplerate, nfilt, NFFT)
 
     featsvec = np.dot(powframes, fbank.T)
-    featsvec = np.where(featsvec < ZERO, ZERO, featsvec) # avoid problems with log
+    featsvec = np.where(featsvec == 0, EPS, featsvec) # avoid problems with log
     featsvec = np.log(featsvec)
     # type = 2 or type = 3? TODO escrever uma DCT?
     featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
@@ -240,7 +239,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     if append_energy:
         energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
-        energy = np.where(energy < ZERO, ZERO, energy)
+        energy = np.where(energy == 0, EPS, energy)
         energy = np.log(energy)
         featsvec[ : , 0] = energy
 
@@ -257,7 +256,7 @@ if __name__ == '__main__':
     import os, os.path, shutil
     import pylab as pl
 
-    from common import CORPORA_DIR
+    from common import CORPORA_DIR, ZERO
 
 
     # Reading speech signal
@@ -334,6 +333,10 @@ if __name__ == '__main__':
     featsvec = np.dot(powframes, fbank.T)
     pl.plot(featsvec)
     pl.figure() # figure 7
+    featsvec[50,0] = 0
+    featsvec = np.where(featsvec == 0, EPS, featsvec)
+    featsvec[100,0] = 0
+    featsvec = np.where(featsvec == 0, ZERO, featsvec)
     logfeats = np.log(featsvec)
     pl.plot(logfeats)
     pl.figure()  # figure 8
