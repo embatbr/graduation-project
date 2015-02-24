@@ -85,9 +85,12 @@ if 'identify' in commands:
     if DEBUG: print('M = %d' % M)
     for delta_order in delta_orders:
         if DEBUG: print('delta_order = %d' % delta_order)
-        # opening experiment file
-        EXP_SET_PATH = '%smit_%d_%d.exp' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
-        expfile = open(EXP_SET_PATH, 'a')
+        MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
+        if not os.path.exists(MFCC_DIR):
+            os.mkdir(MFCC_DIR)
+
+        EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
+        expfile = open(EXP_SET_PATH, 'w')
 
         # reading GMMs from 'enroll_1' to use as base
         ENROLL_1_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)

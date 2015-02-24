@@ -7,7 +7,7 @@ from math import pi as PI
 from common import EPS
 
 
-DEBUG = False
+DEBUG = True
 
 
 # K-means algorithm to generate the means
@@ -110,7 +110,7 @@ class GMM(object):
         numframes = len(featsvec) # numframes is the number T of x_t elements
         return (logprobs / numframes)
 
-    def train(self, featsvec, threshold=0.01):
+    def train(self, featsvec, threshold=1E-5):
         """Train the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -176,20 +176,20 @@ class GMM(object):
 
             if DEBUG: print('CALCULATING new_logprob')
             new_logprob = self.log_likelihood(featsvec)
-            reduction = old_logprob - new_logprob
+            reduction = (old_logprob - new_logprob) / old_logprob
             if DEBUG: print(new_logprob)
-            if DEBUG: print('reduction = %f' % reduction)
+            if DEBUG: print('reduction = %e' % reduction)
 
-            if (reduction < 0) and (reduction >= -threshold):
-                print('CORRETO')
+            if (reduction >= 0) and (reduction <= threshold):
+                if DEBUG: print('CORRETO')
                 break
             # This 'if' should never be triggered
-            if new_logprob <= old_logprob: #log of probabilities are negative; |new| >= |old|
-                self.weights[i] = old_weights[i]
-                self.meansvec[i] = old_meansvec[i]
-                self.variancesvec[i] = old_variancesvec[i]
-                print('ERRADO')
-                break
+            #if new_logprob <= old_logprob: #log of probabilities are negative; |new| >= |old|
+            #    self.weights[i] = old_weights[i]
+            #    self.meansvec[i] = old_meansvec[i]
+            #    self.variancesvec[i] = old_variancesvec[i]
+            #    if DEBUG: print('ERRADO')
+            #    break
 
             old_logprob = new_logprob
 
