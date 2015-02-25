@@ -1,6 +1,5 @@
 bases/corpora/
 bases/features/
-bases/gmms/
 docs/*.aux
 docs/*.log
 docs/*.toc
