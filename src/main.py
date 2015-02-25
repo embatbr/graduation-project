@@ -9,16 +9,18 @@ import os, os.path
 import shutil
 import time
 import pickle
-from common import FEATURES_DIR, GMMS_DIR, EXP_IDENTIFICATION_DIR
+from common import FEATURES_DIR, GMMS_DIR, UBMS_DIR, ADAP_GMMS_DIR
+from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR
 import bases, mixtures
 
 
 commands = sys.argv[1:]
 
+
+numceps = [6, 13, 19]
 delta_orders = [0, 1, 2]
-M = 64
-datasets = ['enroll_1', 'enroll_2', 'imposter']
-numcep = 6
+M = 32
+
 
 #Extract the MFCCs from base MIT and put in the correct format.
 if 'extract-features' in commands:
@@ -29,11 +31,16 @@ if 'extract-features' in commands:
 
     winlen = 0.02
     winstep = 0.01
+
     t = time.time()
-    for delta_order in delta_orders:
-        bases.extract_mit(winlen, winstep, numcep, delta_order)
+
+    for numcep in numceps:
+        for delta_order in delta_orders:
+            bases.extract_mit(winlen, winstep, numcep, delta_order)
+
     t = time.time() - t
     print('Features extracted in %f seconds' % t)
+
 
 if 'train-gmms' in commands:
     if not os.path.exists(GMMS_DIR):
@@ -42,141 +49,190 @@ if 'train-gmms' in commands:
     print('GMM TRAINING\nM = %d' % M)
     t_tot = time.time()
 
-    for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
-        GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-        if not os.path.exists(GMMS_PATH):
-            os.mkdir(GMMS_PATH)
+    for numcep in numceps:
+        print('numcep = %d' % numcep)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
+            if not os.path.exists(GMMS_PATH):
+                os.mkdir(GMMS_PATH)
 
-        ENROLL_1_PATH = '%smit_%d_%d/enroll_1/' % (FEATURES_DIR, numcep, delta_order)
-        speakers = os.listdir(ENROLL_1_PATH)
-        speakers.sort()
+            ENROLL_1_PATH = '%smit_%d_%d/enroll_1/' % (FEATURES_DIR, numcep, delta_order)
+            speakers = os.listdir(ENROLL_1_PATH)
+            speakers.sort()
 
-        for speaker in speakers:
-            featsvec = bases.read_mit_speaker_features(numcep, delta_order,
-                                                       'enroll_1', speaker)
-            print('GMM %s: %s' % (speaker, featsvec.shape))
+            for speaker in speakers:
+                featsvec = bases.read_mit_speaker_features(numcep, delta_order,
+                                                           'enroll_1', speaker)
+                print('GMM %s: %s' % (speaker, featsvec.shape))
 
-            gmm = mixtures.GMM(M, featsvec)
-            featsvec_utt = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f00', 1)
-            untrained_log_likelihood = gmm.log_likelihood(featsvec_utt)
-            print('log_likelihood = %f' % untrained_log_likelihood)
+                gmm = mixtures.GMM(M, featsvec)
+                featsvec_utt = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f00', 1)
+                untrained_log_likelihood = gmm.log_likelihood(featsvec_utt)
+                print('log_likelihood = %f' % untrained_log_likelihood)
 
-            t = time.time()
-            gmm.train(featsvec)
-            t = time.time() - t
-            print('Trained in %f seconds' % t)
-            trained_log_likelihood = gmm.log_likelihood(featsvec_utt)
-            print('log_likelihood = %f' % trained_log_likelihood)
+                t = time.time()
+                gmm.train(featsvec)
+                t = time.time() - t
+                print('Trained in %f seconds' % t)
+                trained_log_likelihood = gmm.log_likelihood(featsvec_utt)
+                print('log_likelihood = %f' % trained_log_likelihood)
 
-            increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
-            print('increase = %2.2f%%' % (increase*100))
+                increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
+                print('increase = %2.2f%%' % (increase*100))
 
-            GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, speaker, M)
-            gmmfile = open(GMM_PATH, 'wb')
-            pickle.dump(gmm, gmmfile)
-            gmmfile.close()
+                GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, speaker, M)
+                gmmfile = open(GMM_PATH, 'wb')
+                pickle.dump(gmm, gmmfile)
+                gmmfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
 
 
 if 'identify' in commands:
-    if os.path.exists(EXP_IDENTIFICATION_DIR):
-        shutil.rmtree(EXP_IDENTIFICATION_DIR)
-    os.mkdir(EXP_IDENTIFICATION_DIR)
+    if not os.path.exists(EXP_IDENTIFICATION_DIR):
+        os.mkdir(EXP_IDENTIFICATION_DIR)
 
     print('SPEAKER IDENTIFICATION\nM = %d' % M)
 
-    for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
+    t_tot = time.time()
 
-        # reading GMMs from 'enroll_1' to use as base
-        ENROLL_1_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-        gmmfilenames = os.listdir(ENROLL_1_PATH)
-        gmmfilenames.sort()
-        gmms_enroll_1 = list()
-        for gmmfilename in gmmfilenames:
-            GMM_PATH = '%s%s' % (ENROLL_1_PATH, gmmfilename)
-            gmmfile = open(GMM_PATH, 'rb')
-            gmm = pickle.load(gmmfile)
-            gmmfile.close()
-            gmms_enroll_1.append(gmm)
+    for numcep in numceps:
+        print('numcep = %d' % numcep)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
 
-        # reading features from 'enroll_2'
-        ENROLL_2_PATH = '%smit_%d_%d/enroll_2/' % (FEATURES_DIR, numcep, delta_order)
-        speakers = os.listdir(ENROLL_2_PATH)
-        speakers.sort()
-        hitslist = list()
-        for speaker in speakers:
-            print(speaker)
-            SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
-            features = os.listdir(SPEAKER_PATH)
-            features.sort()
+            # reading GMMs from 'enroll_1' to use as base
+            ENROLL_1_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
+            gmmfilenames = os.listdir(ENROLL_1_PATH)
+            gmmfilenames.sort()
+            gmms_enroll_1 = list()
+            for gmmfilename in gmmfilenames:
+                GMM_PATH = '%s%s' % (ENROLL_1_PATH, gmmfilename)
+                gmmfile = open(GMM_PATH, 'rb')
+                gmm = pickle.load(gmmfile)
+                gmmfile.close()
+                gmms_enroll_1.append(gmm)
 
-            hits = 0
-            for feature in features:
-                featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_2',
-                                                   speaker, int(feature[:2]))
-                probs = [gmm_enroll_1.log_likelihood(featsvec) for gmm_enroll_1
-                                                               in gmms_enroll_1]
-                indentified = gmmfilenames[probs.index(max(probs))][:3]
-                if indentified == speaker:
-                    hits = hits + 1
+            # reading features from 'enroll_2'
+            ENROLL_2_PATH = '%smit_%d_%d/enroll_2/' % (FEATURES_DIR, numcep, delta_order)
+            speakers = os.listdir(ENROLL_2_PATH)
+            speakers.sort()
+            hitslist = list()
+            for speaker in speakers:
+                print(speaker)
+                SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
+                features = os.listdir(SPEAKER_PATH)
+                features.sort()
 
-            hits = hits / len(features)
-            hitslist.append(hits)
-            print('hits =', (hits*100))
+                hits = 0
+                for feature in features:
+                    featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_2',
+                                                       speaker, int(feature[:2]))
+                    probs = [gmm_enroll_1.log_likelihood(featsvec) for gmm_enroll_1
+                                                                   in gmms_enroll_1]
+                    indentified = gmmfilenames[probs.index(max(probs))][:3]
+                    if indentified == speaker:
+                        hits = hits + 1
 
-        MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
-        if not os.path.exists(MFCC_DIR):
-            os.mkdir(MFCC_DIR)
+                hits = hits / len(features)
+                hitslist.append(hits)
+                print('hits = %3.2f%%' % (hits*100))
 
-        EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
-        expfile = open(EXP_SET_PATH, 'w')
-        for (speaker, hits) in zip(speakers, hitslist):
-            expfile.write('%s %3.2f\n' % (speaker, 100*hits))
+            MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
+            if not os.path.exists(MFCC_DIR):
+                os.mkdir(MFCC_DIR)
+
+            EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
+            expfile = open(EXP_SET_PATH, 'w')
+            for (speaker, hits) in zip(speakers, hitslist):
+                expfile.write('%s %3.2f\n' % (speaker, 100*hits))
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
 
 
 if 'train-ubms' in commands:
-    if not os.path.exists(GMMS_DIR):
-        os.mkdir(GMMS_DIR)
+    if not os.path.exists(UBMS_DIR):
+        os.mkdir(UBMS_DIR)
 
     print('UBM TRAINING\nM = %d' % M)
 
     t_tot = time.time()
 
     genders = ['f', 'm']
-    for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
-        GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-        if not os.path.exists(GMMS_PATH):
-            os.mkdir(GMMS_PATH)
+    for numcep in numceps:
+        print('numcep = %d' % numcep)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numcep, delta_order)
+            if not os.path.exists(GMMS_PATH):
+                os.mkdir(GMMS_PATH)
 
-        for gender in genders:
-            featsvec = bases.read_mit_background_features(numcep, delta_order,
-                                                          gender)
-            print('%s: %s' % (gender, featsvec.shape))
+            for gender in genders:
+                featsvec = bases.read_mit_background_features(numcep, delta_order,
+                                                              gender)
+                print('UBM %s: %s' % (gender, featsvec.shape))
 
-            ubm = mixtures.GMM(M, featsvec)
-            t = time.time()
-            ubm.train(featsvec)
-            t = time.time() - t
-            print('UBM trained in %f seconds' % t)
+                ubm = mixtures.GMM(M, featsvec)
+                t = time.time()
+                ubm.train(featsvec)
+                t = time.time() - t
+                print('UBM trained in %f seconds' % t)
 
-            GMM_PATH = '%s/ubm_%s_%d.gmm' % (GMMS_PATH, gender, M)
-            ubmfile = open(GMM_PATH, 'wb')
-            pickle.dump(ubm, ubmfile)
-            ubmfile.close()
+                GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, gender, M)
+                ubmfile = open(GMM_PATH, 'wb')
+                pickle.dump(ubm, ubmfile)
+                ubmfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
 
 
 if 'adap-gmms-from-ubm' in commands:
-    #TODO gmm files must ba named as 'adap_<speaker>_M.gmm', where speaker = 'fxx' or 'mxx'
-    pass
+    if not os.path.exists(ADAP_GMMS_DIR):
+        os.mkdir(ADAP_GMMS_DIR)
+
+    print('GMM ADAPTATION FROM UBM\nM = %d' % M)
+
+    t_tot = time.time()
+
+    #TODO code goes here
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
 
 
 if 'verify' in commands:
-    pass
+    if not os.path.exists(EXP_VERIFICATION_DIR):
+        os.mkdir(EXP_VERIFICATION_DIR)
+
+    print('SPEAKER VERIFICATION\nM = %d' % M)
+
+    t_tot = time.time()
+
+    for numcep in numceps:
+        print('numcep = %d' % numcep)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+
+            # reading UBMs and GMMs trained using utterances from 'enroll_1'
+            directories = [UBMS_DIR, GMMS_DIR]
+            for directory in directories[:1]:
+                PATH = '%smit_%d_%d/' % (directory, numcep, delta_order)
+                print(PATH)
+                filenames = os.listdir(PATH)
+                filenames = [filename for filename in filenames
+                                      if filename.endswith('%d.gmm' % M)]
+                filenames.sort()
+                #gmms = list()
+                #for gmmfilename in filenames:
+                #    GMM_PATH = '%s%s' % (PATH, gmmfilename)
+                #    gmmfile = open(UBM_PATH, 'rb')
+                #    gmm = pickle.load(gmmfile)
+                #    gmmfile.close()
+                #    gmms.append(gmm)
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)

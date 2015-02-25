@@ -9,9 +9,12 @@ BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
 GMMS_DIR = '%sgmms/' % BASES_DIR
+UBMS_DIR = '%subms/' % BASES_DIR
+ADAP_GMMS_DIR = '%sadap_gmms/' % BASES_DIR
 
 EXPERIMENTS_DIR = '../experiments/'
 EXP_IDENTIFICATION_DIR = '%sidentification/' % EXPERIMENTS_DIR
+EXP_VERIFICATION_DIR = '%sverification/' % EXPERIMENTS_DIR
 
 FLOAT_MIN = np.finfo(np.float64).min # -1.7976931348623157e+308
 FLOAT_MAX = np.finfo(np.float64).max # +1.7976931348623157e+308

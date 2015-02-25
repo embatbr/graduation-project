@@ -134,12 +134,14 @@ if __name__ == '__main__':
 
     winlen = 0.02
     winstep = 0.01
-    numcep = 13
+    numcep = 6
     delta_order = 0
     Ms = [2**n for n in range(3, 11)]
 
     featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f02')
     test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f02', 1)
+    print(featsvec.shape)
+    print(test_featsvec.shape)
 
     for M in Ms:
         #creation
