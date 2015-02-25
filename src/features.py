@@ -49,7 +49,7 @@ def framesignal(signal, framelen, framestep):
     padsignal = np.append(signal, zeros)  # addition of zeros at the end
 
     # indices of samples in frames (0:0->framelen, 1:framestep->(framelen + framestep), ...)
-    # the 'tile' count is really smart, but difficult to get at first
+    # the 'tile' usage is really smart, but difficult to get at first
     indices = np.tile(np.arange(0, framelen), (numframes, 1)) +\
               np.tile(np.arange(0, numframes*framestep, framestep), (framelen, 1)).T
     indices = indices.astype(np.int32, copy=False)
@@ -96,8 +96,7 @@ def hz2mel(hz):
     @returns: a value in Mels. If an array was passed in, an identical sized array
     is returned.
     """
-    #return (2595 * np.log10(1 + hz/700))
-    return (1127 * np.log(1 + hz/700))
+    return (2595 * np.log10(1 + hz/700))
 
 def mel2hz(mel):
     """Converts a value in Mels to Hertz
@@ -108,8 +107,7 @@ def mel2hz(mel):
     @returns: a value in Hertz. If an array was passed in, an identical sized
     array is returned.
     """
-    #return (700 * (10**(mel/2595) - 1))
-    return (700 * (np.exp(mel/1127) - 1))
+    return (700 * (10**(mel/2595) - 1))
 
 def filterbank(samplerate, nfilt=26, NFFT=512):
     """Creates an filterbank in the mel scale. The filters are stored in the rows,
@@ -230,14 +228,16 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     fbank = filterbank(samplerate, nfilt, NFFT)
 
     featsvec = np.dot(powframes, fbank.T)
-    featsvec = np.log(featsvec)
+    featsvec = 10*np.log10(featsvec) #dB
     featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:
         energy = np.sum(powframes, axis=1) # stores the total energy of each frame
-        energy = np.log(energy)
+        energy = 10*np.log10(energy) #dB
         featsvec[ : , 0] = energy
+
+    featsvec = featsvec - np.mean(featsvec, axis=0) # CMS reduces the effect of noise
 
     while delta_order > 0:
         featsvec = append_deltas(featsvec, numcep, N)
@@ -329,11 +329,13 @@ if __name__ == '__main__':
     featsvec = np.dot(powframes, fbank.T) + EPS
     pl.plot(featsvec)
     pl.figure() # figure 7
-    logfeats = np.log(featsvec)
-    pl.plot(logfeats)
+    featsvec = 10*np.log10(featsvec)
+    pl.plot(featsvec)
     pl.figure()  # figure 8
-    dctlogfeats = dct(logfeats, type=2, axis=1, norm='ortho')[ : , : 13]
-    pl.plot(dctlogfeats)
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
+    featsvec = lifter(featsvec, L=22)
+    featsvec = featsvec - np.mean(featsvec, axis=0)
+    pl.plot(featsvec)
 
     # Test for function 'mfcc'
     pl.figure() # figure 9

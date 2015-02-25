@@ -61,7 +61,7 @@ class GMM(object):
         for gmm for each feature vector, aka, the log-likelihood.
         """
         probs = np.array([self.eval(feats)[0] for feats in featsvec])
-        logprobs = np.log(probs)
+        logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sum logprobs and divide by number of samples (T)
 
     def train(self, featsvec, threshold=1E-2):
@@ -126,10 +126,11 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     numcep = 13
+    delta_order = 0
     Ms = [2**n for n in range(3, 11)]
 
-    featsvec = bases.read_mit_speaker_features(numcep, 0, 'enroll_1', 'f00')
-    test_featsvec = bases.read_mit_features(numcep, 0, 'enroll_1', 'f00', 1)
+    featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f00')
+    test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f00', 1)
 
     for M in Ms:
         #creation
@@ -139,7 +140,8 @@ if __name__ == '__main__':
         print('GMM (M = %d) created in %f seconds' % (M, t))
         untrained_log_likelihood = gmm.log_likelihood(test_featsvec)
         print('untrained GMM: log-likelihood = %f' % untrained_log_likelihood)
-        pl.figure()
+        fig = pl.figure()
+        fig.suptitle('M = %d' % M)
         pl.subplot(221)
         pl.plot(featsvec[:, 0], featsvec[:, 1], '.')
         pl.subplot(223)
