@@ -4,7 +4,7 @@
 
 import numpy as np
 from math import pi as PI
-from common import EPS, ZERO
+from common import ZERO
 
 
 class GMM(object):
@@ -84,21 +84,21 @@ class GMM(object):
                 posteriors[t] = w_gaussians / likelihood_in_t
 
             #Summation of posteriors from t=1 until t=T
-            sum_posteriors_in_t = np.sum(posteriors, axis=0)
+            sum_posteriors = np.sum(posteriors, axis=0)
 
             # M-Step
             for i in range(self.nummixtures):
                 #Updating i-th weight
-                self.weights[i] = sum_posteriors_in_t[i] / T
+                self.weights[i] = sum_posteriors[i] / T
 
                 #Updating i-th meansvec
                 #BUG: means is receiving 'nan'
                 self.meansvec[i] = np.dot(posteriors[:, i], featsvec)
-                self.meansvec[i] = self.meansvec[i] / sum_posteriors_in_t[i]
+                self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
 
                 #Updating i-th variancesvec
                 self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
-                self.variancesvec[i] = self.variancesvec[i] / sum_posteriors_in_t[i]
+                self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
                 self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
 
             new_log_like = self.log_likelihood(featsvec)
@@ -107,6 +107,15 @@ class GMM(object):
 
                 if reduction < 0: # If enters here, it's wrong
                     print('WRONG!')
+                    wrong = open('wrong.log', 'w')
+                    wrong.write('MLE by EM algorithm is not monotonically increasing.\n')
+                    wrong.write('old_log_like = %f.\n' % old_log_like)
+                    wrong.write('new_log_like = %f.\n' % new_log_like)
+                    wrong.write('reduction = %f.\n' % reduction)
+                    wrong.write('sum_posteriors = %f.\n' % sum_posteriors)
+                    wrong.write('self.weights = %f.\n' % self.weights)
+                    wrong.write('self.meansvec = %f.\n' % self.meansvec)
+                    wrong.write('self.variancesvec = %f.\n' % self.variancesvec)
                     break
                 elif reduction <= threshold:
                     run = False
