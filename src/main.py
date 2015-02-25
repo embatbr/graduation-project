@@ -13,12 +13,10 @@ from common import FEATURES_DIR, GMMS_DIR, EXP_IDENTIFICATION_DIR
 import bases, mixtures
 
 
-DEBUG = True
-
 commands = sys.argv[1:]
 
 delta_orders = [0, 1, 2]
-M = 8#1024
+M = 64
 datasets = ['enroll_1', 'enroll_2', 'imposter']
 numcep = 13
 
@@ -58,13 +56,22 @@ if 'train-gmms' in commands:
         for speaker in speakers:
             featsvec = bases.read_mit_speaker_features(numcep, delta_order,
                                                        'enroll_1', speaker)
-            if DEBUG: print('%s: %s' % (speaker, featsvec.shape))
+            print('GMM %s: %s' % (speaker, featsvec.shape))
 
             gmm = mixtures.GMM(M, featsvec)
-            if DEBUG: t = time.time()
+            featsvec_utt = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f00', 1)
+            untrained_log_likelihood = gmm.log_likelihood(featsvec_utt)
+            print('log_likelihood = %f' % untrained_log_likelihood)
+
+            t = time.time()
             gmm.train(featsvec)
-            if DEBUG: t = time.time() - t
-            if DEBUG: print('GMM trained in %f seconds' % t)
+            t = time.time() - t
+            print('Trained in %f seconds' % t)
+            trained_log_likelihood = gmm.log_likelihood(featsvec_utt)
+            print('log_likelihood = %f' % trained_log_likelihood)
+
+            increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
+            print('increase = %2.2f%%' % (increase*100))
 
             GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, speaker, M)
             gmmfile = open(GMM_PATH, 'wb')
@@ -80,17 +87,10 @@ if 'identify' in commands:
         shutil.rmtree(EXP_IDENTIFICATION_DIR)
     os.mkdir(EXP_IDENTIFICATION_DIR)
 
-    print('SPEAKER IDENTIFICATION')
+    print('SPEAKER IDENTIFICATION\nM = %d' % M)
 
-    if DEBUG: print('M = %d' % M)
     for delta_order in delta_orders:
-        if DEBUG: print('delta_order = %d' % delta_order)
-        MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
-        if not os.path.exists(MFCC_DIR):
-            os.mkdir(MFCC_DIR)
-
-        EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
-        expfile = open(EXP_SET_PATH, 'w')
+        print('delta_order = %d' % delta_order)
 
         # reading GMMs from 'enroll_1' to use as base
         ENROLL_1_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
@@ -108,8 +108,9 @@ if 'identify' in commands:
         ENROLL_2_PATH = '%smit_%d_%d/enroll_2/' % (FEATURES_DIR, numcep, delta_order)
         speakers = os.listdir(ENROLL_2_PATH)
         speakers.sort()
+        hitslist = list()
         for speaker in speakers:
-            if DEBUG: print(speaker)
+            print(speaker)
             SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
             features = os.listdir(SPEAKER_PATH)
             features.sort()
@@ -125,22 +126,30 @@ if 'identify' in commands:
                     hits = hits + 1
 
             hits = hits / len(features)
-            if DEBUG: print('hits =', hits)
-            expfile.write('%d %s %3.2f\n' % (M, speaker, 100*hits))
+            hitslist.append(hits)
+            print('hits =', (hits*100))
+
+        MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
+        if not os.path.exists(MFCC_DIR):
+            os.mkdir(MFCC_DIR)
+
+        EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
+        expfile = open(EXP_SET_PATH, 'w')
+        for (speaker, hits) in zip(speakers, hitslist):
+            expfile.write('%s %3.2f\n' % (speaker, 100*hits))
 
 
 if 'train-ubms' in commands:
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
 
-    print('UBM TRAINING')
+    print('UBM TRAINING\nM = %d' % M)
 
     t_tot = time.time()
 
     genders = ['f', 'm']
-    if DEBUG: print('M = %d' % M)
     for delta_order in delta_orders:
-        if DEBUG: print('delta_order = %d' % delta_order)
+        print('delta_order = %d' % delta_order)
         GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
         if not os.path.exists(GMMS_PATH):
             os.mkdir(GMMS_PATH)
@@ -148,15 +157,15 @@ if 'train-ubms' in commands:
         for gender in genders:
             featsvec = bases.read_mit_background_features(numcep, delta_order,
                                                           gender)
-            if DEBUG: print('%s: %s' % (gender, featsvec.shape))
+            print('%s: %s' % (gender, featsvec.shape))
 
             ubm = mixtures.GMM(M, featsvec)
-            if DEBUG: t = time.time()
+            t = time.time()
             ubm.train(featsvec)
-            if DEBUG: t = time.time() - t
-            if DEBUG: print('UBM trained in %f seconds' % t)
+            t = time.time() - t
+            print('UBM trained in %f seconds' % t)
 
-            GMM_PATH = '%s/%s_%d.ubm' % (GMMS_PATH, gender, M)
+            GMM_PATH = '%s/ubm_%s_%d.gmm' % (GMMS_PATH, gender, M)
             ubmfile = open(GMM_PATH, 'wb')
             pickle.dump(ubm, ubmfile)
             ubmfile.close()
@@ -166,6 +175,7 @@ if 'train-ubms' in commands:
 
 
 if 'adap-gmms-from-ubm' in commands:
+    #TODO gmm files must ba named as 'adap_<speaker>_M.gmm', where speaker = 'fxx' or 'mxx'
     pass
 
 

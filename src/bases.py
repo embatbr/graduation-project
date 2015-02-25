@@ -118,8 +118,6 @@ def read_mit_background_features(numcep, delta_order, gender):
         else:
             featsvec = np.vstack((featsvec, feats))
 
-    print(featsvec.shape)
-
     return featsvec
 
 

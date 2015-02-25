@@ -10,7 +10,6 @@ what I understood and improved some parts.
 import numpy as np
 import math
 from scipy.fftpack import dct
-from common import EPS
 
 
 def preemphasis(signal, preemph=0.97):
@@ -231,15 +230,12 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     fbank = filterbank(samplerate, nfilt, NFFT)
 
     featsvec = np.dot(powframes, fbank.T)
-    featsvec = np.where(featsvec == 0, EPS, featsvec) # avoid problems with log
     featsvec = np.log(featsvec)
-    # type = 2 or type = 3? TODO escrever uma DCT?
     featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:
-        energy = np.sum(powframes, axis=1)    # stores the total energy of each frame
-        energy = np.where(energy == 0, EPS, energy)
+        energy = np.sum(powframes, axis=1) # stores the total energy of each frame
         energy = np.log(energy)
         featsvec[ : , 0] = energy
 
@@ -256,7 +252,7 @@ if __name__ == '__main__':
     import os, os.path, shutil
     import pylab as pl
 
-    from common import CORPORA_DIR, ZERO
+    from common import CORPORA_DIR, EPS
 
 
     # Reading speech signal
@@ -330,13 +326,9 @@ if __name__ == '__main__':
 
     # Plotting the dot product of 'powframes' with 'fbank', with the log applied
     pl.figure() # figure 6
-    featsvec = np.dot(powframes, fbank.T)
+    featsvec = np.dot(powframes, fbank.T) + EPS
     pl.plot(featsvec)
     pl.figure() # figure 7
-    featsvec[50,0] = 0
-    featsvec = np.where(featsvec == 0, EPS, featsvec)
-    featsvec[100,0] = 0
-    featsvec = np.where(featsvec == 0, ZERO, featsvec)
     logfeats = np.log(featsvec)
     pl.plot(logfeats)
     pl.figure()  # figure 8
