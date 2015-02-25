@@ -138,8 +138,8 @@ if __name__ == '__main__':
     delta_order = 0
     Ms = [2**n for n in range(3, 11)]
 
-    featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f00')
-    test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f00', 1)
+    featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f02')
+    test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f02', 1)
 
     for M in Ms:
         #creation

@@ -229,7 +229,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     featsvec = np.dot(powframes, fbank.T)
     featsvec = 10*np.log10(featsvec) #dB
-    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numcep]
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:
@@ -332,7 +332,8 @@ if __name__ == '__main__':
     featsvec = 10*np.log10(featsvec)
     pl.plot(featsvec)
     pl.figure()  # figure 8
-    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : 13]
+    numcep = 6
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numcep]
     featsvec = lifter(featsvec, L=22)
     featsvec = featsvec - np.mean(featsvec, axis=0)
     pl.plot(featsvec)
@@ -341,18 +342,18 @@ if __name__ == '__main__':
     pl.figure() # figure 9
     winlen = 0.02
     winstep = 0.01
-    featsvec = mfcc(signal, winlen, winstep, samplerate)
+    featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep)
     pl.plot(featsvec)
 
     # Test for function 'mfcc' with 'delta_order = 2'
     pl.figure() # figure 10
     winlen = 0.02
     winstep = 0.01
-    featsvec = mfcc(signal, winlen, winstep, samplerate, delta_order=2)
+    featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep, delta_order=2)
     pl.plot(featsvec)
     pl.figure() # figure 11
-    pl.plot(featsvec[:, 13 : 26])
+    pl.plot(featsvec[:, numcep : 2*numcep])
     pl.figure() # figure 12
-    pl.plot(featsvec[:, 26 :])
+    pl.plot(featsvec[:, 2*numcep :])
 
     pl.show()

@@ -18,13 +18,12 @@ commands = sys.argv[1:]
 delta_orders = [0, 1, 2]
 M = 64
 datasets = ['enroll_1', 'enroll_2', 'imposter']
-numcep = 13
+numcep = 6
 
 #Extract the MFCCs from base MIT and put in the correct format.
 if 'extract-features' in commands:
-    if os.path.exists(FEATURES_DIR):
-        shutil.rmtree(FEATURES_DIR)
-    os.mkdir(FEATURES_DIR)
+    if not os.path.exists(FEATURES_DIR):
+        os.mkdir(FEATURES_DIR)
 
     print('FEATURE EXTRACTION')
 

@@ -62,8 +62,9 @@ def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
 
     @returns: The features from the utterance given by (dataset, speaker, uttnum).
     """
-    featsvec = np.load('%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
-                        dataset, speaker, uttnum))
+    PATH = '%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
+                                           dataset, speaker, uttnum)
+    featsvec = np.load(PATH)
 
     return featsvec
 
@@ -85,13 +86,13 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
     featsvec = None
 
     for feature in features:
-        featnum = int(feature[:2])
-        feat = read_mit_features(numcep, delta_order, dataset, speaker, featnum)
+        featsnum = int(feature[:2])
+        feats = read_mit_features(numcep, delta_order, dataset, speaker, featsnum)
 
         if featsvec is None:
-            featsvec = feat
+            featsvec = feats
         else:
-            featsvec = np.vstack((featsvec, feat))
+            featsvec = np.vstack((featsvec, feats))
 
     return featsvec
 
