@@ -17,9 +17,9 @@ import bases, mixtures
 commands = sys.argv[1:]
 
 
-numceps = [6, 13, 19]
+numceps = [6]#[13]#[19]#[6, 13, 19]
 delta_orders = [0, 1, 2]
-M = 32
+M = 64
 
 
 #Extract the MFCCs from base MIT and put in the correct format.
@@ -96,6 +96,10 @@ if 'identify' in commands:
 
     print('SPEAKER IDENTIFICATION\nM = %d' % M)
 
+    M_DIR = '%sM_%d/' % (EXP_IDENTIFICATION_DIR, M)
+    if not os.path.exists(M_DIR):
+        os.mkdir(M_DIR)
+
     t_tot = time.time()
 
     for numcep in numceps:
@@ -120,6 +124,7 @@ if 'identify' in commands:
             speakers = os.listdir(ENROLL_2_PATH)
             speakers.sort()
             hitslist = list()
+
             for speaker in speakers:
                 print(speaker)
                 SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
@@ -127,6 +132,7 @@ if 'identify' in commands:
                 features.sort()
 
                 hits = 0
+                t = time.time()
                 for feature in features:
                     featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_2',
                                                        speaker, int(feature[:2]))
@@ -136,18 +142,18 @@ if 'identify' in commands:
                     if indentified == speaker:
                         hits = hits + 1
 
+                t = time.time() - t
                 hits = (hits / len(features)) * 100
                 hitslist.append(hits)
                 print('hits = %3.2f%%' % hits)
+                print('Indentified in %f seconds' % t)
 
-            M_DIR = '%sM_%d/' % (EXP_IDENTIFICATION_DIR, M)
-            if not os.path.exists(M_DIR):
-                os.mkdir(M_DIR)
 
             EXP_SET_PATH = '%smit_%d_%d.exp' % (M_DIR, numcep, delta_order)
             expfile = open(EXP_SET_PATH, 'w')
             for (speaker, hits) in zip(speakers, hitslist):
                 expfile.write('%s %3.2f\n' % (speaker, hits))
+            expfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
