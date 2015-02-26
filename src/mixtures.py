@@ -11,6 +11,10 @@ class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
     def __init__(self, nummixtures, featsvec):
+        #TODO achar o ponto central de 'featsvec', o desvio padrão e criar as médias
+        #de modo aleatório, dentro de uma super-elipse (elipse D-dimensional) cujo
+        #raio na dimensão d seja o desvio padrão nesta dimensão.
+        #TODO adicionar um atributo 'gender', com valores em {'f', 'm'}
         """Creates a GMM.
 
         @param nummixtures: number of mixtures (integer).
@@ -21,6 +25,24 @@ class GMM(object):
         self.weights = np.tile(1 / nummixtures, nummixtures)
         self.meansvec = np.random.random((nummixtures, self.numfeats))*10 # 0 t0 10
         self.variancesvec = (np.random.random((nummixtures, self.numfeats)) + 1)*100 # 100 to 200
+
+    def __repr__(self):
+        """String representation of a GMM object.
+
+        @returns: a string containing the atributes.
+        """
+        ret = 'M = %d\nD = %d' % (self.nummixtures, self.numfeats)
+        ret = '%s\nweights:\n' % ret
+        for m in range(self.nummixtures):
+            ret = '%s%d: %f\n' % (ret, m, self.weights[m])
+        ret = '%smeans:\n' % ret
+        for m in range(self.nummixtures):
+            ret = '%s%d: %s\n' % (ret, m, self.meansvec[m])
+        ret = '%svariances:\n' % ret
+        for m in range(self.nummixtures):
+            ret = '%s%d: %s\n' % (ret, m, self.variancesvec[m])
+
+        return ret
 
     def eval(self, feats):
         """Feeds the GMM with the given features. It performs a normal pdf for a
