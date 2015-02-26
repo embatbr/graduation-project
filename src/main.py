@@ -136,18 +136,18 @@ if 'identify' in commands:
                     if indentified == speaker:
                         hits = hits + 1
 
-                hits = hits / len(features)
+                hits = (hits / len(features)) * 100
                 hitslist.append(hits)
-                print('hits = %3.2f%%' % (hits*100))
+                print('hits = %3.2f%%' % hits)
 
-            MFCC_DIR = '%smit_%d_%d/' % (EXP_IDENTIFICATION_DIR, numcep, delta_order)
-            if not os.path.exists(MFCC_DIR):
-                os.mkdir(MFCC_DIR)
+            M_DIR = '%sM_%d/' % (EXP_IDENTIFICATION_DIR, M)
+            if not os.path.exists(M_DIR):
+                os.mkdir(M_DIR)
 
-            EXP_SET_PATH = '%sM_%d.exp' % (MFCC_DIR, M)
+            EXP_SET_PATH = '%smit_%d_%d.exp' % (M_DIR, numcep, delta_order)
             expfile = open(EXP_SET_PATH, 'w')
             for (speaker, hits) in zip(speakers, hitslist):
-                expfile.write('%s %3.2f\n' % (speaker, 100*hits))
+                expfile.write('%s %3.2f\n' % (speaker, hits))
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
