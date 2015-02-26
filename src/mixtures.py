@@ -14,7 +14,8 @@ class GMM(object):
         #TODO achar o ponto central de 'featsvec', o desvio padrão e criar as médias
         #de modo aleatório, dentro de uma super-elipse (elipse D-dimensional) cujo
         #raio na dimensão d seja o desvio padrão nesta dimensão.
-        #TODO adicionar um atributo 'gender', com valores em {'f', 'm'}
+        #TODO as variâncias serão o quadrado do desvio padrão calculado acima.
+        #TODO adicionar um atributo 'gender', com valores em {'f', 'm'}.
         """Creates a GMM.
 
         @param nummixtures: number of mixtures (integer).

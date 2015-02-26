@@ -9,17 +9,18 @@ import os, os.path
 import shutil
 import time
 import pickle
+import numpy as np
 from common import FEATURES_DIR, GMMS_DIR, UBMS_DIR, ADAP_GMMS_DIR
-from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR
+from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR, EXP_VERIFICATION_ADAP_DIR
 import bases, mixtures
 
 
 commands = sys.argv[1:]
 
 
-numceps = [6]#[13]#[19]#[6, 13, 19]
+numceps = [6, 13, 19]
 delta_orders = [0, 1, 2]
-M = 64
+M = 32
 
 
 #Extract the MFCCs from base MIT and put in the correct format.
@@ -205,6 +206,7 @@ if 'adap-gmms-from-ubm' in commands:
     t_tot = time.time()
 
     #TODO code goes here
+    #TODO save in '../bases/adap_gmms/'
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
@@ -216,6 +218,10 @@ if 'verify' in commands:
 
     print('SPEAKER VERIFICATION\nM = %d' % M)
 
+    M_DIR = '%sM_%d/' % (EXP_VERIFICATION_DIR, M)
+    if not os.path.exists(M_DIR):
+        os.mkdir(M_DIR)
+
     t_tot = time.time()
 
     for numcep in numceps:
@@ -224,21 +230,80 @@ if 'verify' in commands:
             print('delta_order = %d' % delta_order)
 
             # reading UBMs and GMMs trained using utterances from 'enroll_1'
-            directories = [UBMS_DIR, GMMS_DIR]
-            for directory in directories[:1]:
+            directories = (UBMS_DIR, GMMS_DIR)
+            for directory in directories:
                 PATH = '%smit_%d_%d/' % (directory, numcep, delta_order)
-                print(PATH)
                 filenames = os.listdir(PATH)
                 filenames = [filename for filename in filenames
                                       if filename.endswith('%d.gmm' % M)]
                 filenames.sort()
-                #gmms = list()
-                #for gmmfilename in filenames:
-                #    GMM_PATH = '%s%s' % (PATH, gmmfilename)
-                #    gmmfile = open(UBM_PATH, 'rb')
-                #    gmm = pickle.load(gmmfile)
-                #    gmmfile.close()
-                #    gmms.append(gmm)
+
+                models = list()
+                for filename in filenames:
+                    MODEL_PATH = '%s%s' % (PATH, filename)
+                    modelfile = open(MODEL_PATH, 'rb')
+                    model = pickle.load(modelfile)
+                    modelfile.close()
+                    models.append(model)
+
+                if directory is directories[0]:
+                    ubms = models
+                    ubmfilenames = [filename[0] for filename in filenames]
+                elif directory is directories[1]:
+                    gmms = models
+
+            MIT_NUMCEP_DELTA_ORDER_PATH = '%smit_%d_%d/' % (M_DIR, numcep, delta_order)
+            if not os.path.exists(MIT_NUMCEP_DELTA_ORDER_PATH):
+                os.mkdir(MIT_NUMCEP_DELTA_ORDER_PATH)
+
+            # log-likelihood ratio test for claimed and imposter speakers
+            CLAIMED_SPEAKERS_PATH = '%smit_%d_%d/enroll_2' % (FEATURES_DIR, numcep,
+                                                              delta_order)
+            IMPOSTER_SPEAKERS_PATH = '%smit_%d_%d/imposter' % (FEATURES_DIR, numcep,
+                                                               delta_order)
+            PATHS = [CLAIMED_SPEAKERS_PATH, IMPOSTER_SPEAKERS_PATH]
+            datasets = ['enroll_2', 'imposter']
+            for (SPEAKER_PATH, dataset) in zip(PATHS, datasets):
+                speakers = os.listdir(SPEAKER_PATH)
+                speakers.sort()
+                for (gmm, speaker) in zip(gmms, speakers):
+                    ubm = ubms[ubmfilenames.index(speaker[0])]
+                    speaker_features = bases.read_mit_features_list(numcep, delta_order,
+                                                                    dataset, speaker)
+
+                    print(speaker)
+                    scores = list()
+                    for speaker_feature in speaker_features:
+                        log_likeli_gmm = gmm.log_likelihood(speaker_feature)
+                        log_likeli_ubm = ubm.log_likelihood(speaker_feature)
+                        score = log_likeli_gmm - log_likeli_ubm
+                        score = 10**score
+                        scores.append(score)
+
+                    scores = np.array(scores)
+
+                    SCORE_PATH = '%s/%s.score' % (MIT_NUMCEP_DELTA_ORDER_PATH, speaker)
+                    scorefile = open(SCORE_PATH, 'wb')
+                    pickle.dump(score, scorefile)
+                    scorefile.close()
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
+
+
+if 'verify-adap' in commands:
+    if not os.path.exists(EXP_VERIFICATION_ADAP_DIR):
+        os.mkdir(EXP_VERIFICATION_ADAP_DIR)
+
+    print('SPEAKER VERIFICATION-ADAP\nM = %d' % M)
+
+    M_DIR = '%sM_%d/' % (EXP_VERIFICATION_ADAP_DIR, M)
+    if not os.path.exists(M_DIR):
+        os.mkdir(M_DIR)
+
+    t_tot = time.time()
+
+    #TODO repeat code from 'verify'
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)

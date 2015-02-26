@@ -68,6 +68,24 @@ def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
 
     return featsvec
 
+def read_mit_features_list(numcep, delta_order, dataset, speaker):
+    """Reads all features from a speaker.
+
+    @returns: The features from speaker listed by utterance.
+    """
+    PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
+                                          dataset, speaker)
+    features = os.listdir(PATH_SPEAKER)
+    features.sort()
+    featslist = list()
+
+    for feature in features:
+        featsnum = int(feature[:2])
+        feats = read_mit_features(numcep, delta_order, dataset, speaker, featsnum)
+        featslist.append(feats)
+
+    return featslist
+
 def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
     """Reads the features files from database for each speaker and concatenate
     in a single matrix of features.
