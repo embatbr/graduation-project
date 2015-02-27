@@ -20,7 +20,7 @@ commands = sys.argv[1:]
 
 numceps = [6, 13, 19]
 delta_orders = [0, 1, 2]
-M = 64#TODO fazer identification com M = 64 e M = 128
+M = 32
 
 
 #Extract the MFCCs from base MIT and put in the correct format.
