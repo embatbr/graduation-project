@@ -23,6 +23,7 @@ An utterance is a piece of speech produced by a speaker. It may be a word, a sta
 The raw speech signal is unfit for usage by an ASR. For a correct processing, the unique features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy" in the features, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
 
 \section{Speaker Identification}
+\label{sec:speaker-identification}
 
 In speaker identification, the objective of the system is to assign an identity from a set of enrolled speakers to the so far unknown speaker, using a speech signal produced by him or her. This system contains a set $\dvec{\mathcal{S}}$ and is fed with features $\dvec{X} = \{\dvec{x}_1, ..., \dvec{x}_T\}$ extracted from the speech $\dvec{Y}$ produced by the speaker $\mathcal{S}$, the one to be identified.
 
@@ -63,6 +64,7 @@ Once all $\lambda_j$'s are trained, the system if able to be used for classifica
 \noindent and the unknown speaker receives the identity of the enrolled speaker for which $\dvec{X}$ maximizes the \textbf{likelihood} of $\lambda_j$ (see \figureref{speaker-identification}).
 
 \section{Speaker Verification}
+\label{sec:speaker-verification}
 
 In speaker verification, $\mathcal{S}$ claims to be a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$. The strength of this claim resides on how similar the features $\dvec{X}$ are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
 

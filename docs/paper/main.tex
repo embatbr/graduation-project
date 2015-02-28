@@ -49,6 +49,9 @@
 \newcommand{\postprob}[2]{P(#1|#2)}
 \newcommand{\pdf}[1]{p(#1)}
 \newcommand{\postpdf}[2]{p(#1|#2)}
+\newcommand{\determinant}[1]{|#1|}
+\newcommand{\dgaussian}[3]{\frac{1}{(2\pi)^{D/2}\determinant{\dvec{#3}}^{1/2}}e^{-\frac{1}{2}(\dvec{#1} - \dvec{#2})'\dvec{#3}^{-1}(\dvec{#1} - \dvec{#2})}}
+\newcommand{\dgaussianmixture}{\sum_{i=1}^M \frac{1}{(2\pi)^{D/2}\determinant{\dvec{\Sigma}_i}^{1/2}}e^{-\frac{1}{2}(\dvec{x} - \dvec{\mu}_i)'\dvec{\Sigma}_i^{-1}(\dvec{x} - \dvec{\mu}_i)}}
 \newcommand{\verifytest}[2]
 {
     \left\{
