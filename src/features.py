@@ -191,7 +191,7 @@ def append_deltas(featsvec, numcep, N=2):
     return new_feats
 
 def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
-         numcep=13, ceplifter=22, append_energy=True, delta_order=0, N=2):
+         numcep=13, ceplifter=22, append_energy=True, applyCMS=True, delta_order=0, N=2):
     """Extracts features from an audio signal using the MFCC algorithm.
 
     @param signal: the audio signal from which to extract the features. Should
@@ -237,7 +237,8 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
         energy = 10*np.log10(energy) #dB
         featsvec[ : , 0] = energy
 
-    featsvec = featsvec - np.mean(featsvec, axis=0) # CMS reduces the effect of noise
+    if applyCMS:
+        featsvec = featsvec - np.mean(featsvec, axis=0) # CMS reduces the effect of noise
 
     while delta_order > 0:
         featsvec = append_deltas(featsvec, numcep, N)
@@ -261,16 +262,24 @@ if __name__ == '__main__':
     numsamples = len(signal)
     duration = numsamples/samplerate
     time = np.linspace(1/samplerate, duration, numsamples)
+    NFFT=512
+    freqs = np.linspace(0, 8000, int(NFFT/2) + 1)
 
     # Test for function 'preemphasis'
     # figure 1
     emph_signal = preemphasis(signal)
-    pl.subplot(211)
+    pl.subplot(221)
     pl.grid(True)
     pl.plot(time, signal)
-    pl.subplot(212)
+    pl.subplot(223)
+    pl.grid(True)
+    pl.fill_between(freqs, magspec(signal), color='red')
+    pl.subplot(222)
     pl.grid(True)
     pl.plot(time, emph_signal)
+    pl.subplot(224)
+    pl.grid(True)
+    pl.fill_between(freqs, magspec(emph_signal), color='red')
 
     # Test for functions 'framesignal', 'magspec' and 'powspec'
     pl.figure() # figure 2
@@ -278,32 +287,21 @@ if __name__ == '__main__':
     framestep = samplerate*0.010
     indices = np.arange(0, framelen)
     frames = framesignal(emph_signal, framelen, framestep)
-    pl.subplot(411)
-    pl.grid(True)
-    pl.plot(emph_signal)
-    pl.subplot(412)
-    pl.grid(True)
-    for frame in frames:
-        pl.plot(indices, frame, 'g')
-        indices = indices + framestep
-
     magframes = magspec(frames)
-    pl.subplot(413)
-    pl.grid(True)
+    pl.subplot(211)
     for magframe in magframes:
-        pl.plot(magframe)
+        pl.plot(freqs, magframe)
     powframes = powspec(frames)
-    pl.subplot(414)
-    pl.grid(True)
+    pl.subplot(212)
     for powframe in powframes:
-        pl.plot(powframe)
+        pl.plot(freqs, powframe)
 
     # Showing some frames
+    indices = np.linspace(50*framestep, 50*framestep + framelen, framelen, False)
     pl.figure() # figure 3
-    indices = np.arange(0, framelen)
-    positions = np.arange(1, 5)
-    for (frame, position) in zip(frames[50 : 54], positions):
-        pl.subplot(410 + position)
+    positions = np.arange(1, 3)
+    for (frame, position) in zip(frames[50 : 52], positions):
+        pl.subplot(210 + position)
         pl.grid(True)
         pl.plot(indices, frame, 'g')
         pl.xlim(indices[0], indices[-1])
@@ -319,6 +317,7 @@ if __name__ == '__main__':
 
     # Test for function 'filterbank'
     pl.figure()  # figure 5
+    pl.subplot(211)
     fbank = filterbank(samplerate)
     freqs = np.linspace(0, samplerate/2, len(fbank[0]))
     for f in fbank:
@@ -326,16 +325,29 @@ if __name__ == '__main__':
 
     # Plotting the dot product of 'powframes' with 'fbank', with the log applied
     pl.figure() # figure 6
+    pl.subplot(221)
     featsvec = np.dot(powframes, fbank.T) + EPS
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec)
-    pl.figure() # figure 7
+    pl.subplot(222)
     featsvec = 10*np.log10(featsvec)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec)
-    pl.figure()  # figure 8
+    pl.figure()  # figure 7
     numcep = 6
     featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numcep]
     featsvec = lifter(featsvec, L=22)
-    featsvec = featsvec - np.mean(featsvec, axis=0)
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
+    pl.plot(featsvec)
+
+    # Test for function 'mfcc' without CMS
+    pl.figure() # figure 8
+    winlen = 0.02
+    winstep = 0.01
+    featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep, applyCMS=False)
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec)
 
     # Test for function 'mfcc'
@@ -343,6 +355,8 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep)
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec)
 
     # Test for function 'mfcc' with 'delta_order = 2'
@@ -350,10 +364,23 @@ if __name__ == '__main__':
     winlen = 0.02
     winstep = 0.01
     featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep, delta_order=2)
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec)
     pl.figure() # figure 11
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec[:, numcep : 2*numcep])
     pl.figure() # figure 12
+    pl.subplot(211)
+    pl.xlim(0, len(featsvec) - 1)
     pl.plot(featsvec[:, 2*numcep :])
+
+    freqs = np.linspace(0, 8000, 8001)
+    pl.figure() # figure 13
+    pl.subplot(211)
+    pl.xlabel('Hz')
+    pl.ylabel('mels')
+    pl.plot(freqs, hz2mel(freqs), 'r')
 
     pl.show()
