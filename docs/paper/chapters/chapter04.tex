@@ -39,6 +39,13 @@ The idea behind use a GMM as a model for a speaker $\mathcal{S}$ is to achieve a
 
 The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, such that $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration, until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The description ahead for the steps is for a $\lambda$ with all $\dvec{\Sigma}_i$ diagonal, i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i$ of variances.
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{em_algorithm}
+    \caption{Features 2 and 3 before (left) and after (right) the EM algorithm. The dashed blue lines are the 8 gaussians and the solid red lines the mixture.}
+    \label{fig:em_algorithm}
+\end{figure}
+
 \subsubsection*{E-Step}
 
 The expectation step consists of estimate the \emph{a posteriori} probabilities for each distribution $i$ and each feature vector $\dvec{x}_t$,
@@ -50,17 +57,23 @@ The expectation step consists of estimate the \emph{a posteriori} probabilities 
 
 \subsubsection*{M-Step}
 
-In the maximization step, the parameters are updated, and the algorithm guarantees that each new $\lambda^(j+1)$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the following equations:
+In the maximization step, the parameters are updated, and the algorithm guarantees that each new $\lambda^(j+1)$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the equations below.
+
+\noindent\\\textbf{Weights:}
 
 \begin{equation}
     \overline{w}_i = \frac{1}{T} \sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda},
     \label{eq:m-step-weight}
 \end{equation}
 
+\noindent\\\textbf{Means:}
+
 \begin{equation}
     \overline{\dvec{\mu}}_i = \frac{1}{T} \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}},
     \label{eq:m-step-means}
 \end{equation}
+
+\noindent\textbf{Variances:}
 
 \begin{equation}
     \overline{\dvec{\sigma}}_i = \frac{1}{T} \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2.
@@ -68,6 +81,6 @@ In the maximization step, the parameters are updated, and the algorithm guarante
 \end{equation}
 \\
 
-This algorithm is used to train the GMMs described in sections \sectionref{speaker-identification} and \sectionref{speaker-verification} of \chapterref{speaker-recognition-system}.
+This algorithm is used to train the GMMs described in sections \sectionref{speaker-identification} and \sectionref{speaker-verification} of \chapterref{speaker-recognition-system}. \figureref{em_algorithm} shows the mixture before and after the training.
 
 \section{Universal Background Model}

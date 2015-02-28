@@ -159,43 +159,95 @@ if __name__ == '__main__':
     winstep = 0.01
     numcep = 6
     delta_order = 0
-    Ms = [2**n for n in range(3, 11)]
+    M = 8
 
     featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f02')
     test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f02', 1)
     print(featsvec.shape)
     print(test_featsvec.shape)
 
-    for M in Ms:
-        #creation
-        t = time.time()
-        gmm = GMM(M, featsvec)
-        t = time.time() - t
-        print('GMM (M = %d) created in %f seconds' % (M, t))
-        untrained_log_likelihood = gmm.log_likelihood(test_featsvec)
-        print('untrained GMM: log-likelihood = %f' % untrained_log_likelihood)
-        fig = pl.figure()
-        fig.suptitle('M = %d' % M)
-        pl.subplot(221)
-        pl.plot(featsvec[:, 0], featsvec[:, 1], '.')
-        pl.subplot(223)
-        for means in gmm.meansvec:
-            pl.plot(means[0], means[1], 'o')
+    numfeats = len(featsvec)
+    (amin, amax) = (np.amin(featsvec[:, 1]), np.amax(featsvec[:, 1]))
+    featspace = np.linspace(amin, amax, numfeats)
+    def normal(x, mean, variance):
+        cte_denom = (2 * np.pi * variance)**0.5
+        power = -0.5 * ((x - mean)**2) / variance
+        return np.exp(power) / cte_denom
 
-        #training
-        t = time.time()
-        gmm.train(featsvec)
-        t = time.time() - t
-        print('EM training in %f seconds' % t)
-        trained_log_likelihood = gmm.log_likelihood(test_featsvec)
-        print('trained GMM: log-likelihood =', trained_log_likelihood)
-        pl.subplot(222)
-        pl.plot(featsvec[:, 0], featsvec[:, 1], '.')
-        pl.subplot(224)
-        for means in gmm.meansvec:
-            pl.plot(means[0], means[1], 'o')
+    #creation
+    t = time.time()
+    gmm = GMM(M, featsvec)
+    t = time.time() - t
+    print('GMM (M = %d) created in %f seconds' % (M, t))
+    untrained_log_likelihood = gmm.log_likelihood(test_featsvec)
+    print('untrained GMM: log-likelihood = %f' % untrained_log_likelihood)
+    fig = pl.figure()
+    fig.suptitle('M = %d' % M)
 
-        increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
-        print('increase = %2.2f%%' % (increase*100))
+    pl.subplot(221)
+    pl.xlabel('feature 2')
+    mixture = list()
+    x = featsvec[:, 1]
+    x.sort()
+    for i in range(M):
+        mean = gmm.meansvec[i, 1]
+        variance = gmm.variancesvec[i, 1]
+        y = normal(x, mean, variance)
+        mixture.append(gmm.weights[i] * y)
+        pl.plot(featspace, y, 'b--')
+    mixture = np.array(sum(mixture))
+    pl.plot(featspace, mixture, 'r')
+
+    pl.subplot(223)
+    pl.xlabel('feature 3')
+    mixture = list()
+    x = featsvec[:, 2]
+    x.sort()
+    for i in range(M):
+        mean = gmm.meansvec[i, 2]
+        variance = gmm.variancesvec[i, 2]
+        y = normal(x, mean, variance)
+        mixture.append(gmm.weights[i] * y)
+        pl.plot(featspace, y, 'b--')
+    mixture = np.array(sum(mixture))
+    pl.plot(featspace, mixture, 'r')
+
+    #training
+    t = time.time()
+    gmm.train(featsvec)
+    t = time.time() - t
+    print('EM training in %f seconds' % t)
+    trained_log_likelihood = gmm.log_likelihood(test_featsvec)
+    print('trained GMM: log-likelihood =', trained_log_likelihood)
+    pl.subplot(222)
+    pl.xlabel('feature 2')
+    mixture = list()
+    x = featsvec[:, 1]
+    x.sort()
+    for i in range(M):
+        mean = gmm.meansvec[i, 1]
+        variance = gmm.variancesvec[i, 1]
+        y = normal(x, mean, variance)
+        mixture.append(gmm.weights[i] * y)
+        pl.plot(featspace, y, 'b--')
+    mixture = np.array(sum(mixture))
+    pl.plot(featspace, mixture, 'r')
+
+    pl.subplot(224)
+    pl.xlabel('feature 3')
+    mixture = list()
+    x = featsvec[:, 2]
+    x.sort()
+    for i in range(M):
+        mean = gmm.meansvec[i, 2]
+        variance = gmm.variancesvec[i, 2]
+        y = normal(x, mean, variance)
+        mixture.append(gmm.weights[i] * y)
+        pl.plot(featspace, y, 'b--')
+    mixture = np.array(sum(mixture))
+    pl.plot(featspace, mixture, 'r')
+
+    increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
+    print('increase = %2.2f%%' % (increase*100))
 
     pl.show()
