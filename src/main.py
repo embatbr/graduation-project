@@ -10,8 +10,9 @@ import shutil
 import time
 import pickle
 import numpy as np
-from common import FEATURES_DIR, GMMS_DIR, UBMS_DIR, ADAP_GMMS_DIR
-from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR, EXP_VERIFICATION_ADAP_DIR
+import pylab as pl
+from common import FEATURES_DIR, GMMS_DIR, UBMS_DIR
+from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR, RESULTS_DIR
 import bases, mixtures
 
 
@@ -168,7 +169,6 @@ if 'train-ubms' in commands:
 
     t_tot = time.time()
 
-    genders = ['f', 'm']
     for numcep in numceps:
         print('numcep = %d' % numcep)
         for delta_order in delta_orders:
@@ -177,36 +177,39 @@ if 'train-ubms' in commands:
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
-            for gender in genders:
-                featsvec = bases.read_mit_background_features(numcep, delta_order,
-                                                              gender)
-                print('UBM %s: %s' % (gender, featsvec.shape))
+            featsvec_f = bases.read_mit_background_features(numcep, delta_order, 'f')
+            featsvec_m = bases.read_mit_background_features(numcep, delta_order, 'm')
+            featsvec = np.vstack((featsvec_f, featsvec_m))
 
-                ubm = mixtures.GMM(M, featsvec)
-                t = time.time()
-                ubm.train(featsvec)
-                t = time.time() - t
-                print('UBM trained in %f seconds' % t)
+            ubm_unisex = mixtures.GMM(M, featsvec_f)
+            print('UBM unisex created. Training...')
+            t = time.time()
+            ubm_unisex.train(featsvec_f)
+            t = time.time() - t
+            print('UBM unisex trained in %f seconds' % t)
+            GMM_PATH = '%s/unisex_%d.gmm' % (GMMS_PATH, M)
+            ubmfile = open(GMM_PATH, 'wb')
+            pickle.dump(ubm_unisex, ubmfile)
+            ubmfile.close()
 
-                GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, gender, M)
-                ubmfile = open(GMM_PATH, 'wb')
-                pickle.dump(ubm, ubmfile)
-                ubmfile.close()
-
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
-
-
-if 'adap-gmms-from-ubm' in commands:
-    if not os.path.exists(ADAP_GMMS_DIR):
-        os.mkdir(ADAP_GMMS_DIR)
-
-    print('GMM ADAPTATION FROM UBM\nM = %d' % M)
-
-    t_tot = time.time()
-
-    #TODO code goes here
-    #TODO save in '../bases/adap_gmms/'
+            ubm_f = mixtures.GMM(M//2, featsvec_f)
+            ubm_m = mixtures.GMM(M//2, featsvec_m)
+            print('UBM gender created. Training...')
+            t = time.time()
+            ubm_f.train(featsvec_f)
+            ubm_m.train(featsvec_m)
+            t = time.time() - t
+            # combination
+            ubm_gender = ubm_f
+            ubm_gender.nummixtures = 2*ubm_gender.nummixtures
+            ubm_gender.weights = np.hstack((ubm_gender.weights, ubm_m.weights))
+            ubm_gender.meansvec = np.vstack((ubm_gender.meansvec, ubm_m.meansvec))
+            ubm_gender.variancesvec = np.vstack((ubm_gender.variancesvec, ubm_m.variancesvec))
+            print('UBM gender trained in %f seconds' % t)
+            GMM_PATH = '%s/gender_%d.gmm' % (GMMS_PATH, M)
+            ubmfile = open(GMM_PATH, 'wb')
+            pickle.dump(ubm_gender, ubmfile)
+            ubmfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
@@ -229,32 +232,30 @@ if 'verify' in commands:
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
 
-            # reading UBMs and GMMs trained using utterances from 'enroll_1'
-            directories = (UBMS_DIR, GMMS_DIR)
-            for directory in directories:
-                PATH = '%smit_%d_%d/' % (directory, numcep, delta_order)
-                filenames = os.listdir(PATH)
-                filenames = [filename for filename in filenames
-                                      if filename.endswith('%d.gmm' % M)]
-                filenames.sort()
+            # reading UBMs trained using utterances from 'enroll_1'
+            PATH = '%smit_%d_%d/' % (UBMS_DIR, numcep, delta_order)
+            ubm_unisex_file = open('%sunisex_%d.gmm' % (PATH, M), 'rb')
+            ubm_unisex = pickle.load(ubm_unisex_file)
+            ubm_gender_file = open('%sgender_%d.gmm' % (PATH, M), 'rb')
+            ubm_gender = pickle.load(ubm_gender_file)
 
-                models = list()
-                for filename in filenames:
-                    MODEL_PATH = '%s%s' % (PATH, filename)
-                    modelfile = open(MODEL_PATH, 'rb')
-                    model = pickle.load(modelfile)
-                    modelfile.close()
-                    models.append(model)
+            # reading GMMs trained using utterances from 'enroll_1'
+            PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
+            filenames = os.listdir(PATH)
+            filenames = [filename for filename in filenames
+                                  if filename.endswith('%d.gmm' % M)]
+            filenames.sort()
+            gmms = dict()
+            for filename in filenames:
+                GMM_PATH = '%s%s' % (PATH, filename)
+                modelfile = open(GMM_PATH, 'rb')
+                model = pickle.load(modelfile)
+                modelfile.close()
+                gmms[filename[: 3]] = model
 
-                if directory is directories[0]:
-                    ubms = models
-                    ubmfilenames = [filename[0] for filename in filenames]
-                elif directory is directories[1]:
-                    gmms = models
-
-            MIT_NUMCEP_DELTA_ORDER_PATH = '%smit_%d_%d/' % (M_DIR, numcep, delta_order)
-            if not os.path.exists(MIT_NUMCEP_DELTA_ORDER_PATH):
-                os.mkdir(MIT_NUMCEP_DELTA_ORDER_PATH)
+            M_DIR_NUMCEP_DELTA_PATH = '%smit_%d_%d/' % (M_DIR, numcep, delta_order)
+            if not os.path.exists(M_DIR_NUMCEP_DELTA_PATH):
+                os.mkdir(M_DIR_NUMCEP_DELTA_PATH)
 
             # log-likelihood ratio test for claimed and imposter speakers
             CLAIMED_SPEAKERS_PATH = '%smit_%d_%d/enroll_2' % (FEATURES_DIR, numcep,
@@ -266,44 +267,69 @@ if 'verify' in commands:
             for (SPEAKER_PATH, dataset) in zip(PATHS, datasets):
                 speakers = os.listdir(SPEAKER_PATH)
                 speakers.sort()
-                for (gmm, speaker) in zip(gmms, speakers):
-                    ubm = ubms[ubmfilenames.index(speaker[0])]
+                for speaker in speakers:
+                    print(speaker)
+                    gmm = gmms[speaker[: 3]]
                     speaker_features = bases.read_mit_features_list(numcep, delta_order,
                                                                     dataset, speaker)
 
-                    print(speaker)
                     scores = list()
                     for speaker_feature in speaker_features:
                         log_likeli_gmm = gmm.log_likelihood(speaker_feature)
-                        log_likeli_ubm = ubm.log_likelihood(speaker_feature)
-                        score = log_likeli_gmm - log_likeli_ubm
-                        score = 10**score
-                        scores.append(score)
+                        log_likeli_ubm_unisex = ubm_unisex.log_likelihood(speaker_feature)
+                        log_likeli_ubm_gender = ubm_gender.log_likelihood(speaker_feature)
+                        score_unisex = log_likeli_gmm - log_likeli_ubm_unisex
+                        score_gender = log_likeli_gmm - log_likeli_ubm_gender
+                        scores.append((score_unisex, score_gender))
 
-                    scores = np.array(scores)
-
-                    SCORE_PATH = '%s/%s.score' % (MIT_NUMCEP_DELTA_ORDER_PATH, speaker)
-                    scorefile = open(SCORE_PATH, 'wb')
-                    pickle.dump(score, scorefile)
+                    SCORE_PATH = '%s%s.score' % (M_DIR_NUMCEP_DELTA_PATH, speaker)
+                    scorefile = open(SCORE_PATH, 'w')
+                    for score in scores:
+                        scorefile.write('%f\t%f\n' % (score[0], score[1]))
                     scorefile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
 
 
-if 'verify-adap' in commands:
-    if not os.path.exists(EXP_VERIFICATION_ADAP_DIR):
-        os.mkdir(EXP_VERIFICATION_ADAP_DIR)
+if 'results-identify' in commands:
+    if not os.path.exists(RESULTS_DIR):
+        os.mkdir(RESULTS_DIR)
 
-    print('SPEAKER VERIFICATION-ADAP\nM = %d' % M)
-
-    M_DIR = '%sM_%d/' % (EXP_VERIFICATION_ADAP_DIR, M)
-    if not os.path.exists(M_DIR):
-        os.mkdir(M_DIR)
+    print('WRITING RESULTS')
 
     t_tot = time.time()
 
-    #TODO repeat code from 'verify'
+    resultsfile = open('%sindentify' % RESULTS_DIR, 'w')
+
+    for M in [32, 64, 128]:
+        print('M = %d' % M)
+        print('M_%d' % M, file=resultsfile)
+        for numcep in numceps:
+            print('numcep = %d' % numcep)
+            for delta_order in delta_orders:
+                print('delta_order = %d' % delta_order)
+                print('mit_%d_%d' % (numcep, delta_order), file=resultsfile)
+
+                EXP_ID_PATH = '%sM_%d/mit_%d_%d.exp' % (EXP_IDENTIFICATION_DIR,
+                                                        M, numcep, delta_order)
+                exp_id_file = open(EXP_ID_PATH)
+                results = dict()
+                for line in exp_id_file:
+                    line = line.split()
+                    (speaker, result) = (line[0], line[1])
+                    results[speaker]= float(result)
+
+                values = np.array(list(results.values()))
+                mean = np.mean(values)
+                std = np.std(values) # desvio padrão
+                amax = np.amax(values)
+                amin = np.amin(values)
+
+                print('mean: %.2f' % mean, file=resultsfile)
+                print('std: %.2f' % std, file=resultsfile)
+                print('maximum: %.2f' % amax, file=resultsfile)
+                print('minimum: %.2f' % amin, file=resultsfile)
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)

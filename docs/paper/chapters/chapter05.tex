@@ -1,2 +1,39 @@
 \chapter{Experiments}
 \label{ch:experiments}
+
+The ASR was implemented in its entirety using the programming language Python (version 3.4) and the frameworks NumPy (version 1.8.1) and SciPy (version 0.14.0), meaning the feature extraction, the GMM and UBM models, and the identification and verification classifiers. All codes and data are stored in the public repository \url{https://github.com/embatbr/tg}, as well as this document and secondary resources.
+
+The database used for this work is the \textbf{MIT Mobile Device Speaker Verification Corpus (MIT-MDSCV)}, \refbib{Woo et. al.}{woo.park.hazen.2006}. Two different sets of models were trained. The first was a single speaker GMM for each enrolled speaker, using the utterances relative to the speaker presented in the dataset \textit{enroll\_1}. The trainings took 2-12 seconds each, by the EM algorithm. The second set was of UBMs, also using the utterances from the dataset \textit{enroll\_1}. Two types of UBMs were created: an unisex and a divided by gender, both described in \sectionref{ubm} from chapter \chapterref{gmm}. The unisex UBM took 3-6 minutes of training, while the divided by gender took 7-10 minutes. Both sets of models were created and trained for 32, 64 and 128 distributions, 6, 13 and 19 cepstral coefficients and 0, 1 and 2 orders of delta.
+
+Three experiments were conducted: identification, verification using unisex trained UBMs and verification using gender trained UBMs.
+
+\section{Identification}
+
+The identification is performed by the application of \equationref{decision_speaker_identification_3} to vectors of features $\dvec{X}$ extracted from speech signals in \textit{enroll\_2} and models $\lambda_j$ stored in the directory \textit{bases/gmms}. The set of enrolled speakers is composed of all 26 males and 22 females. Each speaker in \textit{enroll\_2} has 54 recorded utterances, with all tested and the percentage of correct identification calculated.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        \textbf{Model Order} & \textbf{\#Coeffs.} \multirow{2}{*} & \multicolumn{3}{c|}{\textbf{\#Deltas}} \\ \cline{3-5}
+        & & 0 & 1 & 2 \\
+        \hline
+        \multirow{4}{*}{$M = 32$} & 6 & 29.55 & 40.28 & 51.74 \\ \cline{2-5}
+        & 13 & 57.68 & 69.60 & 74.77 \\ \cline{2-5}
+        & 19 & 71.76 & 81.52 & 84.53 \\ \cline{2-5}
+        \hline
+        \multirow{3}{*}{$M = 64$} & 6 & 29.55 & 40.28 & 51.74 \\ \cline{2-5}
+        & 13 & 57.68 & 69.60 & 74.77 \\ \cline{2-5}
+        & 19 & 71.76 & 81.52 & 84.53 \\ \cline{2-5}
+        \hline
+        \multirow{2}{*}{$M = 128$} & 6 & 29.55 & 40.28 & 51.74 \\ \cline{2-5}
+        & 13 & 57.68 & 69.60 & 74.77 \\ \cline{2-5}
+        & 19 & 71.76 & 81.52 & 84.53 \\ \cline{2-5}
+        \hline
+    \end{tabular}
+    \caption{Average correct identification of speakers.}
+    \label{table:avg-correctness}
+\end{table}
+
+%\section{Verification using unisex trained UBMs}
+%\section{Verification using gender trained UBMs}

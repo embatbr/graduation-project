@@ -1,0 +1,138 @@
+M_32
+mit_6_0
+mean: 29.55
+std: 16.93
+maximum: 83.33
+minimum: 7.41
+mit_6_1
+mean: 40.28
+std: 20.27
+maximum: 88.89
+minimum: 9.26
+mit_6_2
+mean: 51.74
+std: 15.83
+maximum: 90.74
+minimum: 22.22
+mit_13_0
+mean: 57.68
+std: 15.14
+maximum: 87.04
+minimum: 35.19
+mit_13_1
+mean: 69.60
+std: 15.27
+maximum: 96.30
+minimum: 37.04
+mit_13_2
+mean: 74.77
+std: 14.03
+maximum: 98.15
+minimum: 37.04
+mit_19_0
+mean: 71.76
+std: 13.09
+maximum: 96.30
+minimum: 40.74
+mit_19_1
+mean: 81.52
+std: 10.70
+maximum: 100.00
+minimum: 48.15
+mit_19_2
+mean: 84.53
+std: 9.42
+maximum: 98.15
+minimum: 57.41
+M_64
+mit_6_0
+mean: 29.55
+std: 16.93
+maximum: 83.33
+minimum: 7.41
+mit_6_1
+mean: 40.28
+std: 20.27
+maximum: 88.89
+minimum: 9.26
+mit_6_2
+mean: 51.74
+std: 15.83
+maximum: 90.74
+minimum: 22.22
+mit_13_0
+mean: 57.68
+std: 15.14
+maximum: 87.04
+minimum: 35.19
+mit_13_1
+mean: 69.60
+std: 15.27
+maximum: 96.30
+minimum: 37.04
+mit_13_2
+mean: 74.77
+std: 14.03
+maximum: 98.15
+minimum: 37.04
+mit_19_0
+mean: 71.76
+std: 13.09
+maximum: 96.30
+minimum: 40.74
+mit_19_1
+mean: 81.52
+std: 10.70
+maximum: 100.00
+minimum: 48.15
+mit_19_2
+mean: 84.53
+std: 9.42
+maximum: 98.15
+minimum: 57.41
+M_128
+mit_6_0
+mean: 29.55
+std: 16.93
+maximum: 83.33
+minimum: 7.41
+mit_6_1
+mean: 40.28
+std: 20.27
+maximum: 88.89
+minimum: 9.26
+mit_6_2
+mean: 51.74
+std: 15.83
+maximum: 90.74
+minimum: 22.22
+mit_13_0
+mean: 57.68
+std: 15.14
+maximum: 87.04
+minimum: 35.19
+mit_13_1
+mean: 69.60
+std: 15.27
+maximum: 96.30
+minimum: 37.04
+mit_13_2
+mean: 74.77
+std: 14.03
+maximum: 98.15
+minimum: 37.04
+mit_19_0
+mean: 71.76
+std: 13.09
+maximum: 96.30
+minimum: 40.74
+mit_19_1
+mean: 81.52
+std: 10.70
+maximum: 100.00
+minimum: 48.15
+mit_19_2
+mean: 84.53
+std: 9.42
+maximum: 98.15
+minimum: 57.41
