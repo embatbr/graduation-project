@@ -111,7 +111,7 @@ For each frame the Fast Fourier Transform (FFT) is calculated, with number of po
 
 %Filterbank
 
-To get the envelope (and to reduce the size of spectral coefficients), the spectrum is multiplied by a filterbank in the mel scale. As seen in \figureref{filterbank}, the width of the filters enlarge when the frequency increases (these frequencies bands have the same width in mels). This is an approximation of the filtering process executed by the cochlea (see \figureref{cochlea}), and is done this way due to the higher accuracy of human hearing in lower frequencies than in higher ones. The result of the filtering is the energy in each sample of the frame (see \figureref{vectors_and_vectorsdB} (left)).
+To get the envelope (and to reduce the size of spectral coefficients), the spectrum is multiplied by a filterbank in the mel scale. As seen in \figureref{filterbank}, the width of the filters enlarge when the frequency increases (these frequencies bands have the same width in mels). This is an approximation of the filtering process executed by the cochlea (see \figureref{cochlea}), and is done this way due to the higher accuracy of human hearing in lower frequencies than in higher ones. The result of the filtering is the energy in each sample of the frame (see \figureref{features_and_featuresdB} (left)).
 
 \begin{figure}[ht]
     \centering
@@ -126,9 +126,9 @@ The spectral coefficients are then converted to dB by the application of the fun
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.9\textwidth]{vectors_and_vectorsdB}
+    \includegraphics[width=0.9\textwidth]{features_and_featuresdB}
     \caption{Spectral coefficients after the filterbank (left) and after the log conversion (right).}
-    \label{fig:vectors_and_vectorsdB}
+    \label{fig:features_and_featuresdB}
 \end{figure}
 
 %DCT

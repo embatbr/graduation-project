@@ -50,7 +50,7 @@ The expectation step consists of estimate the \emph{a posteriori} probabilities 
 
 \subsubsection*{M-Step}
 
-In the maximization step, the parameters are updated, and the algorithm guarantees that each new $\lambda$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the following equations:
+In the maximization step, the parameters are updated, and the algorithm guarantees that each new $\lambda^(j+1)$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the following equations:
 
 \begin{equation}
     \overline{w}_i = \frac{1}{T} \sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda},
