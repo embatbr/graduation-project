@@ -8,14 +8,8 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 ##DONE
 
 - Chaper 1, Introduction;
-- Chapter 2, Speaker Recognition Systems.
-
-
-##TODO
-
-- Replace the quotation at the beginning of chapter 3 by another sentence explaining the same thing;
-- Change text references from "according to [1]" to "according to Author at [1]" (or something similar);
-- Compare features extracted by MFCC written here vs. MFCC from Matlab Tool Box.
+- Chapter 2, Speaker Recognition Systems;
+- Chapter 3, Feature Extraction;
 
 
 ##Dates
