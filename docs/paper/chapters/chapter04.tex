@@ -84,3 +84,14 @@ In the maximization step, the parameters are updated, and the algorithm guarante
 This algorithm is used to train the GMMs described in sections \sectionref{speaker-identification} and \sectionref{speaker-verification} of \chapterref{speaker-recognition-system}. \figureref{em_algorithm} shows the mixture before and after the training.
 
 \section{Universal Background Model}
+
+An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. Its idea is to model a system as if speech signals were recorded by the same microphone with all speakers talking at once, i.e., a background of voices, a situation where it is impossible to understand the content of what each speaker is saying.
+
+The training and evaluation of an UBM are the same for single speaker GMMs, with difference in the time taken (due to the number of speakers composing it). In this paper, there is two types of UBMs. In the first, the subpopulations of male and female speeches are combined and used to train a single, unisex UBM. In the second, each subpopulation is used to train its own model, and then both models are combined in one with twice the number of distributions.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ubm-diagram}
+    \caption{Gender (a) independent and (b) dependent UBMs. \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000}{}}
+    \label{fig:ubm-diagram}
+\end{figure}
