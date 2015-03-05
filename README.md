@@ -5,11 +5,10 @@ This monograph is a partial requirement to the degree of Computer Engineer by Un
 The working in progress can be downloaded [here](https://github.com/embatbr/tg/blob/master/docs/paper/main.pdf?raw=true).
 
 
-##DONE
-
-- Chaper 1, Introduction;
-- Chapter 2, Speaker Recognition Systems;
-- Chapter 3, Feature Extraction;
+#TODO
+- Diagnose the reason why the number of mixtures doesn't affect the results and correct it.
+- Generate models divided in the three groups presented in the database (no noise, low noise and high noise) and run experiments for each one.
+- Use the FCM theory.
 
 
 ##Dates
