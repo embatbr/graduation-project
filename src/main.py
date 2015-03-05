@@ -19,9 +19,9 @@ import bases, mixtures
 commands = sys.argv[1:]
 
 
-numceps = [6, 13, 19]
-delta_orders = [0, 1, 2]
-M = 32
+numceps = [6]#[6, 13, 19]
+delta_orders = [0]#[0, 1, 2]
+M = 128
 
 
 #Extract the MFCCs from base MIT and put in the correct format.
@@ -201,7 +201,7 @@ if 'train-ubms' in commands:
             t = time.time() - t
             # combination
             ubm_gender = ubm_f
-            ubm_gender.nummixtures = 2*ubm_gender.nummixtures
+            ubm_gender.M = 2*ubm_gender.M
             ubm_gender.weights = np.hstack((ubm_gender.weights, ubm_m.weights))
             ubm_gender.meansvec = np.vstack((ubm_gender.meansvec, ubm_m.meansvec))
             ubm_gender.variancesvec = np.vstack((ubm_gender.variancesvec, ubm_m.variancesvec))
@@ -302,17 +302,23 @@ if 'results-identify' in commands:
 
     resultsfile = open('%sindentify' % RESULTS_DIR, 'w')
 
-    for M in [32, 64, 128]:
-        print('M = %d' % M)
-        print('M_%d' % M, file=resultsfile)
+    graph = np.zeros((3,3,3))
+    i = 0
+
+    Ms = np.array([32, 64, 128])
+    for m in Ms:
+        j = 0
+        print('M = %d' % m)
+        print('M_%d' % m, file=resultsfile)
         for numcep in numceps:
+            k = 0
             print('numcep = %d' % numcep)
             for delta_order in delta_orders:
                 print('delta_order = %d' % delta_order)
                 print('mit_%d_%d' % (numcep, delta_order), file=resultsfile)
 
                 EXP_ID_PATH = '%sM_%d/mit_%d_%d.exp' % (EXP_IDENTIFICATION_DIR,
-                                                        M, numcep, delta_order)
+                                                        m, numcep, delta_order)
                 exp_id_file = open(EXP_ID_PATH)
                 results = dict()
                 for line in exp_id_file:
@@ -326,10 +332,21 @@ if 'results-identify' in commands:
                 amax = np.amax(values)
                 amin = np.amin(values)
 
+                graph[i,j,k] = mean
+
+                print('values', values, file=resultsfile)
                 print('mean: %.2f' % mean, file=resultsfile)
                 print('std: %.2f' % std, file=resultsfile)
                 print('maximum: %.2f' % amax, file=resultsfile)
                 print('minimum: %.2f' % amin, file=resultsfile)
+
+                k += 1
+            j += 1
+        i += 1
+
+    print(graph)
+    pl.plot(Ms, graph[:, 0, 0])
+    pl.show()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)

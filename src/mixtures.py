@@ -3,6 +3,7 @@
 
 
 import numpy as np
+import random
 from math import pi as PI
 from common import ZERO
 
@@ -10,7 +11,7 @@ from common import ZERO
 class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    def __init__(self, nummixtures, featsvec):
+    def __init__(self, M, featsvec):
         #TODO achar o ponto central de 'featsvec', o desvio padrão e criar as médias
         #de modo aleatório, dentro de uma super-elipse (elipse D-dimensional) cujo
         #raio na dimensão d seja o desvio padrão nesta dimensão.
@@ -18,29 +19,32 @@ class GMM(object):
         #TODO adicionar um atributo 'gender', com valores em {'f', 'm'}.
         """Creates a GMM.
 
-        @param nummixtures: number of mixtures (integer).
+        @param M: number of mixtures (integer).
         @param featsvec: features used by the GMM.
         """
-        self.nummixtures = nummixtures
-        self.numfeats = len(featsvec[0])
-        self.weights = np.tile(1 / nummixtures, nummixtures)
-        self.meansvec = np.random.random((nummixtures, self.numfeats))*10 # 0 t0 10
-        self.variancesvec = (np.random.random((nummixtures, self.numfeats)) + 1)*100 # 100 to 200
+        self.M = M
+        self.D = featsvec.shape[1]
+        self.weights = np.tile(1 / M, M)
+        amax = np.amax(featsvec, axis=0)
+        amin = np.amin(featsvec, axis=0)
+        self.meansvec = np.array([random.uniform(amin, amax) for _ in range(M)])
+        variances = np.std(featsvec, axis=0)**2
+        self.variancesvec = np.ones((M, self.D))
 
     def __repr__(self):
         """String representation of a GMM object.
 
         @returns: a string containing the atributes.
         """
-        ret = 'M = %d\nD = %d' % (self.nummixtures, self.numfeats)
+        ret = 'M = %d\nD = %d' % (self.M, self.D)
         ret = '%s\nweights:\n' % ret
-        for m in range(self.nummixtures):
+        for m in range(self.M):
             ret = '%s%d: %f\n' % (ret, m, self.weights[m])
         ret = '%smeans:\n' % ret
-        for m in range(self.nummixtures):
+        for m in range(self.M):
             ret = '%s%d: %s\n' % (ret, m, self.meansvec[m])
         ret = '%svariances:\n' % ret
-        for m in range(self.nummixtures):
+        for m in range(self.M):
             ret = '%s%d: %s\n' % (ret, m, self.variancesvec[m])
 
         return ret
@@ -56,9 +60,8 @@ class GMM(object):
         @returns: a tuple: the weighted gaussians for gmm, summed and as array.
         """
         #Denominator of constant
-        D = self.numfeats
         determinant = np.prod(self.variancesvec, axis=1)
-        cte = ((2*PI)**(D/2)) * (determinant**(1/2))
+        cte = ((2*PI)**(self.D/2)) * (determinant**(1/2))
 
         #Exponent
         feats_minus_meansvec = feats - self.meansvec
@@ -70,6 +73,8 @@ class GMM(object):
         #Probabilities
         probs = np.exp(exponent) / cte
         w_probs = (self.weights * probs)
+        #if np.any(w_probs == 0):
+        #    print(len(probs[w_probs == 0]))
         w_probs = np.where(w_probs == 0, ZERO, w_probs)
         likelihood = np.sum(w_probs, axis=0)
 
@@ -96,8 +101,8 @@ class GMM(object):
         lower than (or equal to) this parameter in %. Default 0.01 (1%).
         """
         T = len(featsvec)
-        posteriors = np.zeros((T, self.nummixtures))
-        old_log_like = None
+        posteriors = np.zeros((T, self.M))
+        old_log_like = self.log_likelihood(featsvec)
 
         run = True
         while run:
@@ -106,11 +111,11 @@ class GMM(object):
                 (likelihood_in_t, w_gaussians) = self.eval(featsvec[t]) # one for each one of M mixtures
                 posteriors[t] = w_gaussians / likelihood_in_t
 
-            #Summation of posteriors from t=1 until t=T
+            #Summation of posteriors from 1 to T
             sum_posteriors = np.sum(posteriors, axis=0)
 
             # M-Step
-            for i in range(self.nummixtures):
+            for i in range(self.M):
                 #Updating i-th weight
                 self.weights[i] = sum_posteriors[i] / T
 
@@ -123,25 +128,27 @@ class GMM(object):
                 self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
                 self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
                 self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                if np.any(self.variancesvec[i] < 0.01):
+                    print('VAR %d: %f' % (i, len(self.variancesvec[i][self.variancesvec[i] < 0.01])))
 
             new_log_like = self.log_likelihood(featsvec)
-            if not old_log_like is None:
-                reduction = (old_log_like - new_log_like) / old_log_like
+            reduction = (old_log_like - new_log_like) / old_log_like
 
-                if reduction < 0: # If enters here, it's wrong
-                    print('WRONG!')
-                    wrong = open('wrong.log', 'w')
-                    wrong.write('MLE by EM algorithm is not monotonically increasing.\n')
-                    wrong.write('old_log_like = %f.\n' % old_log_like)
-                    wrong.write('new_log_like = %f.\n' % new_log_like)
-                    wrong.write('reduction = %f.\n' % reduction)
-                    wrong.write('sum_posteriors = %f.\n' % sum_posteriors)
-                    wrong.write('self.weights = %f.\n' % self.weights)
-                    wrong.write('self.meansvec = %f.\n' % self.meansvec)
-                    wrong.write('self.variancesvec = %f.\n' % self.variancesvec)
-                    break
-                elif reduction <= threshold:
-                    run = False
+            if reduction < 0: # If enters here, it's wrong
+                print('WRONG!')
+                wrong = open('wrong.log', 'w')
+                wrong.write('MLE by EM algorithm is not monotonically increasing.\n')
+                wrong.write('old_log_like = %f.\n' % old_log_like)
+                wrong.write('new_log_like = %f.\n' % new_log_like)
+                wrong.write('reduction = %f.\n' % reduction)
+                wrong.write('sum_posteriors = %f.\n' % sum_posteriors)
+                wrong.write('self.weights = %f.\n' % self.weights)
+                wrong.write('self.meansvec = %f.\n' % self.meansvec)
+                wrong.write('self.variancesvec = %f.\n' % self.variancesvec)
+                break
+            elif reduction <= threshold:
+                run = False
+
             old_log_like = new_log_like
 
 
@@ -159,95 +166,79 @@ if __name__ == '__main__':
     winstep = 0.01
     numcep = 6
     delta_order = 0
-    M = 8
+    Ms = [32, 64, 128]
 
     featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1', 'f02')
     test_featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_1', 'f02', 1)
-    print(featsvec.shape)
-    print(test_featsvec.shape)
+    print('featsvec.shape:', featsvec.shape)
+    print('test_featsvec.shape:', test_featsvec.shape)
 
-    numfeats = len(featsvec)
-    (amin, amax) = (np.amin(featsvec[:, 1]), np.amax(featsvec[:, 1]))
-    featspace = np.linspace(amin, amax, numfeats)
+    T = len(featsvec)
     def normal(x, mean, variance):
         cte_denom = (2 * np.pi * variance)**0.5
         power = -0.5 * ((x - mean)**2) / variance
         return np.exp(power) / cte_denom
 
-    #creation
-    t = time.time()
-    gmm = GMM(M, featsvec)
-    t = time.time() - t
-    print('GMM (M = %d) created in %f seconds' % (M, t))
-    untrained_log_likelihood = gmm.log_likelihood(test_featsvec)
-    print('untrained GMM: log-likelihood = %f' % untrained_log_likelihood)
-    fig = pl.figure()
-    fig.suptitle('M = %d' % M)
+    (amin, amax) = (np.amin(featsvec, axis=0), np.amax(featsvec, axis=0))
+    (mean, variance) = (np.mean(featsvec, axis=0), np.std(featsvec, axis=0)**2)
+    X = [np.linspace(amin[d], amax[d], T) for d in range(numcep)]
+    #[x.sort(axis=0) for x in X]
 
-    pl.subplot(221)
-    pl.xlabel('feature 2')
-    mixture = list()
-    x = featsvec[:, 1]
-    x.sort()
-    for i in range(M):
-        mean = gmm.meansvec[i, 1]
-        variance = gmm.variancesvec[i, 1]
-        y = normal(x, mean, variance)
-        mixture.append(gmm.weights[i] * y)
-        pl.plot(featspace, y, 'b--')
-    mixture = np.array(sum(mixture))
-    pl.plot(featspace, mixture, 'r')
+    # Checking prob distribution of features
+    for d in range(numcep):
+        y = normal(X[d], mean[d], variance[d])
+        position = 231 + d
+        pl.subplot(position)
+        pl.plot(X[d], y)
 
-    pl.subplot(223)
-    pl.xlabel('feature 3')
-    mixture = list()
-    x = featsvec[:, 2]
-    x.sort()
-    for i in range(M):
-        mean = gmm.meansvec[i, 2]
-        variance = gmm.variancesvec[i, 2]
-        y = normal(x, mean, variance)
-        mixture.append(gmm.weights[i] * y)
-        pl.plot(featspace, y, 'b--')
-    mixture = np.array(sum(mixture))
-    pl.plot(featspace, mixture, 'r')
+    for M in Ms:
+        #creation
+        t = time.time()
+        gmm = GMM(M, featsvec)
+        t = time.time() - t
+        print('GMM (M = %d) created in %f seconds' % (M, t))
+        untrained_log_likelihood = gmm.log_likelihood(test_featsvec)
+        print('untrained GMM: log-likelihood = %f' % untrained_log_likelihood)
+        fig = pl.figure()
+        fig.suptitle('M = %d, untrained' % M)
+        for d in range(numcep):
+            position = 231 + d
+            pl.subplot(position)
+            pl.xlabel('feature %d' % (d + 1))
+            mixture = list()
+            for i in range(M):
+                mean = gmm.meansvec[i, 1]
+                variance = gmm.variancesvec[i, 1]
+                y = normal(X[0], mean, variance)
+                mixture.append(gmm.weights[i] * y)
+                pl.plot(X[0], y, 'b--')
+            mixture = np.array(sum(mixture))
+            pl.plot(X[0], mixture, 'r')
 
-    #training
-    t = time.time()
-    gmm.train(featsvec)
-    t = time.time() - t
-    print('EM training in %f seconds' % t)
-    trained_log_likelihood = gmm.log_likelihood(test_featsvec)
-    print('trained GMM: log-likelihood =', trained_log_likelihood)
-    pl.subplot(222)
-    pl.xlabel('feature 2')
-    mixture = list()
-    x = featsvec[:, 1]
-    x.sort()
-    for i in range(M):
-        mean = gmm.meansvec[i, 1]
-        variance = gmm.variancesvec[i, 1]
-        y = normal(x, mean, variance)
-        mixture.append(gmm.weights[i] * y)
-        pl.plot(featspace, y, 'b--')
-    mixture = np.array(sum(mixture))
-    pl.plot(featspace, mixture, 'r')
+        #training
+        t = time.time()
+        gmm.train(featsvec)
+        t = time.time() - t
+        print('EM training in %f seconds' % t)
+        trained_log_likelihood = gmm.log_likelihood(test_featsvec)
+        print('trained GMM: log-likelihood =', trained_log_likelihood)
+        fig = pl.figure()
+        fig.suptitle('M = %d, trained' % M)
+        for d in range(numcep):
+            position = 231 + d
+            pl.subplot(position)
+            pl.xlabel('feature %d' % (d + 1))
+            mixture = list()
+            for i in range(M):
+                mean = gmm.meansvec[i, 1]
+                variance = gmm.variancesvec[i, 1]
+                y = normal(X[0], mean, variance)
+                mixture.append(gmm.weights[i] * y)
+                pl.plot(X[0], y, 'b--')
+            mixture = np.array(sum(mixture))
+            pl.plot(X[0], mixture, 'r')
 
-    pl.subplot(224)
-    pl.xlabel('feature 3')
-    mixture = list()
-    x = featsvec[:, 2]
-    x.sort()
-    for i in range(M):
-        mean = gmm.meansvec[i, 2]
-        variance = gmm.variancesvec[i, 2]
-        y = normal(x, mean, variance)
-        mixture.append(gmm.weights[i] * y)
-        pl.plot(featspace, y, 'b--')
-    mixture = np.array(sum(mixture))
-    pl.plot(featspace, mixture, 'r')
-
-    increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
-    print('increase = %2.2f%%' % (increase*100))
+        increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
+        print('increase = %2.2f%%' % (increase*100))
 
     pl.show()
