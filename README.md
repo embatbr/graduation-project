@@ -6,8 +6,9 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 
 #TODO
-- Diagnose the reason why the number of mixtures doesn't affect the results and correct it.
-- Generate models divided in the three groups presented in the database (no noise, low noise and high noise) and run experiments for each one.
+- Diagnose the reason why the number of mixtures doesn't affect the results and correct it;
+- Generate models divided in the three groups presented in the database (no noise, low noise and high noise) and run experiments for each one;
+- Check if the values calculated for likelihoods are correct (they are very low - order of 10**-20 or less);
 - Use the FCM theory.
 
 
