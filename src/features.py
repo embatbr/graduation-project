@@ -29,8 +29,6 @@ def framesignal(signal, framelen, framestep):
     @param signal: the audio signal to frame.
     @param framelen: length of each frame in samples.
     @param framestep: frame shift in samples.
-    @param winfunc: the analysis window to apply to each frame. By default it's
-    the hamming window.
 
     @returns: an array of frames of size NUMFRAMES x framelen.
     """
@@ -208,6 +206,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     lifter. Default is 22.
     @param append_energy: if this is true, the zeroth cepstral coefficient is
     replaced by the log of the frame energy.
+    @param applyCMS: if True (default), applies the Cepstral Mean Subtraction.
     @param delta_order: the number of delta calculations. Default 0 (no delta).
     @param N: complexity of delta. Default 2.
 

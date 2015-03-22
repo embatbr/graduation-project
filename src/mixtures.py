@@ -5,7 +5,7 @@
 import numpy as np
 import random
 from math import pi as PI
-from common import ZERO
+from common import ZERO, MIN_VARIANCE
 
 
 class GMM(object):
@@ -128,25 +128,12 @@ class GMM(object):
                 self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
                 self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
                 self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
-                if np.any(self.variancesvec[i] < 0.01):
-                    print('VAR %d: %f' % (i, len(self.variancesvec[i][self.variancesvec[i] < 0.01])))
+                self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
+                                                MIN_VARIANCE, self.variancesvec[i])
 
             new_log_like = self.log_likelihood(featsvec)
             reduction = (old_log_like - new_log_like) / old_log_like
-
-            if reduction < 0: # If enters here, it's wrong
-                print('WRONG!')
-                wrong = open('wrong.log', 'w')
-                wrong.write('MLE by EM algorithm is not monotonically increasing.\n')
-                wrong.write('old_log_like = %f.\n' % old_log_like)
-                wrong.write('new_log_like = %f.\n' % new_log_like)
-                wrong.write('reduction = %f.\n' % reduction)
-                wrong.write('sum_posteriors = %f.\n' % sum_posteriors)
-                wrong.write('self.weights = %f.\n' % self.weights)
-                wrong.write('self.meansvec = %f.\n' % self.meansvec)
-                wrong.write('self.variancesvec = %f.\n' % self.variancesvec)
-                break
-            elif reduction <= threshold:
+            if reduction <= threshold:
                 run = False
 
             old_log_like = new_log_like
