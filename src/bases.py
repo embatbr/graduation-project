@@ -10,6 +10,16 @@ from common import CORPORA_DIR, FEATURES_DIR
 from features import mfcc
 
 
+def get_conditions(filename):
+    txt_file = open(filename)
+    lines = txt_file.readlines()
+    location = [line for line in lines if line.lower().startswith('location:')][0]
+    location = location[len('location:') : ].strip().lower()
+    microphone = [line for line in lines if line.lower().startswith('microphone:')][0]
+    microphone = microphone[len('microphone:') : ].strip().lower()
+
+    return (location, microphone)
+
 def extract_mit(winlen, winstep, numcep, delta_order=0):
     """Extracts features from base MIT. The features are saved in a directory with
     name given by '../bases/features/mit_<numcep>_<delta_order>'.
@@ -45,17 +55,22 @@ def extract_mit(winlen, winstep, numcep, delta_order=0):
             PATH_SPEAKER = '%s%s/%s' % (PATH_DATASETS, dataset, speaker)
             utterances = os.listdir(PATH_SPEAKER)
             utterances.sort()
+            texts = [utt for utt in utterances if utt.endswith('.txt')]
             utterances = [utt for utt in utterances if utt.endswith('.wav')]
 
             #path to write in features
             PATH_SPEAKER_FEAT = '%s%s/%s' % (PATH_FEATS, dataset, speaker)
             os.mkdir('%s' % PATH_SPEAKER_FEAT)
-            for utt in utterances:
+            for (utt, txt) in zip(utterances, texts):
                 PATH_UTT = '%s/%s' % (PATH_SPEAKER, utt)
+                PATH_TXT = '%s/%s' % (PATH_SPEAKER, txt)
+                (location, microphone) = get_conditions(PATH_TXT)
+
                 (samplerate, signal) = wavf.read(PATH_UTT)
                 featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep,
                              delta_order=delta_order)
-                np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[6:8]), featsvec)
+                np.save('%s/%s_%s_%s' % (PATH_SPEAKER_FEAT, utt[6:8], location,
+                                         microphone), featsvec)
 
 def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
     """Reads a feature from a speaker.

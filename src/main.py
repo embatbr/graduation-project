@@ -21,10 +21,10 @@ commands = sys.argv[1:]
 
 numceps = [13, 19, 26] # 26 is the number of filters.
 delta_orders = [0, 1, 2]
-Ms = [8, 16, 32, 64, 128, 256]
+Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 
 
-#Extract the MFCCs from base MIT and put in the correct format.
+#Extract the MFCCs from base MIT and save it in the correct format.
 if 'extract-features' in commands:
     if not os.path.exists(FEATURES_DIR):
         os.mkdir(FEATURES_DIR)
@@ -33,7 +33,6 @@ if 'extract-features' in commands:
 
     winlen = 0.02
     winstep = 0.01
-
     t = time.time()
 
     for numcep in numceps:
@@ -94,7 +93,7 @@ if 'train-gmms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
-#TODO separar por nível de ruído
+#TODO SEPARAR POR TIPO DE RUÍDO
 if 'identify' in commands:
     if not os.path.exists(EXP_IDENTIFICATION_DIR):
         os.mkdir(EXP_IDENTIFICATION_DIR)
@@ -165,6 +164,7 @@ if 'identify' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
+#TODO SEPARAR POR TIPO DE RUÍDO
 if 'train-ubms' in commands:
     if not os.path.exists(UBMS_DIR):
         os.mkdir(UBMS_DIR)
@@ -220,6 +220,7 @@ if 'train-ubms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
+#TODO SEPARAR POR TIPO DE RUÍDO
 if 'verify' in commands:
     if not os.path.exists(EXP_VERIFICATION_DIR):
         os.mkdir(EXP_VERIFICATION_DIR)
