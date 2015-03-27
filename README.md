@@ -6,10 +6,16 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 
 #TODO
+
 - Diagnose the reason why the number of mixtures doesn't affect the results and correct it;
-- Generate models divided in the three groups presented in the database (no noise, low noise and high noise) and run experiments for each one;
+- Generate models (GMMs and UBMs) divided in the groups presented in the database and run experiments for each one;
 - Check if the values calculated for likelihoods are correct (they are very low - order of 10**-20 or less);
 - Use the FCM theory.
+
+
+#Corrections
+
+- Features extracted and dividied by group, each composed by an environment (office, hallway or intersection) and a microphone mode (headset of internal).
 
 
 ##Dates
