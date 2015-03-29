@@ -11,7 +11,7 @@ from common import ZERO, MIN_VARIANCE
 class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    def __init__(self, M, featsvec):
+    def __init__(self, name, M, featsvec):
         #TODO achar o ponto central de 'featsvec', o desvio padrão e criar as médias
         #de modo aleatório, dentro de uma super-elipse (elipse D-dimensional) cujo
         #raio na dimensão d seja o desvio padrão nesta dimensão.
@@ -22,6 +22,7 @@ class GMM(object):
         @param M: number of mixtures (integer).
         @param featsvec: features used by the GMM.
         """
+        self.name = name
         self.M = M
         self.D = featsvec.shape[1]
         self.weights = np.tile(1 / M, M)

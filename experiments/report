@@ -1,0 +1,9 @@
+numceps = [13, 19, 26]
+delta_orders = [0, 1, 2]
+Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+
+extract-features:
+    Total time: circa 18 minutes
+
+train-gmms:
+    Total time: 26 hours and 41 minutes

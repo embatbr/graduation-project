@@ -23,6 +23,9 @@ numceps = [13, 19, 26] # 26 is the number of filters.
 delta_orders = [0, 1, 2]
 Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 
+environments = ['office', 'hallway', 'intersection']
+microphones = ['headset', 'internal']
+
 
 #Extract the MFCCs from base MIT and save it in the correct format.
 if 'extract-features' in commands:
@@ -65,35 +68,29 @@ if 'train-gmms' in commands:
                 speakers.sort()
 
                 for speaker in speakers:
-                    featsvec = bases.read_mit_speaker_features(numcep, delta_order,
-                                                               'enroll_1', speaker)
-                    print('GMM %s: %s' % (speaker, featsvec.shape))
+                    for environment in environments:
+                        for microphone in microphones:
+                            print('GMM %s at %s, with %s microphone' % (speaker, environment,
+                                                                        microphone))
+                            gmmname = '%s_%d_%s_%s' % (speaker, M, environment, microphone)
+                            featsvec = bases.read_mit_speaker_features(numcep, delta_order, 'enroll_1',
+                                                                       speaker, environment, microphone)
 
-                    gmm = mixtures.GMM(M, featsvec)
-                    featsvec_utt = bases.read_mit_features(numcep, delta_order, 'enroll_1', speaker, 1)
-                    untrained_log_likelihood = gmm.log_likelihood(featsvec_utt)
-                    print('log_likelihood = %f' % untrained_log_likelihood)
+                            gmm = mixtures.GMM(gmmname, M, featsvec)
+                            t = time.time()
+                            gmm.train(featsvec)
+                            t = time.time() - t
+                            print('Trained in %f seconds' % t)
 
-                    t = time.time()
-                    gmm.train(featsvec)
-                    t = time.time() - t
-                    print('Trained in %f seconds' % t)
-                    trained_log_likelihood = gmm.log_likelihood(featsvec_utt)
-                    print('log_likelihood = %f' % trained_log_likelihood)
-
-                    increase = 1 - (trained_log_likelihood / untrained_log_likelihood)
-                    print('increase = %f' % increase)
-
-                    GMM_PATH = '%s/%s_%d.gmm' % (GMMS_PATH, speaker, M)
-                    gmmfile = open(GMM_PATH, 'wb')
-                    pickle.dump(gmm, gmmfile)
-                    gmmfile.close()
+                            GMM_PATH = '%s/%s.gmm' % (GMMS_PATH, gmmname)
+                            gmmfile = open(GMM_PATH, 'wb')
+                            pickle.dump(gmm, gmmfile)
+                            gmmfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
 
 
-#TODO SEPARAR POR TIPO DE RUÍDO
 if 'identify' in commands:
     if not os.path.exists(EXP_IDENTIFICATION_DIR):
         os.mkdir(EXP_IDENTIFICATION_DIR)
@@ -111,54 +108,61 @@ if 'identify' in commands:
             print('numcep = %d' % numcep)
             for delta_order in delta_orders:
                 print('delta_order = %d' % delta_order)
-
-                # reading GMMs from 'enroll_1' to use as base
-                ENROLL_1_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-                gmmfilenames = os.listdir(ENROLL_1_PATH)
-                gmmfilenames.sort()
-                gmms_enroll_1 = list()
-                for gmmfilename in gmmfilenames:
-                    GMM_PATH = '%s%s' % (ENROLL_1_PATH, gmmfilename)
-                    gmmfile = open(GMM_PATH, 'rb')
-                    gmm = pickle.load(gmmfile)
-                    gmmfile.close()
-                    gmms_enroll_1.append(gmm)
-
-                # reading features from 'enroll_2'
+                GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
+                gmmfilenames_all = os.listdir(GMMS_PATH)
                 ENROLL_2_PATH = '%smit_%d_%d/enroll_2/' % (FEATURES_DIR, numcep, delta_order)
                 speakers = os.listdir(ENROLL_2_PATH)
                 speakers.sort()
-                hitslist = list()
 
+                gmmlist_all = list()
+                for environment in environments:
+                    for microphone in microphones:
+                        # reading the GMMs
+                        signature = '_%d_%s_%s.gmm' % (M, environment, microphone)
+                        gmmfilenames = [gmmfilename for gmmfilename in gmmfilenames_all
+                                        if gmmfilename.endswith(signature)]
+                        gmmfilenames.sort()
+                        for gmmfilename in gmmfilenames:
+                            GMM_PATH = '%s%s' % (GMMS_PATH, gmmfilename)
+                            gmmfile = open(GMM_PATH, 'rb')
+                            gmm = pickle.load(gmmfile)
+                            gmmfile.close()
+                            gmmlist_all.append(gmm)
+
+                # reading utterances for each speaker
+                hitslist = list()
                 for speaker in speakers:
                     print(speaker)
                     SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
-                    features = os.listdir(SPEAKER_PATH)
-                    features.sort()
+                    featurenames = os.listdir(SPEAKER_PATH)
+                    featurenames.sort()
 
                     hits = 0
                     t = time.time()
-                    for feature in features:
+                    for featurename in featurenames:
                         featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_2',
-                                                           speaker, int(feature[:2]))
-                        probs = [gmm_enroll_1.log_likelihood(featsvec) for gmm_enroll_1
-                                                                       in gmms_enroll_1]
-                        indentified = gmmfilenames[probs.index(max(probs))][:3]
-                        if indentified == speaker:
-                            hits = hits + 1
-
-                    t = time.time() - t
-                    hits = (hits / len(features)) * 100
-                    hitslist.append(hits)
-                    print('hits = %3.2f%%' % hits)
-                    print('Indentified in %f seconds' % t)
-
-
-                EXP_SET_PATH = '%smit_%d_%d.exp' % (M_DIR, numcep, delta_order)
-                expfile = open(EXP_SET_PATH, 'w')
-                for (speaker, hits) in zip(speakers, hitslist):
-                    expfile.write('%s %3.2f\n' % (speaker, hits))
-                expfile.close()
+                                                           speaker, featurename)
+                        signature = '%d%s' % (M, featurename[2 : -4])
+                        print(featurename)
+                        gmmlist = [gmm for gmm in gmmlist_all if gmm.name.endswith(signature)]
+#                        probs = [gmm_enroll_1.log_likelihood(featsvec) for gmm_enroll_1
+#                                                                       in gmmlist_all]
+#                        indentified = gmmfilenames[probs.index(max(probs))][:3]
+#                        if indentified == speaker:
+#                            hits = hits + 1
+#
+#                    t = time.time() - t
+#                    hits = (hits / len(features)) * 100
+#                    hitslist.append(hits)
+#                    print('hits = %3.2f%%' % hits)
+#                    print('Indentified in %f seconds' % t)
+#
+#
+#                EXP_SET_PATH = '%smit_%d_%d.exp' % (M_DIR, numcep, delta_order)
+#                expfile = open(EXP_SET_PATH, 'w')
+#                for (speaker, hits) in zip(speakers, hitslist):
+#                    expfile.write('%s %3.2f\n' % (speaker, hits))
+#                expfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)

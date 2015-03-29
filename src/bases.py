@@ -72,16 +72,22 @@ def extract_mit(winlen, winstep, numcep, delta_order=0):
                 np.save('%s/%s_%s_%s' % (PATH_SPEAKER_FEAT, utt[6:8], location,
                                          microphone), featsvec)
 
-def read_mit_features(numcep, delta_order, dataset, speaker, uttnum):
+def read_mit_features(numcep, delta_order, dataset, speaker, featurename):
     """Reads a feature from a speaker.
 
-    @returns: The features from the utterance given by (dataset, speaker, uttnum).
-    """
-    PATH = '%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
-                                           dataset, speaker, uttnum)
-    featsvec = np.load(PATH)
+    @param numcep: number of cepstral coefficients (used to access the base).
+    @param delta_order: order of deltas (used to access the base).
+    @param dataset: the dataset from where to extract the feature.
+    @param speaker: the speaker to read the features.
+    @param featurename: the feature name, such as '01_office_headset.npy'.
 
-    return featsvec
+    @returns: The features from the utterance given by (dataset, speaker, featurename).
+    """
+    PATH = '%smit_%d_%d/%s/%s/%s' % (FEATURES_DIR, numcep, delta_order, dataset,
+                                     speaker, featurename)
+    feats = np.load(PATH)
+
+    return feats
 
 def read_mit_features_list(numcep, delta_order, dataset, speaker):
     """Reads all features from a speaker.
@@ -101,27 +107,32 @@ def read_mit_features_list(numcep, delta_order, dataset, speaker):
 
     return featslist
 
-def read_mit_speaker_features(numcep, delta_order, dataset, speaker):
+def read_mit_speaker_features(numcep, delta_order, dataset, speaker, environment,
+                              microphone):
     """Reads the features files from database for each speaker and concatenate
     in a single matrix of features.
 
     @param numcep: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
+    @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
+    @param environment: one of three environments: 'office', 'hallway' or 'intersection'.
+    @param microphone: one of two microphones: 'headset' or 'internal'.
 
     @returns: a matrix of order NUMFRAMESTOTAL x numcep representing the speaker's
     features.
     """
     PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
                                           dataset, speaker)
-    features = os.listdir(PATH_SPEAKER)
-    features.sort()
+    featurenames = os.listdir(PATH_SPEAKER)
+    signature = '_%s_%s.npy' % (environment, microphone)
+    featurenames = [featurename for featurename in featurenames
+                    if featurename.endswith(signature)]
+    featurenames.sort()
     featsvec = None
 
-    for feature in features:
-        featsnum = int(feature[:2])
-        feats = read_mit_features(numcep, delta_order, dataset, speaker, featsnum)
-
+    for featurename in featurenames:
+        feats = read_mit_features(numcep, delta_order, dataset, speaker, featurename)
         if featsvec is None:
             featsvec = feats
         else:
