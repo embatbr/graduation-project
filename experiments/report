@@ -3,7 +3,13 @@ delta_orders = [0, 1, 2]
 Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 
 extract-features:
-    Total time: circa 18 minutes
+    mit: 18 minutes.
+    azreda: 8 minutes and 18 seconds.
 
 train-gmms:
-    Total time: 26 hours and 41 minutes
+    mit: 26 hours and 41 minutes.
+    azreda: 16 hours and 44 minutes.
+
+identify:
+    mit:
+    azreda:
