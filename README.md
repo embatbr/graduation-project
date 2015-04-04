@@ -7,7 +7,7 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 #TODO
 
-- Diagnose the reason why the number of mixtures doesn't affect the results and correct it;
+- Diagnose the reason why the number of mixtures doesn't affect the results and correct it. One possibility is that the mixture is stucked in a local maximum.
 - Generate models (GMMs and UBMs) divided in the groups presented in the database and run experiments for each one;
 - Check if the values calculated for likelihoods are correct (they are very low - order of 10**-20 or less);
 - Use the FCM theory.

@@ -10,9 +10,6 @@ from common import CORPORA_DIR, FEATURES_DIR
 from features import mfcc
 
 
-# MIT base
-
-
 def get_conditions(filename):
     txt_file = open(filename)
     lines = txt_file.readlines()
@@ -113,7 +110,7 @@ def read_mit_features_list(numcep, delta_order, dataset, speaker):
     return featslist
 
 
-def read_mit_speaker_features(numcep, delta_order, dataset, speaker, environment,
+def read_mit_speaker_features(numcep, delta_order, dataset, speaker, location,
                               microphone):
     """Reads the features files from database for each speaker and concatenate
     in a single matrix of features.
@@ -122,7 +119,7 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker, environment
     @param delta_order: order of deltas (used to access the base).
     @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
-    @param environment: one of three environments: 'office', 'hallway' or 'intersection'.
+    @param location: one of three locations: 'office', 'hallway' or 'intersection'.
     @param microphone: one of two microphones: 'headset' or 'internal'.
 
     @returns: a matrix of order NUMFRAMESTOTAL x numcep representing the speaker's
@@ -131,7 +128,7 @@ def read_mit_speaker_features(numcep, delta_order, dataset, speaker, environment
     PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
                                           dataset, speaker)
     featurenames = os.listdir(PATH_SPEAKER)
-    signature = '_%s_%s.npy' % (environment, microphone)
+    signature = '_%s_%s.npy' % (location, microphone)
     featurenames = [featurename for featurename in featurenames
                     if featurename.endswith(signature)]
     featurenames.sort()
@@ -171,50 +168,6 @@ def read_mit_background_features(numcep, delta_order, gender):
             featsvec = np.vstack((featsvec, feats))
 
     return featsvec
-
-
-# AZREDA base
-
-
-def extract_azreda(winlen, winstep, numcep, delta_order=0):
-    """Extracts features from base AZREDA. The features are saved in a directory
-    with name given by '../bases/features/azreda_<numcep>_<delta_order>'.
-
-    @param winlen: the length of the analysis window in seconds.
-    @param winstep: the step between successive windows in seconds.
-    @param numcep: the number of cepstrum to return.
-    @param delta_order: number of delta calculations.
-    """
-    if not os.path.exists(FEATURES_DIR):
-        os.mkdir(FEATURES_DIR)
-
-    #Feature base: azreda_<numcep>_<delta_order>
-    PATH_FEATS = '%sazreda_%d_%d/' % (FEATURES_DIR, numcep, delta_order)
-    print('CREATING %s' % PATH_FEATS)
-    if os.path.exists(PATH_FEATS):
-        shutil.rmtree(PATH_FEATS)
-    os.mkdir(PATH_FEATS)
-
-    PATH_SPEAKERS = '%sazreda/' % CORPORA_DIR
-    speakers = os.listdir(PATH_SPEAKERS)
-    speakers.sort()
-
-    for speaker in speakers:
-        print(speaker)
-        #reading list of utterances from each speaker
-        PATH_SPEAKER = '%s%s' % (PATH_SPEAKERS, speaker)
-        utterances = os.listdir(PATH_SPEAKER)
-        utterances.sort()
-
-        #path to write in features
-        PATH_SPEAKER_FEAT = '%s%s' % (PATH_FEATS, speaker)
-        os.mkdir('%s' % PATH_SPEAKER_FEAT)
-        for utt in utterances:
-            PATH_UTT = '%s/%s' % (PATH_SPEAKER, utt)
-            (samplerate, signal) = wavf.read(PATH_UTT)
-            featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep,
-                            delta_order=delta_order)
-            np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[0]), featsvec)
 
 
 #TESTS

@@ -2,7 +2,7 @@
 
 This module was made "from scratch" using the codes provided by James Lyons
 at the url "github.com/jameslyons/python_speech_features". Most part of the code
-is similar to the "inspiration" (aka it's the same). I just read his work, copy
+is similar to the "inspiration" (aka it's the same). I just read his work, copied
 what I understood and improved some parts.
 """
 
