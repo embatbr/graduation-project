@@ -11,8 +11,7 @@ import time
 import pickle
 import numpy as np
 import pylab as pl
-from common import FEATURES_DIR, GMMS_DIR, UBMS_DIR
-from common import EXP_IDENTIFICATION_DIR, EXP_VERIFICATION_DIR, RESULTS_DIR
+from common import FEATURES_DIR, GMMS_DIR, EXP_VERIFICATION_DIR
 import bases, mixtures
 
 
@@ -24,6 +23,7 @@ Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 
 locations = ['office', 'hallway', 'intersection']
 microphones = ['headset', 'internal']
+
 
 if 'extract-features' in commands:
     if not os.path.exists(FEATURES_DIR):
@@ -43,133 +43,9 @@ if 'extract-features' in commands:
     print('Features extracted in %f seconds' % t)
 
 
-if 'train-gmms' in commands:
+if 'train-ubms' in commands:
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
-
-    print('GMM TRAINING')
-    t_tot = time.time()
-
-    for M in Ms:
-        print('M = %d' % M)
-        for numcep in numceps:
-            print('numcep = %d' % numcep)
-            for delta_order in delta_orders:
-                print('delta_order = %d' % delta_order)
-                GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-                if not os.path.exists(GMMS_PATH):
-                    os.mkdir(GMMS_PATH)
-
-                ENROLL_1_PATH = '%smit_%d_%d/enroll_1/' % (FEATURES_DIR, numcep,
-                                                           delta_order)
-                speakers = os.listdir(ENROLL_1_PATH)
-                speakers.sort()
-
-                for speaker in speakers:
-                    for location in locations:
-                        for microphone in microphones:
-                            print('GMM %s at %s, with %s microphone' % (speaker,
-                                                                        location,
-                                                                        microphone))
-                            gmmname = '%s_%d_%s_%s' % (speaker, M, location, microphone)
-                            featsvec = bases.read_mit_speaker_features(numcep, delta_order,
-                                                                       'enroll_1', speaker,
-                                                                       location, microphone)
-
-                            gmm = mixtures.GMM(gmmname, M, featsvec)
-                            t = time.time()
-                            gmm.train(featsvec)
-                            t = time.time() - t
-                            print('Trained in %f seconds' % t)
-
-                            GMM_PATH = '%s/%s.gmm' % (GMMS_PATH, gmmname)
-                            gmmfile = open(GMM_PATH, 'wb')
-                            pickle.dump(gmm, gmmfile)
-                            gmmfile.close()
-
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
-
-
-if 'identify' in commands:
-    if not os.path.exists(EXP_IDENTIFICATION_DIR):
-        os.mkdir(EXP_IDENTIFICATION_DIR)
-
-    print('SPEAKER IDENTIFICATION')
-    t_tot = time.time()
-
-    for M in Ms:
-        print('M = %d' % M)
-        M_DIR = '%sM_%d/' % (EXP_IDENTIFICATION_DIR, M)
-        if not os.path.exists(M_DIR):
-            os.mkdir(M_DIR)
-
-        for numcep in numceps:
-            print('numcep = %d' % numcep)
-            for delta_order in delta_orders:
-                print('delta_order = %d' % delta_order)
-                GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
-                gmmfilenames_all = os.listdir(GMMS_PATH)
-                ENROLL_2_PATH = '%smit_%d_%d/enroll_2/' % (FEATURES_DIR, numcep,
-                                                           delta_order)
-                speakers = os.listdir(ENROLL_2_PATH)
-                speakers.sort()
-
-                # reads all GMMs from a given M, numcep and delta
-                gmmlist_all = list()
-                for location in locations:
-                    for microphone in microphones:
-                        # reading the GMMs
-                        signature = '_%d_%s_%s.gmm' % (M, location, microphone)
-                        gmmfilenames = [gmmfilename for gmmfilename in gmmfilenames_all
-                                        if gmmfilename.endswith(signature)]
-                        gmmfilenames.sort()
-                        for gmmfilename in gmmfilenames:
-                            GMM_PATH = '%s%s' % (GMMS_PATH, gmmfilename)
-                            gmmfile = open(GMM_PATH, 'rb')
-                            gmm = pickle.load(gmmfile)
-                            gmmfile.close()
-                            gmmlist_all.append(gmm)
-
-                # reading utterances for each speaker
-                hitslist = list()
-                for speaker in speakers:
-                    print(speaker)
-                    SPEAKER_PATH = '%s%s' % (ENROLL_2_PATH, speaker)
-                    featurenames = os.listdir(SPEAKER_PATH)
-                    featurenames.sort()
-
-                    hits = 0
-                    for featurename in featurenames:
-                        featsvec = bases.read_mit_features(numcep, delta_order, 'enroll_2',
-                                                           speaker, featurename)
-                        signature = '%d%s' % (M, featurename[2 : -4])
-                        gmmlist = [gmm for gmm in gmmlist_all if gmm.name.endswith(signature)]
-                        log_likelihoods = np.array([gmm.log_likelihood(featsvec)
-                                                    for gmm in gmmlist])
-                        index = np.argmax(log_likelihoods)
-                        indentified = gmmlist[index].name
-                        if indentified.startswith(speaker):
-                            hits = hits + 1
-
-                    hits = (hits / len(featurenames)) * 100
-                    print('hits = %03.2f%%' % hits)
-                    hitslist.append(hits)
-
-                EXP_SET_PATH = '%smit_%d_%d.exp' % (M_DIR, numcep, delta_order)
-                expfile = open(EXP_SET_PATH, 'w')
-                for (speaker, hits) in zip(speakers, hitslist):
-                    expfile.write('%s %03.2f%%\n' % (speaker, hits))
-                expfile.close()
-
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
-
-
-#TODO SEPARAR POR CONDITIONS
-if 'train-ubms' in commands:
-    if not os.path.exists(UBMS_DIR):
-        os.mkdir(UBMS_DIR)
 
     print('UBM TRAINING')
     t_tot = time.time()
@@ -180,41 +56,40 @@ if 'train-ubms' in commands:
             print('numcep = %d' % numcep)
             for delta_order in delta_orders:
                 print('delta_order = %d' % delta_order)
-                GMMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numcep, delta_order)
+                GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numcep, delta_order)
                 if not os.path.exists(GMMS_PATH):
                     os.mkdir(GMMS_PATH)
 
-                featsvec_f = bases.read_mit_background_features(numcep, delta_order,
-                                                                'f')
-                featsvec_m = bases.read_mit_background_features(numcep, delta_order,
-                                                                'm')
+                featsvec_f = bases.read_mit_background(numcep, delta_order, 'f')
+                featsvec_m = bases.read_mit_background(numcep, delta_order, 'm')
                 featsvec = np.vstack((featsvec_f, featsvec_m))
 
-                ubm_unisex = mixtures.GMM(M, featsvec_f)
-                print('UBM unisex created. Training...')
+                print('UNISEX UBM')
+                ubm_unisex = mixtures.GMM('unisex', M, featsvec)
                 t = time.time()
-                ubm_unisex.train(featsvec_f)
+                ubm_unisex.train(featsvec)
                 t = time.time() - t
-                print('UBM unisex trained in %f seconds' % t)
+                print('Trained in %f seconds' % t)
                 GMM_PATH = '%s/unisex_%d.ubm' % (GMMS_PATH, M)
                 ubmfile = open(GMM_PATH, 'wb')
                 pickle.dump(ubm_unisex, ubmfile)
                 ubmfile.close()
 
-                ubm_f = mixtures.GMM(M//2, featsvec_f)
-                ubm_m = mixtures.GMM(M//2, featsvec_m)
-                print('UBM gender created. Training...')
+                print('GENDER UBM')
+                ubm_f = mixtures.GMM('gender', M//2, featsvec_f)
+                ubm_m = mixtures.GMM('gender', M//2, featsvec_m)
                 t = time.time()
                 ubm_f.train(featsvec_f)
                 ubm_m.train(featsvec_m)
                 t = time.time() - t
+                print('Trained in %f seconds' % t)
                 # combination
                 ubm_gender = ubm_f
                 ubm_gender.M = 2*ubm_gender.M
                 ubm_gender.weights = np.hstack((ubm_gender.weights, ubm_m.weights))
                 ubm_gender.meansvec = np.vstack((ubm_gender.meansvec, ubm_m.meansvec))
-                ubm_gender.variancesvec = np.vstack((ubm_gender.variancesvec, ubm_m.variancesvec))
-                print('UBM gender trained in %f seconds' % t)
+                ubm_gender.variancesvec = np.vstack((ubm_gender.variancesvec,
+                                                     ubm_m.variancesvec))
                 GMM_PATH = '%s/gender_%d.ubm' % (GMMS_PATH, M)
                 ubmfile = open(GMM_PATH, 'wb')
                 pickle.dump(ubm_gender, ubmfile)
