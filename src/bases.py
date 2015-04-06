@@ -59,24 +59,24 @@ def extract_mit(winlen, winstep, numcep, delta_order=0):
                 np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[6:8]), featsvec)
 
 
-def read_mit_features(numcep, delta_order, dataset, speaker, featurenum):
+def read_mit_features(numcep, delta_order, dataset, speaker, featurename):
     """Reads a feature from a speaker.
 
     @param numcep: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
     @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
-    @param featurenum: the feature number.
+    @param featurename: the feature number.
 
-    @returns: The features from the utterance given by (dataset, speaker, featurenum).
+    @returns: The features from the utterance given by (dataset, speaker, featurename).
     """
-    PATH = '%smit_%d_%d/%s/%s/%02d.npy' % (FEATURES_DIR, numcep, delta_order,
-                                           dataset, speaker, featurenum)
+    PATH = '%smit_%d_%d/%s/%s/%s' % (FEATURES_DIR, numcep, delta_order,
+                                           dataset, speaker, featurename)
     feats = np.load(PATH)
     return feats
 
 
-def read_mit_speaker(numcep, delta_order, dataset, speaker):
+def read_mit_speaker(numcep, delta_order, dataset, speaker, downlim='01', uplim='59'):
     """Reads the features files from database for a given speaker and concatenate
     in a single matrix of features.
 
@@ -90,22 +90,22 @@ def read_mit_speaker(numcep, delta_order, dataset, speaker):
     """
     PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
                                           dataset, speaker)
-    featurenums = os.listdir(PATH_SPEAKER)
-    featurenums.sort()
+    featurenames = os.listdir(PATH_SPEAKER)
+    featurenames.sort()
     featsvec = None
 
-    for featurenum in featurenums:
-        featurenum = int(featurenum[ : 2])
-        feats = read_mit_features(numcep, delta_order, dataset, speaker, featurenum)
-        if featsvec is None:
-            featsvec = feats
-        else:
-            featsvec = np.vstack((featsvec, feats))
+    for featurename in featurenames:
+        if featurename[:2] >= downlim and featurename[:2] <= uplim:
+            feats = read_mit_features(numcep, delta_order, dataset, speaker, featurename)
+            if featsvec is None:
+                featsvec = feats
+            else:
+                featsvec = np.vstack((featsvec, feats))
 
     return featsvec
 
 
-def read_mit_background(numcep, delta_order, gender):
+def read_mit_background(numcep, delta_order, gender, downlim='01', uplim='59'):
     """Returns the concatenated MFCCs of a gender from dataset 'enroll_1'.
 
     @param numcep: number of cepstral coefficients (used to access the base).
@@ -122,7 +122,8 @@ def read_mit_background(numcep, delta_order, gender):
 
     featsvec = None
     for speaker in speakers:
-        feats = read_mit_speaker(numcep, delta_order, 'enroll_1', speaker)
+        feats = read_mit_speaker(numcep, delta_order, 'enroll_1', speaker, downlim,
+                                 uplim)
         if featsvec is None:
             featsvec = feats
         else:

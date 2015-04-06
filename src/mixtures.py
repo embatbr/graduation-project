@@ -5,11 +5,11 @@
 import numpy as np
 import random
 from math import pi as PI
-from common import ZERO, MIN_VARIANCE, FLOAT_MAX
+from common import ZERO, MIN_VARIANCE
 
 
-KMEANS_MIN_REDUCTION = 1E-2
-EM_THRESHOLD = 1E-5
+KMEANS_MIN_AMAX_REDUCTION = 1E-2
+EM_THRESHOLD = 1E-3
 
 
 def partition(featsvec, M):
@@ -36,7 +36,7 @@ def partition(featsvec, M):
 
 def kmeans(featsvec, M):
     old_means = partition(featsvec, M)
-    old_amax = FLOAT_MAX
+    old_amax = None
 
     while True:
         clusters = [list() for _ in range(M)]
@@ -53,9 +53,11 @@ def kmeans(featsvec, M):
 
         diff = np.fabs(old_means - means)
         amax = np.amax(diff)
-        reduction = np.fabs((old_amax - amax) / old_amax)
-        if reduction <= KMEANS_MIN_REDUCTION:
-            break
+        if not old_amax is None:
+            reduction = np.fabs(amax / old_amax)
+            if reduction <= KMEANS_MIN_AMAX_REDUCTION:
+                break
+
         old_means = means
         old_amax = amax
 
@@ -157,12 +159,13 @@ class GMM(object):
         @param threshold: the difference between old and new probabilities must be
         lower than (or equal to) this parameter in %. Default 0.01 (1%).
         """
-        (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, M)
+        print('kmeans')
+        (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M)
         T = len(featsvec)
         posteriors = np.zeros((T, self.M))
         old_log_like = self.log_likelihood(featsvec)
 
-        iteration = 1
+        print('EM')
         while True:
             # E-Step
             for t in range(T):
@@ -190,10 +193,6 @@ class GMM(object):
 
             new_log_like = self.log_likelihood(featsvec)
             diff = new_log_like - old_log_like
-            print('%d: old = %f' % (iteration, old_log_like))
-            print('%d: new = %f' % (iteration, new_log_like))
-            print('%d: diff = %f' % (iteration, diff))
-            iteration += 1
             if diff <= threshold:
                 break
 

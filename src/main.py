@@ -17,12 +17,12 @@ import bases, mixtures
 
 commands = sys.argv[1:]
 
-numceps = [13, 19, 26] # 26 is the default number of filters.
+numceps = [19, 26] # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
-Ms = [8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+Ms = [32, 64, 128, 256]
 
-locations = ['office', 'hallway', 'intersection']
-microphones = ['headset', 'internal']
+noisetypes = [('office', '01', '19'), ('hallway', '21', '39'), ('intersection', '41', '59'),
+              ('all', '01', '59')]
 
 
 if 'extract-features' in commands:
@@ -60,40 +60,31 @@ if 'train-ubms' in commands:
                 if not os.path.exists(GMMS_PATH):
                     os.mkdir(GMMS_PATH)
 
-                featsvec_f = bases.read_mit_background(numcep, delta_order, 'f')
-                featsvec_m = bases.read_mit_background(numcep, delta_order, 'm')
-                featsvec = np.vstack((featsvec_f, featsvec_m))
+                for (noise, downlim, uplim) in noisetypes:
+                    print(noise)
+                    featsvec_f = bases.read_mit_background(numcep, delta_order,
+                                                           'f', downlim, uplim)
+                    featsvec_m = bases.read_mit_background(numcep, delta_order,
+                                                           'm', downlim, uplim)
 
-                print('UNISEX UBM')
-                ubm_unisex = mixtures.GMM('unisex', M, featsvec)
-                t = time.time()
-                ubm_unisex.train(featsvec)
-                t = time.time() - t
-                print('Trained in %f seconds' % t)
-                GMM_PATH = '%s/unisex_%d.ubm' % (GMMS_PATH, M)
-                ubmfile = open(GMM_PATH, 'wb')
-                pickle.dump(ubm_unisex, ubmfile)
-                ubmfile.close()
+                    # training
+                    ubm_f = mixtures.GMM('f', M // 2, featsvec_f)
+                    ubm_m = mixtures.GMM('m', M // 2, featsvec_m)
+                    ubm_f.train(featsvec_f)
+                    ubm_m.train(featsvec_m)
 
-                print('GENDER UBM')
-                ubm_f = mixtures.GMM('gender', M//2, featsvec_f)
-                ubm_m = mixtures.GMM('gender', M//2, featsvec_m)
-                t = time.time()
-                ubm_f.train(featsvec_f)
-                ubm_m.train(featsvec_m)
-                t = time.time() - t
-                print('Trained in %f seconds' % t)
-                # combination
-                ubm_gender = ubm_f
-                ubm_gender.M = 2*ubm_gender.M
-                ubm_gender.weights = np.hstack((ubm_gender.weights, ubm_m.weights))
-                ubm_gender.meansvec = np.vstack((ubm_gender.meansvec, ubm_m.meansvec))
-                ubm_gender.variancesvec = np.vstack((ubm_gender.variancesvec,
-                                                     ubm_m.variancesvec))
-                GMM_PATH = '%s/gender_%d.ubm' % (GMMS_PATH, M)
-                ubmfile = open(GMM_PATH, 'wb')
-                pickle.dump(ubm_gender, ubmfile)
-                ubmfile.close()
+                    # combination
+                    ubm = ubm_f
+                    ubm.name = noise
+                    ubm.M = 2 * M
+                    ubm.weights = np.hstack((ubm.weights, ubm_m.weights))
+                    ubm.meansvec = np.vstack((ubm.meansvec, ubm_m.meansvec))
+                    ubm.variancesvec = np.vstack((ubm.variancesvec, ubm_m.variancesvec))
+
+                    GMM_PATH = '%s/%s_%d.ubm' % (GMMS_PATH, noise, M)
+                    ubmfile = open(GMM_PATH, 'wb')
+                    pickle.dump(ubm, ubmfile)
+                    ubmfile.close()
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
