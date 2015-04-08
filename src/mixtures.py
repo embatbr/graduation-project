@@ -8,8 +8,16 @@ from math import pi as PI
 from common import ZERO, MIN_VARIANCE
 
 
-KMEANS_MIN_AMAX_REDUCTION = 1E-2
+KMEANS_MIN_REDUCTION = 1E-2
 EM_THRESHOLD = 1E-3
+
+
+class EmptyClusterError(Exception):
+    def __init__(self):
+        self.msg = 'Empty cluster generated during k-means'
+
+    def __str__(self):
+        return self.msg
 
 
 def partition(featsvec, M):
@@ -35,9 +43,13 @@ def partition(featsvec, M):
 
 
 def kmeans(featsvec, M):
+    """Sometimes, inside the 'while', a cluster gets ZERO elements. So, the program
+    needs to be run again (due to the random nature of method 'partition').
+    """
     old_means = partition(featsvec, M)
-    old_amax = None
+    old_max_diff = ZERO
 
+    iteration = 1
     while True:
         clusters = [list() for _ in range(M)]
         for feats in featsvec:
@@ -47,19 +59,22 @@ def kmeans(featsvec, M):
 
         means = list()
         for cluster in clusters:
+            if len(cluster) == 0:
+                raise EmptyClusterError()
             mean = np.mean(cluster, axis=0)
             means.append(mean)
         means = np.array(means)
 
         diff = np.fabs(old_means - means)
-        amax = np.amax(diff)
-        if not old_amax is None:
-            reduction = np.fabs(amax / old_amax)
-            if reduction <= KMEANS_MIN_AMAX_REDUCTION:
-                break
-
+        max_diff = np.amax(diff)
+        reduction = np.fabs(old_max_diff - max_diff) / old_max_diff
+        print('%d: max_diff = %f' % (iteration, max_diff))
+        print('%d: reduction = %f' % (iteration, reduction))
+        iteration += 1
+        if reduction <= KMEANS_MIN_REDUCTION:
+            break
         old_means = means
-        old_amax = amax
+        old_max_diff = max_diff
 
     T = len(featsvec)
     weights = list()
@@ -77,36 +92,19 @@ def kmeans(featsvec, M):
 class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    def __init__(self, name, M, featsvec):
+    def __init__(self, name, M, D):
         """Creates a GMM.
 
         @param name: name of the GMM.
         @param M: number of mixtures (integer).
-        @param featsvec: features used by the GMM.
         """
-        #TODO usar k-means para evitar ficar preso em máximo local?
         self.name = name
         self.M = M
-        self.D = featsvec.shape[1]
-        self.weights = self.meansvec = self.variancesvec = None
+        self.D = D
 
-    def __repr__(self):
-        """String representation of a GMM object.
-
-        @returns: a string containing the atributes.
-        """
-        ret = 'M = %d\nD = %d' % (self.M, self.D)
-        ret = '%s\nweights:\n' % ret
-        for m in range(self.M):
-            ret = '%s%d: %f\n' % (ret, m, self.weights[m])
-        ret = '%smeans:\n' % ret
-        for m in range(self.M):
-            ret = '%s%d: %s\n' % (ret, m, self.meansvec[m])
-        ret = '%svariances:\n' % ret
-        for m in range(self.M):
-            ret = '%s%d: %s\n' % (ret, m, self.variancesvec[m])
-
-        return ret
+        self.weights = np.tile(1 / M, M)
+        self.meansvec = np.zeros((M, D))
+        self.variancesvec = np.ones((M, D))
 
     def eval(self, feats):
         """Feeds the GMM with the given features. It performs a normal pdf for a
@@ -166,6 +164,7 @@ class GMM(object):
         old_log_like = self.log_likelihood(featsvec)
 
         print('EM')
+        iteration = 1
         while True:
             # E-Step
             for t in range(T):
@@ -193,6 +192,10 @@ class GMM(object):
 
             new_log_like = self.log_likelihood(featsvec)
             diff = new_log_like - old_log_like
+            print('%d: old_log_like = %f' % (iteration, old_log_like))
+            print('%d: new_log_like = %f' % (iteration, new_log_like))
+            print('%d: diff = %f' % (iteration, diff))
+            iteration += 1
             if diff <= threshold:
                 break
 

@@ -19,7 +19,7 @@ commands = sys.argv[1:]
 
 numceps = [19, 26] # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
-Ms = [32, 64, 128, 256]
+Ms = [8, 16, 32, 64, 128, 256]
 
 noisetypes = [('office', '01', '19'), ('hallway', '21', '39'), ('intersection', '41', '59'),
               ('all', '01', '59')]
@@ -68,10 +68,22 @@ if 'train-ubms' in commands:
                                                            'm', downlim, uplim)
 
                     # training
-                    ubm_f = mixtures.GMM('f', M // 2, featsvec_f)
-                    ubm_m = mixtures.GMM('m', M // 2, featsvec_m)
-                    ubm_f.train(featsvec_f)
-                    ubm_m.train(featsvec_m)
+                    ubm_f = mixtures.GMM('f', M // 2, featsvec_f.shape[1])
+                    ubm_m = mixtures.GMM('m', M // 2, featsvec_m.shape[1])
+                    while(True):
+                        try:
+                            print('Training female GMM')
+                            ubm_f.train(featsvec_f)
+                            break
+                        except mixtures.EmptyClusterError as e:
+                            print('%s\nrebooting' % e.msg)
+                    while(True):
+                        try:
+                            print('Training male GMM')
+                            ubm_m.train(featsvec_m)
+                            break
+                        except mixtures.EmptyClusterError as e:
+                            print('%s\nrebooting' % e.msg)
 
                     # combination
                     ubm = ubm_f
