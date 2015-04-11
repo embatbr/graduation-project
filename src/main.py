@@ -20,7 +20,6 @@ commands = sys.argv[1:]
 numceps = [19, 26] # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
 Ms = [8, 16, 32, 64, 128, 256]
-
 noisetypes = [('office', '01', '19'), ('hallway', '21', '39'), ('intersection', '41', '59'),
               ('all', '01', '59')]
 
@@ -102,7 +101,12 @@ if 'train-ubms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
-#TODO SEPARAR POR CONDITIONS
+# TODO adaptar os GMMs a partir dos UBMs
+if 'adapt-gmms' in commands:
+    pass
+
+
+# TODO colocar os resultados em formato json
 if 'verify' in commands:
     if not os.path.exists(EXP_VERIFICATION_DIR):
         os.mkdir(EXP_VERIFICATION_DIR)

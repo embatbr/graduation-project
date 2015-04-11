@@ -71,7 +71,7 @@ def kmeans(featsvec, M):
         print('%d: max_diff = %f' % (iteration, max_diff))
         print('%d: reduction = %f' % (iteration, reduction))
         iteration += 1
-        if reduction <= KMEANS_MIN_REDUCTION:
+        if (reduction <= KMEANS_MIN_REDUCTION) or (max_diff == 0.0):
             break
         old_means = means
         old_max_diff = max_diff
