@@ -5,14 +5,15 @@
 import numpy as np
 import random
 from math import pi as PI
-from common import ZERO, MIN_VARIANCE
+from common import FLOAT_MAX, ZERO, MIN_VARIANCE
 
 
-KMEANS_MIN_REDUCTION = 1E-2
 EM_THRESHOLD = 1E-3
 
 
 class EmptyClusterError(Exception):
+    """Error triggered when a cluster in kmeans is empty
+    """
     def __init__(self):
         self.msg = 'Empty cluster generated during k-means'
 
@@ -21,6 +22,11 @@ class EmptyClusterError(Exception):
 
 
 def partition(featsvec, M):
+    """Partionates a vector of features in clusters.
+
+    @param featsvec: the vector of features.
+    @param M: the number of clusters.
+    """
     np.random.shuffle(featsvec)
     T = len(featsvec)
     step = int(T / M)
@@ -43,14 +49,16 @@ def partition(featsvec, M):
 
 
 def kmeans(featsvec, M):
-    """Sometimes, inside the 'while', a cluster gets ZERO elements. So, the program
-    needs to be run again (due to the random nature of method 'partition').
+    """Clusters a vector of features until total separation.
+
+    @param featsvec: the vector of features.
+    @param M: the number of clusters.
     """
     old_means = partition(featsvec, M)
-    old_max_diff = ZERO
+    max_diff = FLOAT_MAX
 
-    iteration = 1
-    while True:
+    iteration = 0
+    while max_diff != 0.0:
         clusters = [list() for _ in range(M)]
         for feats in featsvec:
             distance = np.linalg.norm(feats - old_means, axis=1)**2
@@ -65,16 +73,11 @@ def kmeans(featsvec, M):
             means.append(mean)
         means = np.array(means)
 
-        diff = np.fabs(old_means - means)
-        max_diff = np.amax(diff)
-        reduction = np.fabs(old_max_diff - max_diff) / old_max_diff
-        print('%d: max_diff = %f' % (iteration, max_diff))
-        print('%d: reduction = %f' % (iteration, reduction))
-        iteration += 1
-        if (reduction <= KMEANS_MIN_REDUCTION) or (max_diff == 0.0):
-            break
+        max_diff = np.amax(np.fabs(old_means - means))
         old_means = means
-        old_max_diff = max_diff
+        iteration += 1
+
+    print('Number of iterations: %d' % iteration)
 
     T = len(featsvec)
     weights = list()
@@ -105,6 +108,20 @@ class GMM(object):
         self.weights = np.tile(1 / M, M)
         self.meansvec = np.zeros((M, D))
         self.variancesvec = np.ones((M, D))
+
+    def merge(self, gmm, name=None):
+        """
+        Merges the GMM object with another GMM object.
+
+        @param gmm: the other GMM object to be merged.
+        @param name: the new name of the merged object.
+        """
+        if not name is None:
+            self.name = name
+        self.M = self.M + gmm.M
+        self.weights = np.hstack((self.weights, gmm.weights))
+        self.meansvec = np.vstack((self.meansvec, gmm.meansvec))
+        self.variancesvec = np.vstack((self.variancesvec, gmm.variancesvec))
 
     def eval(self, feats):
         """Feeds the GMM with the given features. It performs a normal pdf for a
@@ -149,7 +166,7 @@ class GMM(object):
         logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sum logprobs and divide by number of samples (T)
 
-    def train(self, featsvec, threshold=EM_THRESHOLD):
+    def train(self, featsvec, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -157,46 +174,51 @@ class GMM(object):
         @param threshold: the difference between old and new probabilities must be
         lower than (or equal to) this parameter in %. Default 0.01 (1%).
         """
-        print('kmeans')
-        (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M)
-        T = len(featsvec)
-        posteriors = np.zeros((T, self.M))
-        old_log_like = self.log_likelihood(featsvec)
+        if use_kmeans:
+            print('kmeans')
+            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M)
 
-        print('EM')
-        iteration = 1
-        while True:
-            # E-Step
-            for t in range(T):
-                (likelihood_in_t, w_gaussians) = self.eval(featsvec[t]) # one for each one of M mixtures
-                posteriors[t] = w_gaussians / likelihood_in_t
+        if use_EM:
+            print('EM')
+            T = len(featsvec)
+            posteriors = np.zeros((T, self.M))
+            old_log_like = self.log_likelihood(featsvec)
+            print('log_like = %f' % old_log_like)
 
-            #Summation of posteriors from 1 to T
-            sum_posteriors = np.sum(posteriors, axis=0)
+            iteration = 0
+            diff = FLOAT_MAX
+            while diff > threshold:
+                # E-Step
+                for t in range(T):
+                    (likelihood_in_t, w_gaussians) = self.eval(featsvec[t]) # one for each one of M mixtures
+                    posteriors[t] = w_gaussians / likelihood_in_t
 
-            # M-Step
-            for i in range(self.M):
-                #Updating i-th weight
-                self.weights[i] = sum_posteriors[i] / T
+                #Summation of posteriors from 1 to T
+                sum_posteriors = np.sum(posteriors, axis=0)
 
-                #Updating i-th meansvec
-                self.meansvec[i] = np.dot(posteriors[:, i], featsvec)
-                self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
+                # M-Step
+                for i in range(self.M):
+                    #Updating i-th weight
+                    self.weights[i] = sum_posteriors[i] / T
 
-                #Updating i-th variancesvec
-                self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
-                self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
-                self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
-                self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
-                                                MIN_VARIANCE, self.variancesvec[i])
+                    #Updating i-th meansvec
+                    self.meansvec[i] = np.dot(posteriors[:, i], featsvec)
+                    self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
 
-            new_log_like = self.log_likelihood(featsvec)
-            diff = new_log_like - old_log_like
-            print('%d: old_log_like = %f' % (iteration, old_log_like))
-            print('%d: new_log_like = %f' % (iteration, new_log_like))
-            print('%d: diff = %f' % (iteration, diff))
-            iteration += 1
-            if diff <= threshold:
-                break
+                    #Updating i-th variancesvec
+                    self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
+                    self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
+                    self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                    self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
+                                                    MIN_VARIANCE, self.variancesvec[i])
 
-            old_log_like = new_log_like
+                new_log_like = self.log_likelihood(featsvec)
+                diff = new_log_like - old_log_like
+                old_log_like = new_log_like
+                iteration += 1
+
+            print('After %d iterations' % iteration)
+            print('log_like = %f' % new_log_like)
+
+    def adapt_gmm(self, featsvec, relevance_factor=16):
+        pass
