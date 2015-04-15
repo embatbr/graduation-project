@@ -10,20 +10,20 @@ from common import CORPORA_DIR, FEATURES_DIR
 from features import mfcc
 
 
-def extract_mit(winlen, winstep, numcep, delta_order=0):
+def extract(winlen, winstep, numceps, delta_order):
     """Extracts features from base MIT. The features are saved in a directory with
-    name given by '../bases/features/mit_<numcep>_<delta_order>'.
+    name given by '../bases/features/mit_<numceps>_<delta_order>'.
 
     @param winlen: the length of the analysis window in seconds.
     @param winstep: the step between successive windows in seconds.
-    @param numcep: the number of cepstrum to return.
+    @param numceps: the number of cepstrum to return.
     @param delta_order: number of delta calculations.
     """
     if not os.path.exists(FEATURES_DIR):
         os.mkdir(FEATURES_DIR)
 
-    #Feature base: mit_<numcep>_<delta_order>
-    PATH_FEATS = '%smit_%d_%d/' % (FEATURES_DIR, numcep, delta_order)
+    #Feature base: mit_<numceps>_<delta_order>
+    PATH_FEATS = '%smit_%d_%d/' % (FEATURES_DIR, numceps, delta_order)
     print('CREATING %s' % PATH_FEATS)
     if os.path.exists(PATH_FEATS):
         shutil.rmtree(PATH_FEATS)
@@ -54,15 +54,15 @@ def extract_mit(winlen, winstep, numcep, delta_order=0):
                 PATH_UTT = '%s/%s' % (PATH_SPEAKER, utt)
 
                 (samplerate, signal) = wavf.read(PATH_UTT)
-                featsvec = mfcc(signal, winlen, winstep, samplerate, numcep=numcep,
+                featsvec = mfcc(signal, winlen, winstep, samplerate, numceps=numceps,
                                 delta_order=delta_order)
                 np.save('%s/%s' % (PATH_SPEAKER_FEAT, utt[6:8]), featsvec)
 
 
-def read_mit_features(numcep, delta_order, dataset, speaker, featurename):
+def read_features(numceps, delta_order, dataset, speaker, featurename):
     """Reads a feature from a speaker.
 
-    @param numcep: number of cepstral coefficients (used to access the base).
+    @param numceps: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
     @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
@@ -70,25 +70,25 @@ def read_mit_features(numcep, delta_order, dataset, speaker, featurename):
 
     @returns: The features from the utterance given by (dataset, speaker, featurename).
     """
-    PATH = '%smit_%d_%d/%s/%s/%s' % (FEATURES_DIR, numcep, delta_order,
+    PATH = '%smit_%d_%d/%s/%s/%s' % (FEATURES_DIR, numceps, delta_order,
                                            dataset, speaker, featurename)
     feats = np.load(PATH)
     return feats
 
 
-def read_mit_speaker(numcep, delta_order, dataset, speaker, downlim='01', uplim='59'):
+def read_speaker(numceps, delta_order, dataset, speaker, downlim='01', uplim='59'):
     """Reads the features files from database for a given speaker and concatenate
     in a single matrix of features.
 
-    @param numcep: number of cepstral coefficients (used to access the base).
+    @param numceps: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
     @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
 
-    @returns: a matrix of order NUMFRAMESTOTAL x numcep representing the speaker's
+    @returns: a matrix of order NUMFRAMESTOTAL x numceps representing the speaker's
     features.
     """
-    PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numcep, delta_order,
+    PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numceps, delta_order,
                                           dataset, speaker)
     featurenames = os.listdir(PATH_SPEAKER)
     featurenames.sort()
@@ -96,7 +96,7 @@ def read_mit_speaker(numcep, delta_order, dataset, speaker, downlim='01', uplim=
 
     for featurename in featurenames:
         if featurename[:2] >= downlim and featurename[:2] <= uplim:
-            feats = read_mit_features(numcep, delta_order, dataset, speaker, featurename)
+            feats = read_features(numceps, delta_order, dataset, speaker, featurename)
             if featsvec is None:
                 featsvec = feats
             else:
@@ -105,24 +105,24 @@ def read_mit_speaker(numcep, delta_order, dataset, speaker, downlim='01', uplim=
     return featsvec
 
 
-def read_mit_background(numcep, delta_order, gender, downlim='01', uplim='59'):
+def read_background(numceps, delta_order, gender, downlim='01', uplim='59'):
     """Returns the concatenated MFCCs of a gender from dataset 'enroll_1'.
 
-    @param numcep: number of cepstral coefficients (used to access the base).
+    @param numceps: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
     @param gender: tells the gender of the background ('f' or 'm').
 
-    @returns: a matrix of order NUM_FRAMES_TOTAL x numcep representing the MFCCs
+    @returns: a matrix of order NUM_FRAMES_TOTAL x numceps representing the MFCCs
     for the background model.
     """
-    ENROLL_1_PATH = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numcep, delta_order)
+    ENROLL_1_PATH = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numceps, delta_order)
     speakers = os.listdir(ENROLL_1_PATH)
     speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
     speakers.sort()
 
     featsvec = None
     for speaker in speakers:
-        feats = read_mit_speaker(numcep, delta_order, 'enroll_1', speaker, downlim,
+        feats = read_speaker(numceps, delta_order, 'enroll_1', speaker, downlim,
                                  uplim)
         if featsvec is None:
             featsvec = feats

@@ -144,7 +144,7 @@ def lifter(cepstra, L=22):
     """Apply a lifter (filter for cepstrum) to the matrix of cepstra. This has
     the effect of increase the magnitude of the high frequency DCT coeffs.
 
-    @param cepstra: the matrix of mel-cepstra, with size numframes*numcep.
+    @param cepstra: the matrix of mel-cepstra, with size numframes*numceps.
     @param L: the liftering coefficient to use. Default is 22. L <= 0 disables
     lifter.
 
@@ -158,13 +158,13 @@ def lifter(cepstra, L=22):
     else:
         return cepstra
 
-def append_deltas(featsvec, numcep, N=2):
-    """Calculates and appends the deltas for the last 'numcep' features from
+def append_deltas(featsvec, numceps, N=2):
+    """Calculates and appends the deltas for the last 'numceps' features from
     frames 'featsvec[:]'. OBS: this method only calculates 1st order deltas. To
     higher orders, use it recursively.
 
     @param featsvec: the original features.
-    @param numcep: the number of cepstral coefficients (added at the end of each
+    @param numceps: the number of cepstral coefficients (added at the end of each
     frame 'featsvec[:]').
     @param N: complexity of delta. Default 2.
 
@@ -172,15 +172,15 @@ def append_deltas(featsvec, numcep, N=2):
     """
     numfeats = len(featsvec[0, :])
     numframes = len(featsvec)
-    new_feats = np.zeros((numframes, numfeats + numcep))
+    new_feats = np.zeros((numframes, numfeats + numceps))
     new_feats[:, : numfeats] = featsvec[:,:]    #copy old features
 
     denom = 2 * sum([n*n for n in range(1, N + 1)])
     for t in range(numframes):
-        delta = np.zeros(numcep)
+        delta = np.zeros(numceps)
         for n in range(1, N + 1):
-            after = featsvec[t + n, numfeats - numcep :] if ((t + n) < numframes) else 0
-            before = featsvec[t - n, numfeats - numcep :] if ((t - n) >= 0) else 0
+            after = featsvec[t + n, numfeats - numceps :] if ((t + n) < numframes) else 0
+            before = featsvec[t - n, numfeats - numceps :] if ((t - n) >= 0) else 0
 
             delta = delta + n*(after - before)
 
@@ -189,7 +189,7 @@ def append_deltas(featsvec, numcep, N=2):
     return new_feats
 
 def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
-         numcep=13, ceplifter=22, append_energy=True, applyCMS=True, delta_order=0, N=2):
+         numceps=19, ceplifter=22, append_energy=True, applyCMS=True, delta_order=0, N=2):
     """Extracts features from an audio signal using the MFCC algorithm.
 
     @param signal: the audio signal from which to extract the features. Should
@@ -201,7 +201,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     @param NFFT: the FFT size. Default is 512.
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
     no filter. Default is 0.97.
-    @param numcep: the number of cepstrum to return, default 13
+    @param numceps: the number of cepstrum to return, default 13
     @param ceplifter: apply a lifter to final cepstral coefficients. 0 is no
     lifter. Default is 22.
     @param append_energy: if this is true, the zeroth cepstral coefficient is
@@ -212,7 +212,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     @returns: A numpy array of size NUMFRAMES x numfeats containing features.
     Each row holds a numfeats-dimensional vector and each column holds 1 feature
-    over time, where numfeats = (1 + delta_order)*numcep. Ex:
+    over time, where numfeats = (1 + delta_order)*numceps. Ex:
 
     |f_1_1 f_1_2 ... f_1_c|
     |f_2_1 f_2_2 ... f_2_c|
@@ -228,7 +228,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     featsvec = np.dot(powframes, fbank.T)
     featsvec = 20*np.log10(featsvec) #dB
-    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numcep]
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps]
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:
@@ -240,7 +240,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
         featsvec = featsvec - np.mean(featsvec, axis=0) # CMS reduces the effect of noise
 
     while delta_order > 0:
-        featsvec = append_deltas(featsvec, numcep, N)
+        featsvec = append_deltas(featsvec, numceps, N)
         delta_order = delta_order - 1
 
     return featsvec
