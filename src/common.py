@@ -8,6 +8,7 @@ import numpy as np
 BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
+UBMS_DIR = '%subms/' % BASES_DIR
 GMMS_DIR = '%sgmms/' % BASES_DIR
 
 EXPERIMENTS_DIR = '../experiments/'

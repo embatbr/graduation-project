@@ -11,17 +11,17 @@ import time
 import pickle
 import numpy as np
 import pylab as pl
-from common import FEATURES_DIR, GMMS_DIR, EXP_VERIFICATION_DIR
+from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR
 import bases, mixtures
 
 
-commands = sys.argv[1:]
+commands = sys.argv[1 : ]
 
 numceps = 19 # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
-Ms = [8, 16, 32, 64, 128, 256]
-noisetypes = [('office', '01', '19'), ('hallway', '21', '39'), ('intersection', '41', '59'),
-              ('all', '01', '59')]
+Ms = [8, 16, 32, 64, 128, 256] # from 128, the EmptyClusterError tends to be triggered
+configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
+                  'intersection': ('41', '59'), 'all': ('01', '59')}
 
 
 if 'extract-features' in commands:
@@ -42,8 +42,8 @@ if 'extract-features' in commands:
 
 
 if 'train-ubms' in commands:
-    if not os.path.exists(GMMS_DIR):
-        os.mkdir(GMMS_DIR)
+    if not os.path.exists(UBMS_DIR):
+        os.mkdir(UBMS_DIR)
 
     print('UBM TRAINING\nnumceps = %d' % numceps)
     t_tot = time.time()
@@ -52,12 +52,14 @@ if 'train-ubms' in commands:
         print('M = %d' % M)
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
-            for (environment, downlim, uplim) in noisetypes:
+            for environment in configurations.keys():
                 print(environment)
+                downlim = configurations[environment][0]
+                uplim = configurations[environment][1]
                 featsvec_f = bases.read_background(numceps, delta_order, 'f',
                                                    downlim, uplim)
                 featsvec_m = bases.read_background(numceps, delta_order, 'm',
@@ -108,7 +110,10 @@ if 'adapt-gmms' in commands:
 
             for speaker in speakers:
                 print(speaker)
-                for (noise, downlim, uplim) in noisetypes:
+                for environment in configurations.keys():
+                    print(environment)
+                    downlim = configurations[environment][0]
+                    uplim = configurations[environment][1]
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
 
