@@ -66,8 +66,10 @@ if 'train-ubms' in commands:
                                                    downlim, uplim)
 
                 # training
-                ubm_f = mixtures.GMM('f', M // 2, numceps)
-                ubm_m = mixtures.GMM('m', M // 2, numceps)
+                D = numceps * (1 + delta_order)
+                print('D = %d' % D)
+                ubm_f = mixtures.GMM('f', M // 2, D)
+                ubm_m = mixtures.GMM('m', M // 2, D)
                 for (ubm, featsvec, gender) in zip([ubm_f, ubm_m], [featsvec_f, featsvec_m],
                                                    ['female', 'male']):
                     while(True):
