@@ -23,11 +23,10 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1):
 
     ax = pl.gca()
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
-        for (i, color) in zip(range(1, 4), ['r', 'y', 'm']):
-            ellipse = Ellipse(xy=(means[x_axis], means[y_axis]), width=i*variances[x_axis]**0.5,
-                              height=i*variances[y_axis]**0.5, edgecolor=color,
-                              linewidth=1, fill=False, zorder=2)
-            ax.add_artist(ellipse)
+        ellipse = Ellipse(xy=(means[x_axis], means[y_axis]), width=variances[x_axis]**0.5,
+                          height=variances[y_axis]**0.5, edgecolor='r', linewidth=1,
+                          fill=False, zorder=2)
+        ax.add_artist(ellipse)
 
 
 if __name__ == '__main__':
@@ -41,10 +40,14 @@ if __name__ == '__main__':
     delta_order = int(args[1])
     x_axis = int(args[2])
     y_axis = int(args[3])
+    environment = args[4]
 
-    featsvec_f = bases.read_background(numceps, delta_order, 'f', '01', '19')
-    featsvec_m = bases.read_background(numceps, delta_order, 'm', '01', '19')
-    featsvec = np.vstack((featsvec_f, featsvec_m))
+    configurations = {'office' : ('01', '19'), 'hallway' : ('21', '39'),
+                      'intersection' : ('41', '59'), 'all' : ('01', '59')}
+    dowlim = configurations[environment][0]
+    uplim = configurations[environment][1]
+
+    featsvec = bases.read_background(numceps, delta_order, None, dowlim, uplim)
 
     PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
     ubm_file = open('%soffice_%d.ubm' % (PATH, M), 'rb')
