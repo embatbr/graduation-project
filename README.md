@@ -7,17 +7,6 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 #TODO
 
-- Diagnose the reason why the number of mixtures doesn't affect the results and correct it. One possibility is that the mixture is stucked in a local maximum.
-- Generate models (GMMs and UBMs) divided in the groups presented in the database and run experiments for each one;
-- Check if the values calculated for likelihoods are correct (they are very low - order of 10**-20 or less);
-- Use the FCM theory.
-
-
-#Corrections
-
-- Features extracted and dividied by group, each composed by an environment (office, hallway or intersection) and a microphone mode (headset of internal).
-
-
-##Dates
-
-- Defense: March 3, 2015.
+- Adapt speaker's GMMs from UBMs for each of the 4 conditions.
+- Run experiments crossing all conditions.
+- Use the FCM theory and re-run all above.
