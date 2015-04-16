@@ -84,6 +84,8 @@ def read_speaker(numceps, delta_order, dataset, speaker, downlim='01', uplim='59
     @param delta_order: order of deltas (used to access the base).
     @param dataset: the dataset from where to extract the feature.
     @param speaker: the speaker to read the features.
+    @param downlim: the bottom limit for signal reading.
+    @param uplim: the top limit for signal reading.
 
     @returns: a matrix of order NUMFRAMESTOTAL x numceps representing the speaker's
     features.
@@ -105,25 +107,28 @@ def read_speaker(numceps, delta_order, dataset, speaker, downlim='01', uplim='59
     return featsvec
 
 
-def read_background(numceps, delta_order, gender, downlim='01', uplim='59'):
+def read_background(numceps, delta_order, gender=None, downlim='01', uplim='59'):
     """Returns the concatenated MFCCs of a gender from dataset 'enroll_1'.
 
     @param numceps: number of cepstral coefficients (used to access the base).
     @param delta_order: order of deltas (used to access the base).
-    @param gender: tells the gender of the background ('f' or 'm').
+    @param gender: tells the gender of the background ('f' or 'm'). Default None.
+    @param downlim: the bottom limit for signal reading.
+    @param uplim: the top limit for signal reading.
 
     @returns: a matrix of order NUM_FRAMES_TOTAL x numceps representing the MFCCs
     for the background model.
     """
     ENROLL_1_PATH = '%smit_%d_%d/enroll_1' % (FEATURES_DIR, numceps, delta_order)
     speakers = os.listdir(ENROLL_1_PATH)
-    speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
+    if not gender is None:
+        speakers = [speaker for speaker in speakers if speaker.startswith(gender)]
     speakers.sort()
 
     featsvec = None
     for speaker in speakers:
         feats = read_speaker(numceps, delta_order, 'enroll_1', speaker, downlim,
-                                 uplim)
+                             uplim)
         if featsvec is None:
             featsvec = feats
         else:
