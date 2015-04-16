@@ -114,7 +114,7 @@ class GMM(object):
         Merges the GMM object with another GMM object.
 
         @param gmm: the other GMM object to be merged.
-        @param name: the new name of the merged object.
+        @param name: the new name of the merged object. Default, None.
         """
         if not name is None:
             self.name = name
@@ -128,8 +128,6 @@ class GMM(object):
         number M of mixtures (one for each m from M).
 
         @param feats: a Dx1 vector of features.
-        @param sumProbs: tells if the weighted mixtures must be summed. Default
-        is True.
 
         @returns: a tuple: the weighted gaussians for gmm, summed and as array.
         """
@@ -154,25 +152,32 @@ class GMM(object):
 
         return (likelihood, w_probs) #sum in mixtures axis
 
-    def log_likelihood(self, featsvec):
+    def log_likelihood(self, featsvec, normalize=True):
         """Feeds the GMM with a sequence of feature vectors.
 
         @param featsvec: a NUMFRAMES x D matrix of features (features over time).
+        @param normalize: determines if the log-likelihood is divided by T. By
+        default, True.
 
-        @returns: the average sum of logarithm of the weighted sum of gaussians
-        for gmm for each feature vector, aka, the log-likelihood.
+        @returns: the average (if normalize is True) sum of logarithm of the weighted
+        sum of gaussians for the GMM for each feature vector, aka, the log-likelihood
+        in base 10.
         """
         probs = np.array([self.eval(feats)[0] for feats in featsvec])
         logprobs = np.log10(probs)
-        return np.mean(logprobs, axis=0) # sum logprobs and divide by number of samples (T)
+        if normalize:
+            return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
+        return logprobs
 
     def train(self, featsvec, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
         @param featsvec: a NUMFRAMES x D matrix of features.
-        @param threshold: the difference between old and new probabilities must be
-        lower than (or equal to) this parameter in %. Default 0.01 (1%).
+        @param threshold: the difference between old and new log-likelihoods must
+        be lower than (or equal to) this parameter. Default EM_THRESHOLD.
+        @param use_kmeans: determines if the k-means algorithm is used. Default, True.
+        @param use_EM: determines if the EM algorithm is used. Default, True.
         """
         if use_kmeans:
             print('kmeans')
@@ -221,4 +226,12 @@ class GMM(object):
             print('log_like = %f' % new_log_like)
 
     def adapt_gmm(self, featsvec, relevance_factor=16):
+        """
+        Adapts an UBM to a GMM for a specific speaker, given the speaker's features
+        vector.
+
+        @param featsvec: a NUMFRAMES x D matrix of features.
+        @param relevance_factor: the relevance factor for adaptations of weights,
+        means and variances. Default, 16.
+        """
         pass
