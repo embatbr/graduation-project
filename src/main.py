@@ -19,7 +19,7 @@ commands = sys.argv[1 : ]
 
 numceps = 19 # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
-Ms = [8, 16, 32, 64, 128, 256] # from 128, the EmptyClusterError tends to be triggered
+Ms = [8, 16, 32, 64, 128] # from 128, the EmptyClusterError starts to occur
 configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 
@@ -131,7 +131,6 @@ if 'adapt-gmms' in commands:
                     gmmfile = open(GMM_PATH, 'wb')
                     pickle.dump(gmm, gmmfile)
                     gmmfile.close()
-
 
 
     t_tot = time.time() - t_tot
