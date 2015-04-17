@@ -5,7 +5,7 @@
 import numpy as np
 import pylab as pl
 import pickle
-from common import GMMS_DIR
+from common import UBMS_DIR
 from matplotlib.patches import Ellipse
 
 
@@ -49,8 +49,8 @@ if __name__ == '__main__':
 
     featsvec = bases.read_background(numceps, delta_order, None, dowlim, uplim)
 
-    PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
-    ubm_file = open('%soffice_%d.ubm' % (PATH, M), 'rb')
+    UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
+    ubm_file = open('%soffice_%d.ubm' % (UBMS_PATH, M), 'rb')
     ubm = pickle.load(ubm_file)
     plot_gmm(ubm, featsvec, x_axis, y_axis)
 

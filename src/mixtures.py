@@ -123,7 +123,17 @@ class GMM(object):
         self.meansvec = np.vstack((self.meansvec, gmm.meansvec))
         self.variancesvec = np.vstack((self.variancesvec, gmm.variancesvec))
 
-    def eval(self, feats):
+    def clone(self, name=None):
+        clonename = self.name if name is None else name
+        clone = GMM(clonename, self.M, self.D)
+
+        clone.weights = np.copy(self.weights)
+        clone.meansvec = np.copy(self.meansvec)
+        clone.variancesvec = np.copy(self.variancesvec)
+
+        return clone
+
+    def posterior(self, feats):
         """Feeds the GMM with the given features. It performs a normal pdf for a
         number M of mixtures (one for each m from M).
 
@@ -145,14 +155,12 @@ class GMM(object):
         #Probabilities
         probs = np.exp(exponent) / cte
         w_probs = (self.weights * probs)
-        #if np.any(w_probs == 0):
-        #    print(len(probs[w_probs == 0]))
         w_probs = np.where(w_probs == 0, ZERO, w_probs)
         likelihood = np.sum(w_probs, axis=0)
 
         return (likelihood, w_probs) #sum in mixtures axis
 
-    def log_likelihood(self, featsvec, normalize=True):
+    def log_likelihood(self, featsvec):
         """Feeds the GMM with a sequence of feature vectors.
 
         @param featsvec: a NUMFRAMES x D matrix of features (features over time).
@@ -163,11 +171,9 @@ class GMM(object):
         sum of gaussians for the GMM for each feature vector, aka, the log-likelihood
         in base 10.
         """
-        probs = np.array([self.eval(feats)[0] for feats in featsvec])
+        probs = np.array([self.posterior(feats)[0] for feats in featsvec])
         logprobs = np.log10(probs)
-        if normalize:
-            return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
-        return logprobs
+        return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
 
     def train(self, featsvec, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses
@@ -195,8 +201,8 @@ class GMM(object):
             while diff > threshold:
                 # E-Step
                 for t in range(T):
-                    (likelihood_in_t, w_gaussians) = self.eval(featsvec[t]) # one for each one of M mixtures
-                    posteriors[t] = w_gaussians / likelihood_in_t
+                    (posterior_in_t, w_gaussians) = self.posterior(featsvec[t]) # one for each one of M mixtures
+                    posteriors[t] = w_gaussians / posterior_in_t
 
                 #Summation of posteriors from 1 to T
                 sum_posteriors = np.sum(posteriors, axis=0)
@@ -222,8 +228,7 @@ class GMM(object):
                 old_log_like = new_log_like
                 iteration += 1
 
-            print('After %d iterations' % iteration)
-            print('log_like = %f' % new_log_like)
+            print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 
     def adapt_gmm(self, featsvec, relevance_factor=16):
         """
@@ -234,4 +239,31 @@ class GMM(object):
         @param relevance_factor: the relevance factor for adaptations of weights,
         means and variances. Default, 16.
         """
-        pass
+        T = len(featsvec)
+        posteriors = np.zeros((T, self.M))
+
+        # E-Step
+        for t in range(T):
+            (posterior_in_t, w_gaussians) = self.posterior(featsvec[t]) # one for each one of M mixtures
+            posteriors[t] = w_gaussians / posterior_in_t
+
+        #Summation of posteriors from 1 to T.
+        #Is the 'n_i' from the adaptation algorithm
+        sum_posteriors = np.sum(posteriors, axis=0)
+
+        for i in range(self.M):
+            alpha_i = sum_posteriors[i] / (sum_posteriors[i] + relevance_factor)
+            oldmeans = self.meansvec[i]
+
+            self.weights[i] = (alpha_i*sum_posteriors[i]) / T + (1 - alpha_i)*self.weights[i]
+
+            meansvec_map = np.dot(posteriors[:, i], featsvec)
+            meansvec_map = meansvec_map / sum_posteriors[i]
+            self.meansvec[i] = alpha_i*meansvec_map + (1 - alpha_i)*self.meansvec[i]
+
+            variancesvec_map = np.dot(posteriors[:, i], featsvec**2)
+            variancesvec_map = variancesvec_map / sum_posteriors[i]
+            self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
+                                   (self.variancesvec[i] + oldmeans**2) - self.meansvec[i]**2
+
+        self.weights = self.weights / np.sum(self.weights, axis=0)
