@@ -7,6 +7,5 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 #TODO
 
-- Adapt speaker's GMMs from UBMs for each of the 4 conditions.
 - Run experiments crossing all conditions.
 - Use the FCM theory and re-run all above.
