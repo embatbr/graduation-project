@@ -76,6 +76,33 @@ def read_features(numceps, delta_order, dataset, speaker, featurename):
     return feats
 
 
+def read_features_list(numceps, delta_order, dataset, speaker, downlim='01', uplim='59'):
+    """Reads a list of features from a speaker.
+
+    @param numceps: number of cepstral coefficients (used to access the base).
+    @param delta_order: order of deltas (used to access the base).
+    @param dataset: the dataset from where to extract the feature.
+    @param speaker: the speaker to read the features.
+    @param downlim: the bottom limit for signal reading.
+    @param uplim: the top limit for signal reading.
+
+    @returns: a matrix of order NUMFRAMESTOTAL x numceps representing the speaker's
+    features.
+    """
+    PATH_SPEAKER = '%smit_%d_%d/%s/%s' % (FEATURES_DIR, numceps, delta_order,
+                                          dataset, speaker)
+    featurenames = os.listdir(PATH_SPEAKER)
+    featurenames.sort()
+
+    featslist = list()
+    for featurename in featurenames:
+        if featurename[:2] >= downlim and featurename[:2] <= uplim:
+            feats = read_features(numceps, delta_order, dataset, speaker, featurename)
+            featslist.append(feats)
+
+    return featslist
+
+
 def read_speaker(numceps, delta_order, dataset, speaker, downlim='01', uplim='59'):
     """Reads the features files from database for a given speaker and concatenate
     in a single matrix of features.

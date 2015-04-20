@@ -9,9 +9,10 @@ import os, os.path
 import shutil
 import time
 import pickle
+import json
 import numpy as np
 import pylab as pl
-from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR
+from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR
 import bases, mixtures
 
 
@@ -115,8 +116,9 @@ if 'adapt-gmms' in commands:
 
             for environment in configurations.keys():
                 print(environment)
-                ubm_file = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
-                ubm = pickle.load(ubm_file)
+                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubm = pickle.load(ubmfile)
+                ubmfile.close()
 
                 downlim = configurations[environment][0]
                 uplim = configurations[environment][1]
@@ -137,17 +139,69 @@ if 'adapt-gmms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
+if 'verify' in commands:
+    if not os.path.exists(VERIFY_DIR):
+        os.mkdir(VERIFY_DIR)
+
+    print('Verification\nnumceps = %d' % numceps)
+    t_tot = time.time()
+
+    for M in Ms:
+        print('M = %d' % M)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
+            EXP_PATH = '%smit_%d_%d/' % (VERIFY_DIR, numceps, delta_order)
+            if not os.path.exists(EXP_PATH):
+                os.mkdir(EXP_PATH)
+
+            gmm_filenames = os.listdir(GMMS_PATH)
+            gmm_filenames = [gmm_filename for gmm_filename in gmm_filenames
+                             if gmm_filename.endswith('_%d.gmm' % M)]
+            gmm_filenames.sort()
+
+            expdict = dict()
+            for environment in configurations.keys():
+                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubm = pickle.load(ubmfile)
+                ubmfile.close()
+
+                key = ubm.name.split('_')[0]
+                expdict[key] = dict()
+                downlim = configurations[environment][0]
+                uplim = configurations[environment][1]
+
+                for gmm_filename in gmm_filenames:
+                    gmmkey = gmm_filename.replace('_%d.gmm' % M, '')
+                    expdict[key][gmmkey] = dict()
+
+                    for dataset in ['enroll_2', 'imposter']:
+                        expdict[key][gmmkey][dataset] = list()
+                        #TODO continuar daqui
+
+            EXP_FILE_PATH = '%sM_%d.json' % (EXP_PATH, M)
+            with open(EXP_FILE_PATH, 'w') as expfile:
+                json.dump(expdict, expfile, indent=4, sort_keys=True)
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
+
+
 #TODO rodar quando terminar 'train-ubms' para corrigir os nomes
 if 'correct-ubms-names' in commands:
     for M in Ms:
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
             for environment in configurations.keys():
-                ubm_file = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
-                ubm = pickle.load(ubm_file)
+                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubm = pickle.load(ubmfile)
+                ubmfile.close()
                 ubm.name = '%s_%d' % (environment, M)
 
                 UBM_PATH = '%s%s.ubm' % (UBMS_PATH, ubm.name)
                 ubmfile = open(UBM_PATH, 'wb')
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
+
+                print(UBM_PATH, ubm.name)
