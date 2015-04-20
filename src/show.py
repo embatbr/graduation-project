@@ -5,7 +5,7 @@
 import numpy as np
 import pylab as pl
 import pickle
-from common import UBMS_DIR
+from common import UBMS_DIR, GMMS_DIR
 from matplotlib.patches import Ellipse
 
 
@@ -18,8 +18,8 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1):
     @param x_axis: the dimension plotted in the x axis.
     @param y_axis: the dimension plotted in the y axis.
     """
-    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'b.')
-    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'r.')
+    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'bo')
+    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'ro')
 
     ax = pl.gca()
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
@@ -48,11 +48,32 @@ if __name__ == '__main__':
     uplim = configurations[environment][1]
 
     featsvec = bases.read_background(numceps, delta_order, None, dowlim, uplim)
+    featsvec_f = bases.read_speaker(numceps, delta_order, 'enroll_1', 'f04', dowlim, uplim)
+    featsvec_m = bases.read_speaker(numceps, delta_order, 'enroll_1', 'm10', dowlim, uplim)
 
     UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
     ubm_file = open('%soffice_%d.ubm' % (UBMS_PATH, M), 'rb')
     ubm = pickle.load(ubm_file)
+
+    # female
+    GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
+    gmm_file = open('%sf04_office_%d.gmm' % (GMMS_PATH, M), 'rb')
+    gmm = pickle.load(gmm_file)
+    pl.subplot(2, 2, 1)
     plot_gmm(ubm, featsvec, x_axis, y_axis)
+    pl.subplot(2, 2, 2)
+    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
+    plot_gmm(gmm, featsvec_f, x_axis, y_axis)
+
+    # male
+    GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
+    gmm_file = open('%sm10_office_%d.gmm' % (GMMS_PATH, M), 'rb')
+    gmm = pickle.load(gmm_file)
+    pl.subplot(2, 2, 3)
+    plot_gmm(ubm, featsvec, x_axis, y_axis)
+    pl.subplot(2, 2, 4)
+    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
+    plot_gmm(gmm, featsvec_m, x_axis, y_axis)
 
     #ubm = mixtures.GMM('test', M, numceps)
     #ubm.train(featsvec, use_kmeans=True, use_EM=False)
