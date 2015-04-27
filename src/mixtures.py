@@ -230,7 +230,7 @@ class GMM(object):
 
             print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 
-    def adapt_gmm(self, featsvec, relevance_factor=16):
+    def adapt_gmm(self, featsvec, relevance_factor=16, adaptations='wmv'):
         """
         Adapts an UBM to a GMM for a specific speaker, given the speaker's features
         vector.
@@ -238,6 +238,8 @@ class GMM(object):
         @param featsvec: a NUMFRAMES x D matrix of features.
         @param relevance_factor: the relevance factor for adaptations of weights,
         means and variances. Default, 16.
+        @param adaptations: determines which parameters will be adapted. To adapt
+        weights, use 'w', means, 'm', and variances, 'v'. Default 'wmv'.
         """
         T = len(featsvec)
         posteriors = np.zeros((T, self.M))
@@ -255,15 +257,21 @@ class GMM(object):
             alpha_i = sum_posteriors[i] / (sum_posteriors[i] + relevance_factor)
             oldmeans = self.meansvec[i]
 
-            self.weights[i] = (alpha_i*sum_posteriors[i]) / T + (1 - alpha_i)*self.weights[i]
+            if 'w' in adaptations:
+                self.weights[i] = (alpha_i*sum_posteriors[i]) / T + (1 - alpha_i)*self.weights[i]
 
-            meansvec_map = np.dot(posteriors[:, i], featsvec)
-            meansvec_map = meansvec_map / sum_posteriors[i]
-            self.meansvec[i] = alpha_i*meansvec_map + (1 - alpha_i)*self.meansvec[i]
+            if 'm' in adaptations:
+                meansvec_map = np.dot(posteriors[:, i], featsvec)
+                meansvec_map = meansvec_map / sum_posteriors[i]
+                self.meansvec[i] = alpha_i*meansvec_map + (1 - alpha_i)*self.meansvec[i]
 
-            variancesvec_map = np.dot(posteriors[:, i], featsvec**2)
-            variancesvec_map = variancesvec_map / sum_posteriors[i]
-            self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
-                                   (self.variancesvec[i] + oldmeans**2) - self.meansvec[i]**2
+            if 'v' in adaptations:
+                variancesvec_map = np.dot(posteriors[:, i], featsvec**2)
+                variancesvec_map = variancesvec_map / sum_posteriors[i]
+                self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
+                                       (self.variancesvec[i] + oldmeans**2) - self.meansvec[i]**2
+                self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
+                                                MIN_VARIANCE, self.variancesvec[i])
 
-        self.weights = self.weights / np.sum(self.weights, axis=0)
+        if 'w' in adaptations:
+            self.weights = self.weights / np.sum(self.weights, axis=0)

@@ -12,11 +12,12 @@ import pickle
 import json
 import numpy as np
 import pylab as pl
-from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR
+from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 import bases, mixtures
 
 
-commands = sys.argv[1 : ]
+command = sys.argv[1]
+parameters = sys.argv[2 : ]
 
 numceps = 19 # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
@@ -25,7 +26,7 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 
 
-if 'extract-features' in commands:
+if command == 'extract-features':
     if not os.path.exists(FEATURES_DIR):
         os.mkdir(FEATURES_DIR)
 
@@ -42,7 +43,7 @@ if 'extract-features' in commands:
     print('Features extracted in %f seconds' % t)
 
 
-if 'train-ubms' in commands:
+if command == 'train-ubms':
     if not os.path.exists(UBMS_DIR):
         os.mkdir(UBMS_DIR)
 
@@ -58,7 +59,7 @@ if 'train-ubms' in commands:
                 os.mkdir(UBMS_PATH)
 
             for environment in configurations.keys():
-                print(environment)
+                print(environment.upper())
                 downlim = configurations[environment][0]
                 uplim = configurations[environment][1]
                 featsvec_f = bases.read_background(numceps, delta_order, 'f',
@@ -94,11 +95,16 @@ if 'train-ubms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
-if 'adapt-gmms' in commands:
+if command == 'adapt-gmms':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
+    adaptations = parameters[0]
+    adapt_gmmc_dir = '%sadapt_%s/' % (GMMS_DIR, adaptations)
+    if not os.path.exists(adapt_gmmc_dir):
+        os.mkdir(adapt_gmmc_dir)
 
     print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
+    print('adaptations: %s' % adaptations)
     t_tot = time.time()
 
     for M in Ms:
@@ -110,12 +116,12 @@ if 'adapt-gmms' in commands:
             speakers.sort()
 
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
             for environment in configurations.keys():
-                print(environment)
+                print(environment.upper())
                 ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
@@ -127,7 +133,7 @@ if 'adapt-gmms' in commands:
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
                     gmm = ubm.clone('%s_%s_%d' % (speaker, environment, M))
-                    gmm.adapt_gmm(featsvec)
+                    gmm.adapt_gmm(featsvec, adaptations=parameters)
 
                     GMM_PATH = '%s%s.gmm' % (GMMS_PATH, gmm.name)
                     gmmfile = open(GMM_PATH, 'wb')
@@ -139,11 +145,17 @@ if 'adapt-gmms' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
-if 'verify' in commands:
+if command == 'verify':
     if not os.path.exists(VERIFY_DIR):
         os.mkdir(VERIFY_DIR)
+    adaptations = parameters[0]
+    verify_dir = '%sadapt_%s/' % (VERIFY_DIR, adaptations)
+    if not os.path.exists(verify_dir):
+        os.mkdir(verify_dir)
+    adapt_gmmc_dir = '%sadapt_%s/' % (GMMS_DIR, adaptations)
 
     print('Verification\nnumceps = %d' % numceps)
+    print('adaptations: %s' % adaptations)
     t_tot = time.time()
 
     for M in Ms:
@@ -151,34 +163,65 @@ if 'verify' in commands:
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
-            EXP_PATH = '%smit_%d_%d/' % (VERIFY_DIR, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
+            EXP_PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
             if not os.path.exists(EXP_PATH):
                 os.mkdir(EXP_PATH)
 
-            gmm_filenames = os.listdir(GMMS_PATH)
-            gmm_filenames = [gmm_filename for gmm_filename in gmm_filenames
-                             if gmm_filename.endswith('_%d.gmm' % M)]
-            gmm_filenames.sort()
+            all_gmm_filenames = os.listdir(GMMS_PATH)
+            all_gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
+                                 if gmm_filename.endswith('_%d.gmm' % M)]
+            all_gmm_filenames.sort()
 
             expdict = dict()
             for environment in configurations.keys():
+                print(environment.upper())
                 ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
 
-                key = ubm.name.split('_')[0]
-                expdict[key] = dict()
-                downlim = configurations[environment][0]
-                uplim = configurations[environment][1]
+                ubm_key = 'UBM %s' % ubm.name.split('_')[0]
+                expdict[ubm_key] = dict()
+                for env in configurations.keys():
+                    env_key = 'SCORES %s' % env
+                    expdict[ubm_key][env_key] = dict()
+                    expdict[ubm_key][env_key]['enrolled'] = list()
+                    expdict[ubm_key][env_key]['imposter'] = list()
+
+                gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
+                                 if gmm_filename.endswith('_%s_%d.gmm' % (environment, M))]
 
                 for gmm_filename in gmm_filenames:
-                    gmmkey = gmm_filename.replace('_%d.gmm' % M, '')
-                    expdict[key][gmmkey] = dict()
+                    print(gmm_filename)
+                    gmmfile = open('%s%s' % (GMMS_PATH, gmm_filename), 'rb')
+                    gmm = pickle.load(gmmfile)
+                    gmmfile.close()
 
-                    for dataset in ['enroll_2', 'imposter']:
-                        expdict[key][gmmkey][dataset] = list()
-                        #TODO continuar daqui
+                    enrolled = gmm.name.split('_')[0]
+                    gender = enrolled[0]
+                    num_imposters = 17 if gender == 'f' else 23
+                    speakers = [enrolled] + ['%s%02d_i' % (gender, i) for i in range(num_imposters)]
+
+                    for i in range(len(speakers)):
+                        speaker = speakers[i]
+                        dataset = 'imposter' if i > 0 else 'enroll_2'
+                        dataset_key = 'imposter' if i > 0 else 'enrolled'
+                        featslist = bases.read_features_list(numceps, delta_order,
+                                                             dataset, speaker)
+
+                        for i in range(len(featslist)):
+                            feats = featslist[i]
+                            log_likeli_gmm = gmm.log_likelihood(feats)
+                            log_likeli_ubm = ubm.log_likelihood(feats)
+                            score = log_likeli_gmm - log_likeli_ubm
+
+                            expdict[ubm_key]['SCORES all'][dataset_key].append(score)
+                            if i < 18:
+                                expdict[ubm_key]['SCORES office'][dataset_key].append(score)
+                            if 18 <= i < 36:
+                                expdict[ubm_key]['SCORES hallway'][dataset_key].append(score)
+                            if 36 <= i < 54:
+                                expdict[ubm_key]['SCORES intersection'][dataset_key].append(score)
 
             EXP_FILE_PATH = '%sM_%d.json' % (EXP_PATH, M)
             with open(EXP_FILE_PATH, 'w') as expfile:
@@ -188,8 +231,32 @@ if 'verify' in commands:
     print('Total time: %f seconds' % t_tot)
 
 
-#TODO rodar quando terminar 'train-ubms' para corrigir os nomes
-if 'correct-ubms-names' in commands:
+# Códigos de correção para merdas que fiz anteriormente e demorariam muito tempo
+# para refazer
+
+if command == 'check':
+    for M in Ms:
+        for delta_order in delta_orders:
+            for directory in [UBMS_DIR, GMMS_DIR]:
+                PATH = '%smit_%d_%d/' % (directory, numceps, delta_order)
+                filenames = os.listdir(PATH)
+                filenames.sort()
+                for filename in filenames:
+                    gmmfile = open('%s%s' % (PATH, filename), 'rb')
+                    gmm = pickle.load(gmmfile)
+                    gmmfile.close()
+
+                    if np.min(gmm.weights) <= 0 or np.min(gmm.weights) >= 1:
+                        print(gmm.name)
+                        print('Wrong weights')
+                        print(gmm.weights)
+                    if np.min(gmm.variancesvec) < MIN_VARIANCE:
+                        print(gmm.name)
+                        print('Wrong variancesvec')
+                        print(gmm.variancesvec)
+
+
+if command == 'correct-ubms-names':
     for M in Ms:
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
