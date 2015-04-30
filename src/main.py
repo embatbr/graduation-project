@@ -13,6 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
+from common import EPS, DET_DIR
 import bases, mixtures
 
 
@@ -44,6 +45,8 @@ if command == 'extract-features':
 
 
 if command == 'train-ubms':
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
     if not os.path.exists(UBMS_DIR):
         os.mkdir(UBMS_DIR)
 
@@ -99,7 +102,7 @@ if command == 'adapt-gmms':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
     adaptations = parameters[0]
-    adapt_gmmc_dir = '%sadapt_%s/' % (GMMS_DIR, adaptations)
+    adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
     if not os.path.exists(adapt_gmmc_dir):
         os.mkdir(adapt_gmmc_dir)
 
@@ -132,8 +135,8 @@ if command == 'adapt-gmms':
                     print(speaker)
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
-                    gmm = ubm.clone('%s_%s_%d' % (speaker, environment, M))
-                    gmm.adapt_gmm(featsvec, adaptations=parameters)
+                    gmm = ubm.clone('%s_%s_%d_%s' % (speaker, environment, M, adaptations))
+                    gmm.adapt_gmm(featsvec, adaptations=adaptations)
 
                     GMM_PATH = '%s%s.gmm' % (GMMS_PATH, gmm.name)
                     gmmfile = open(GMM_PATH, 'wb')
@@ -149,10 +152,10 @@ if command == 'verify':
     if not os.path.exists(VERIFY_DIR):
         os.mkdir(VERIFY_DIR)
     adaptations = parameters[0]
-    verify_dir = '%sadapt_%s/' % (VERIFY_DIR, adaptations)
+    verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
     if not os.path.exists(verify_dir):
         os.mkdir(verify_dir)
-    adapt_gmmc_dir = '%sadapt_%s/' % (GMMS_DIR, adaptations)
+    adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
 
     print('Verification\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
@@ -170,7 +173,7 @@ if command == 'verify':
 
             all_gmm_filenames = os.listdir(GMMS_PATH)
             all_gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith('_%d.gmm' % M)]
+                                 if gmm_filename.endswith('_%d_%s.gmm' % (M, adaptations))]
             all_gmm_filenames.sort()
 
             expdict = dict()
@@ -189,7 +192,8 @@ if command == 'verify':
                     expdict[ubm_key][env_key]['imposter'] = list()
 
                 gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith('_%s_%d.gmm' % (environment, M))]
+                                 if gmm_filename.endswith('_%s_%d_%s.gmm' % (environment,
+                                                                             M, adaptations))]
 
                 for gmm_filename in gmm_filenames:
                     print(gmm_filename)
@@ -215,6 +219,7 @@ if command == 'verify':
                             log_likeli_ubm = ubm.log_likelihood(feats)
                             score = log_likeli_gmm - log_likeli_ubm
 
+                            # each environment has 18 utterances
                             expdict[ubm_key]['SCORES all'][dataset_key].append(score)
                             if i < 18:
                                 expdict[ubm_key]['SCORES office'][dataset_key].append(score)
@@ -231,14 +236,44 @@ if command == 'verify':
     print('Total time: %f seconds' % t_tot)
 
 
+if command == 'det-curve':
+    verify_dirs = os.listdir(VERIFY_DIR)
+    verify_dirs.sort()
+
+    print('DET Curve\nnumceps = %d' % numceps)
+    t_tot = time.time()
+
+    for verify_dir in verify_dirs:
+        print('verify_dir: %s' % verify_dir)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            for M in Ms:
+                print('M = %d' % M)
+
+#    for M in Ms:
+#        print('M = %d' % M)
+#        for delta_order in delta_orders:
+#            FILE_PATH = '%smit_%d_%d/M_%d.json' % (verify_dir, numceps, delta_order, M)
+#            print(FILE_PATH)
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
+
+
 # Códigos de correção para merdas que fiz anteriormente e demorariam muito tempo
 # para refazer
 
 if command == 'check':
+    directories = os.listdir(GMMS_DIR)
+    directories.sort()
+    print('Directories:', directories)
+
     for M in Ms:
+        print('M =', M)
         for delta_order in delta_orders:
-            for directory in [UBMS_DIR, GMMS_DIR]:
-                PATH = '%smit_%d_%d/' % (directory, numceps, delta_order)
+            print('delta_order =', delta_order)
+            for directory in directories:
+                PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
                 filenames = os.listdir(PATH)
                 filenames.sort()
                 for filename in filenames:
@@ -247,13 +282,16 @@ if command == 'check':
                     gmmfile.close()
 
                     if np.min(gmm.weights) <= 0 or np.min(gmm.weights) >= 1:
-                        print(gmm.name)
-                        print('Wrong weights')
-                        print(gmm.weights)
+                        print(PATH, gmm.name)
+                        print('Some of the weights are not between 0 and 1')
+                        print(PATH, gmm.weights)
+                    if (np.sum(gmm.weights) - 1) >= 10*EPS:
+                        print('Weights not summing to 1')
+                        print('sum:', np.sum(gmm.weights))
                     if np.min(gmm.variancesvec) < MIN_VARIANCE:
-                        print(gmm.name)
-                        print('Wrong variancesvec')
-                        print(gmm.variancesvec)
+                        print(PATH, gmm.name)
+                        print('Negative variancesvec')
+                        print(gmm.variancesvec[gmm.variancesvec < MIN_VARIANCE])
 
 
 if command == 'correct-ubms-names':

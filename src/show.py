@@ -41,6 +41,7 @@ if __name__ == '__main__':
     x_axis = int(args[2])
     y_axis = int(args[3])
     environment = args[4]
+    adaptations = args[5]
 
     configurations = {'office' : ('01', '19'), 'hallway' : ('21', '39'),
                       'intersection' : ('41', '59'), 'all' : ('01', '59')}
@@ -52,28 +53,38 @@ if __name__ == '__main__':
     featsvec_m = bases.read_speaker(numceps, delta_order, 'enroll_1', 'm10', dowlim, uplim)
 
     UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-    ubm_file = open('%soffice_%d.ubm' % (UBMS_PATH, M), 'rb')
+    ubm_file = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
     ubm = pickle.load(ubm_file)
+    print('ubm:', ubm.weights)
+    print('sum:', np.sum(ubm.weights))
+
+    adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
 
     # female
-    GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
-    gmm_file = open('%sf04_office_%d.gmm' % (GMMS_PATH, M), 'rb')
+    GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
+    gmm_file = open('%sf04_%s_%d_%s.gmm' % (GMMS_PATH, environment, M, adaptations),
+                    'rb')
     gmm = pickle.load(gmm_file)
     pl.subplot(2, 2, 1)
     plot_gmm(ubm, featsvec, x_axis, y_axis)
     pl.subplot(2, 2, 2)
     pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
     plot_gmm(gmm, featsvec_f, x_axis, y_axis)
+    print('gmm f04_%s: %s' % (environment, gmm.weights))
+    print('sum:', np.sum(gmm.weights))
 
     # male
-    GMMS_PATH = '%smit_%d_%d/' % (GMMS_DIR, numceps, delta_order)
-    gmm_file = open('%sm10_office_%d.gmm' % (GMMS_PATH, M), 'rb')
+    GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
+    gmm_file = open('%sm10_%s_%d_%s.gmm' % (GMMS_PATH, environment, M, adaptations),
+                    'rb')
     gmm = pickle.load(gmm_file)
     pl.subplot(2, 2, 3)
     plot_gmm(ubm, featsvec, x_axis, y_axis)
     pl.subplot(2, 2, 4)
     pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
     plot_gmm(gmm, featsvec_m, x_axis, y_axis)
+    print('gmm m10_%s: %s' % (environment, gmm.weights))
+    print('sum:', np.sum(gmm.weights))
 
     #ubm = mixtures.GMM('test', M, numceps)
     #ubm.train(featsvec, use_kmeans=True, use_EM=False)

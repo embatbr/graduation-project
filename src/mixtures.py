@@ -120,6 +120,7 @@ class GMM(object):
             self.name = name
         self.M = self.M + gmm.M
         self.weights = np.hstack((self.weights, gmm.weights))
+        self.weights = self.weights / np.sum(self.weights, axis=0)
         self.meansvec = np.vstack((self.meansvec, gmm.meansvec))
         self.variancesvec = np.vstack((self.variancesvec, gmm.variancesvec))
 
