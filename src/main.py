@@ -13,7 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
-from common import EPS, DET_DIR
+from common import EPS, calculate_eer
 import bases, mixtures
 
 
@@ -22,9 +22,10 @@ parameters = sys.argv[2 : ]
 
 numceps = 19 # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
-Ms = [8, 16, 32, 64, 128] # from 128, the EmptyClusterError starts to occur
+Ms = [8, 16, 32, 64, 128] # from 128, the EmptyClusterError starts to be frequent
 configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
+environments = ['office', 'hallway', 'intersection', 'all']
 
 
 if command == 'extract-features':
@@ -61,7 +62,7 @@ if command == 'train-ubms':
             if not os.path.exists(UBMS_PATH):
                 os.mkdir(UBMS_PATH)
 
-            for environment in configurations.keys():
+            for environment in environments:
                 print(environment.upper())
                 downlim = configurations[environment][0]
                 uplim = configurations[environment][1]
@@ -123,7 +124,7 @@ if command == 'adapt-gmms':
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
-            for environment in configurations.keys():
+            for environment in environments:
                 print(environment.upper())
                 ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
@@ -177,7 +178,7 @@ if command == 'verify':
             all_gmm_filenames.sort()
 
             expdict = dict()
-            for environment in configurations.keys():
+            for environment in environments:
                 print(environment.upper())
                 ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
@@ -185,7 +186,7 @@ if command == 'verify':
 
                 ubm_key = 'UBM %s' % ubm.name.split('_')[0]
                 expdict[ubm_key] = dict()
-                for env in configurations.keys():
+                for env in environments:
                     env_key = 'SCORES %s' % env
                     expdict[ubm_key][env_key] = dict()
                     expdict[ubm_key][env_key]['enrolled'] = list()
@@ -228,7 +229,7 @@ if command == 'verify':
                             if 36 <= i < 54:
                                 expdict[ubm_key]['SCORES intersection'][dataset_key].append(score)
 
-            EXP_FILE_PATH = '%sM_%d.json' % (EXP_PATH, M)
+            EXP_FILE_PATH = '%sscores_M_%d.json' % (EXP_PATH, M)
             with open(EXP_FILE_PATH, 'w') as expfile:
                 json.dump(expdict, expfile, indent=4, sort_keys=True)
 
@@ -236,11 +237,68 @@ if command == 'verify':
     print('Total time: %f seconds' % t_tot)
 
 
-if command == 'det-curve':
+if command == 'calc-det-curve':
+    adaptations = parameters[0]
+
+    print('Calculating DET Curve\nnumceps = %d' % numceps)
+    print('adaptations: %s' % adaptations)
+    t_tot = time.time()
+
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        for M in Ms:
+            print('M = %d' % M)
+            PATH = '%sadapted_%s/mit_%d_%d/' % (VERIFY_DIR, adaptations, numceps,
+                                                delta_order)
+            EXP_FILE_PATH = '%sscores_M_%d.json' % (PATH, M)
+            expfile = open(EXP_FILE_PATH)
+            expdict = json.load(expfile)
+
+            detdict = dict()
+            for environment in environments:
+                ubm_key = 'UBM %s' % environment
+                detdict[ubm_key] = dict()
+
+                for environment in environments:
+                    scores_key = 'SCORES %s' % environment
+                    detdict[ubm_key][scores_key] = dict()
+
+                    enrolled = np.array(expdict[ubm_key][scores_key]['enrolled'])
+                    imposter = np.array(expdict[ubm_key][scores_key]['imposter'])
+                    scores = np.sort(np.hstack((enrolled, imposter)))
+                    scores = np.hstack((scores, np.max(scores) + 10*EPS))
+
+                    detdict[ubm_key][scores_key]['false_detection'] = list()
+                    detdict[ubm_key][scores_key]['false_rejection'] = list()
+
+                    for score in scores:
+                        false_detection = imposter[imposter >= score]
+                        false_detection = (len(false_detection) / len(imposter)) * 100
+                        detdict[ubm_key][scores_key]['false_detection'].append(false_detection)
+
+                        false_rejection = enrolled[enrolled < score]
+                        false_rejection = (len(false_rejection) / len(enrolled)) * 100
+                        detdict[ubm_key][scores_key]['false_rejection'].append(false_rejection)
+
+                    fd = detdict[ubm_key][scores_key]['false_detection']
+                    fr = detdict[ubm_key][scores_key]['false_rejection']
+                    (EER, EER_index) = calculate_eer(fd, fr)
+                    detdict[ubm_key][scores_key]['EER'] = EER
+                    detdict[ubm_key][scores_key]['EER_score'] = scores[EER_index]
+
+            DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+            with open(DET_FILE_PATH, 'w') as detfile:
+                json.dump(detdict, detfile, indent=4, sort_keys=True)
+
+    t_tot = time.time() - t_tot
+    print('Total time: %f seconds' % t_tot)
+
+
+if command == 'draw-det-curve':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
 
-    print('DET Curve\nnumceps = %d' % numceps)
+    print('Drawing DET Curve\nnumceps = %d' % numceps)
     t_tot = time.time()
 
     for verify_dir in verify_dirs:
@@ -249,12 +307,50 @@ if command == 'det-curve':
             print('delta_order = %d' % delta_order)
             for M in Ms:
                 print('M = %d' % M)
+                PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
+                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+                detfile = open(DET_FILE_PATH)
+                detdict = json.load(detfile)
 
-#    for M in Ms:
-#        print('M = %d' % M)
-#        for delta_order in delta_orders:
-#            FILE_PATH = '%smit_%d_%d/M_%d.json' % (verify_dir, numceps, delta_order, M)
-#            print(FILE_PATH)
+                colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
+                position = 1
+                ticks = np.arange(10, 100, 10)
+                eer_line = np.linspace(0, 100, 101)
+
+                pl.clf()
+                for environment in environments:
+                    ubm_key = 'UBM %s' % environment
+                    ax = pl.subplot(2, 2, position)
+                    ax.set_title(environment, fontsize=10)
+                    pl.grid(True)
+                    pl.xticks(ticks)
+                    pl.yticks(ticks)
+
+                    [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
+                    [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+
+                    if position == 3 or position == 4:
+                        pl.subplots_adjust(hspace=0.3)
+
+                    position = position + 1
+                    color_index = 0
+
+                    for environment in environments:
+                        scores_key = 'SCORES %s' % environment
+                        false_detection = detdict[ubm_key][scores_key]['false_detection']
+                        false_rejection = detdict[ubm_key][scores_key]['false_rejection']
+                        pl.plot(false_detection, false_rejection, colors[color_index])
+                        color_index = color_index + 1
+
+                    pl.xlabel('false detection', fontsize=7)
+                    pl.ylabel('false rejection', fontsize=7)
+
+                pl.subplot(221)
+                pl.legend(('office','hallway', 'intersection', 'all'),
+                           loc='upper right', prop={'size':7})
+
+                DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
+                pl.savefig(DET_IMG_PATH, bbox_inches='tight')
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
@@ -298,7 +394,7 @@ if command == 'correct-ubms-names':
     for M in Ms:
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            for environment in configurations.keys():
+            for environment in environments:
                 ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
