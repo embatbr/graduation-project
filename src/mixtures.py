@@ -11,6 +11,16 @@ from common import FLOAT_MAX, ZERO, MIN_VARIANCE
 EM_THRESHOLD = 1E-3
 
 
+def calc_frac_variance(vector, r):
+    vector_to_r = vector.astype(np.complex)**r
+    vector_mean_to_r = np.mean(vector, axis=0)**r
+    variance = np.mean(vector_to_r**2, axis=0) -\
+               2*np.mean(vector_to_r, axis=0)*vector_mean_to_r +\
+               vector_mean_to_r**2
+
+    return variance
+
+
 class EmptyClusterError(Exception):
     """Error triggered when a cluster in kmeans is empty
     """
@@ -48,7 +58,7 @@ def partition(featsvec, M):
     return means
 
 
-def kmeans(featsvec, M):
+def kmeans(featsvec, M, r=None):
     """Clusters a vector of features until total separation.
 
     @param featsvec: the vector of features.
@@ -79,12 +89,19 @@ def kmeans(featsvec, M):
 
     print('Number of iterations: %d' % iteration)
 
+    #turn every cluster into a numpy array
+    clusters = [np.array(cluster) for cluster in clusters]
+
     T = len(featsvec)
     weights = list()
     variances = list()
     for cluster in clusters:
         weights.append(len(cluster) / T)
-        variance = np.std(cluster, axis=0)**2
+        if r is None:
+            variance = np.std(cluster, axis=0)**2
+        else:
+            #negative numbers powered to 'r' pop out the error
+            variance = calc_frac_variance(cluster, r)
         variances.append(variance)
     weights = np.array(weights)
     variances = np.array(variances)
@@ -176,7 +193,7 @@ class GMM(object):
         logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
 
-    def train(self, featsvec, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
+    def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -188,7 +205,7 @@ class GMM(object):
         """
         if use_kmeans:
             print('kmeans')
-            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M)
+            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M, r=r)
 
         if use_EM:
             print('EM')
@@ -218,11 +235,19 @@ class GMM(object):
                     self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
 
                     #Updating i-th variancesvec
-                    self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
-                    self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
-                    self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                    if r is None:
+                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
+                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
+                        self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                    else:
+                        EX = np.dot(posteriors[:, i], featsvec)
+                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**(2*r)) -\
+                                               2*np.dot(posteriors[:, i], featsvec**r)*(EX**r) +\
+                                               EX**(2*r)
+                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
                     self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
                                                     MIN_VARIANCE, self.variancesvec[i])
+
 
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
@@ -231,7 +256,7 @@ class GMM(object):
 
             print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 
-    def adapt_gmm(self, featsvec, relevance_factor=16, adaptations='wmv'):
+    def adapt_gmm(self, featsvec, adaptations='wmv', top_C=None, r=None, relevance_factor=16):
         """
         Adapts an UBM to a GMM for a specific speaker, given the speaker's features
         vector.
@@ -267,12 +292,34 @@ class GMM(object):
                 self.meansvec[i] = alpha_i*meansvec_map + (1 - alpha_i)*self.meansvec[i]
 
             if 'v' in adaptations:
-                variancesvec_map = np.dot(posteriors[:, i], featsvec**2)
-                variancesvec_map = variancesvec_map / sum_posteriors[i]
-                self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
-                                       (self.variancesvec[i] + oldmeans**2) - self.meansvec[i]**2
+                if r is None:
+                    #possibly wrong
+                    variancesvec_map = np.dot(posteriors[:, i], featsvec**2)
+                    variancesvec_map = variancesvec_map / sum_posteriors[i]
+                    self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
+                                           (self.variancesvec[i] + oldmeans**2) -\
+                                           self.meansvec[i]**2
+                else:
+                    #TODO checar se a adaptacao esta correta
+                    EX = np.dot(posteriors[:, i], featsvec)
+                    variancesvec_map = np.dot(posteriors[:, i], featsvec**(2*r)) -\
+                                       2*np.dot(posteriors[:, i], featsvec**r)*(EX**r) +\
+                                       EX**(2*r)
+                    variancesvec_map = variancesvec_map / sum_posteriors[i]
+                    self.variancesvec[i] = alpha_i*variancesvec_map + (1 - alpha_i)*\
+                                           (self.variancesvec[i] + oldmeans**2)
                 self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
                                                 MIN_VARIANCE, self.variancesvec[i])
 
         if 'w' in adaptations:
             self.weights = self.weights / np.sum(self.weights, axis=0)
+
+        if not top_C is None:
+            probs = np.array([self.posterior(feats)[1] for feats in featsvec])
+            logprobs = np.log10(probs)
+            logprobs_mean = np.mean(logprobs, axis=0)
+            sorted_indices = np.argsort(logprobs_mean)[-top_C : ]
+
+            self.weights = self.weights[sorted_indices]
+            self.meansvec = self.meansvec[sorted_indices]
+            self.variancesvec = self.variancesvec[sorted_indices]

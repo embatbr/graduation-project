@@ -244,3 +244,53 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
         delta_order = delta_order - 1
 
     return featsvec
+
+
+#Test
+if __name__ == '__main__':
+    import scipy.io.wavfile as wavf
+
+    PATH = '../bases/corpora/mit/enroll_1/f00/phrase01_16k.wav'
+    (samplerate, signal) = wavf.read(PATH)
+    winlen = 0.02
+    winstep = 0.01
+    nfilt = 26
+    NFFT = 512
+    preemph = 0.97
+    numceps = 19
+    ceplifter = 22
+    append_energy = True
+    applyCMS = True
+    delta_order = 0
+    N = 2
+
+
+    emph_signal = preemphasis(signal, preemph)
+    frames = framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
+    powframes = powspec(frames, NFFT)
+    fbank = filterbank(samplerate, nfilt, NFFT)
+
+    featsvec = np.dot(powframes, fbank.T)
+    featsvec = 20*np.log10(featsvec) #dB
+    print(len(featsvec)*len(featsvec[0]))
+    if np.any(featsvec < 0):
+        print('A')
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps]
+    #featsvec = np.fabs(featsvec)
+    if np.any(featsvec < 0):
+        print('B:', len(featsvec[featsvec < 0]), featsvec[featsvec < 0])
+    featsvec = lifter(featsvec, ceplifter)
+    if np.any(featsvec < 0):
+        print('C:', len(featsvec[featsvec < 0]), featsvec[featsvec < 0])
+
+    if append_energy:
+        energy = np.sum(powframes, axis=1) # stores the total energy of each frame
+        energy = 20*np.log10(energy) #dB
+        featsvec[ : , 0] = energy
+
+    if applyCMS:
+        featsvec = featsvec - np.mean(featsvec, axis=0) # CMS reduces the effect of noise
+
+    while delta_order > 0:
+        featsvec = append_deltas(featsvec, numceps, N)
+        delta_order = delta_order - 1
