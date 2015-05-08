@@ -125,13 +125,13 @@ if command == 'adapt-gmms':
 
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
+
     if top_C is None:
-        adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
+        adapted_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
     else:
-        adapt_gmmc_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
-    print(adapt_gmmc_dir)
-    if not os.path.exists(adapt_gmmc_dir):
-        os.mkdir(adapt_gmmc_dir)
+        adapted_gmmc_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
+    if not os.path.exists(adapted_gmmc_dir):
+        os.mkdir(adapted_gmmc_dir)
 
     print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
@@ -146,7 +146,7 @@ if command == 'adapt-gmms':
             speakers.sort()
 
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (adapted_gmmc_dir, numceps, delta_order)
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
@@ -176,13 +176,25 @@ if command == 'adapt-gmms':
 
 
 if command == 'verify':
+    adaptations = parameters[0]
+    top_C = None
+    if len(parameters) > 1:
+        top_C = int(parameters[1])
+
     if not os.path.exists(VERIFY_DIR):
         os.mkdir(VERIFY_DIR)
-    adaptations = parameters[0]
-    verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
+
+    if top_C is None:
+        verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
+    else:
+        verify_dir = '%sadapted_%s_C%d/' % (VERIFY_DIR, adaptations, top_C)
     if not os.path.exists(verify_dir):
         os.mkdir(verify_dir)
-    adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
+
+    if top_C is None:
+        adapted_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
+    else:
+        adapted_gmmc_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
 
     print('Verification\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
@@ -193,7 +205,7 @@ if command == 'verify':
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (adapted_gmmc_dir, numceps, delta_order)
             EXP_PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
             if not os.path.exists(EXP_PATH):
                 os.mkdir(EXP_PATH)
@@ -265,6 +277,14 @@ if command == 'verify':
 
 if command == 'calc-det-curve':
     adaptations = parameters[0]
+    top_C = None
+    if len(parameters) > 1:
+        top_C = int(parameters[1])
+
+    if top_C is None:
+        verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
+    else:
+        verify_dir = '%sadapted_%s_C%d/' % (VERIFY_DIR, adaptations, top_C)
 
     print('Calculating DET Curve\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
@@ -274,8 +294,7 @@ if command == 'calc-det-curve':
         print('delta_order = %d' % delta_order)
         for M in Ms:
             print('M = %d' % M)
-            PATH = '%sadapted_%s/mit_%d_%d/' % (VERIFY_DIR, adaptations, numceps,
-                                                delta_order)
+            PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
             EXP_FILE_PATH = '%sscores_M_%d.json' % (PATH, M)
             expfile = open(EXP_FILE_PATH)
             expdict = json.load(expfile)
