@@ -1,5 +1,7 @@
-\chapter{Speaker Recognition Systems}
-\label{ch:speaker-recognition-system}
+\chapter{Speaker Verification Systems}
+\label{ch:speaker-verification-system}
+
+%TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
 
 The process of speaker recognition lies on the field of pattern classification, with the speaker's utterance (a speech signal) as input for a classifier. This decision may be, given a speech signal $\dvec{Y}$ produced by a speaker $\mathcal{S}$ and a set $\dvec{\mathcal{S}} = \{\mathcal{S}_1, ..., \mathcal{S}_S\}$ of enrolled users, ``identify $\mathcal{S}$ as $\mathcal{S}_i$ if $i = \arg\max_j P(\mathcal{S}_j|\dvec{Y})$". This is a case of speaker identification and the output is a $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$. Another type of decision is ``accept $\mathcal{S}$ as $\mathcal{S}_i$ if $P(\mathcal{S}_i|\dvec{Y}) \geq \alpha$", where $\mathcal{S}_i$ is the claimed identity of $\mathcal{S}$. This is a speaker verification decision. Both are covered in this chapter.
 
