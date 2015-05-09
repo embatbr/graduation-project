@@ -13,7 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
-from common import EPS, calculate_eer, FRAC_GMMS_DIR, FRAC_UBMS_DIR
+from common import EPS, calculate_eer
 import bases, mixtures
 
 
@@ -45,12 +45,20 @@ if command == 'extract-features':
     print('Features extracted in %f seconds' % t)
 
 
-def train_ubms(ubms_dir, r=None):
+if command == 'train-ubms':
+    print('UBM TRAINING\nnumceps = %d' % numceps)
+    t_tot = time.time()
+
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
+    if not os.path.exists(UBMS_DIR):
+        os.mkdir(UBMS_DIR)
+
     for M in Ms:
         print('M = %d' % M)
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
-            UBMS_PATH = '%smit_%d_%d/' % (ubms_dir, numceps, delta_order)
+            UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
             if not os.path.exists(UBMS_PATH):
                 os.mkdir(UBMS_PATH)
 
@@ -73,45 +81,20 @@ def train_ubms(ubms_dir, r=None):
                     while(True):
                         try:
                             print('Training %s GMM' % gender)
-                            ubm.train(featsvec, r=r)
+                            ubm.train(featsvec)
                             break
                         except mixtures.EmptyClusterError as e:
                             print('%s\nrebooting %s GMM' % (e.msg, gender))
 
                 # combination
                 ubm = ubm_f
-                if r is None:
-                    new_name = '%s_%d' % (environment, M)
-                else:
-                    new_name = '%s_%d_%.02f' % (environment, M, r)
+                new_name = '%s_%d' % (environment, M)
                 ubm.merge(ubm_m, new_name)
 
                 UBM_PATH = '%s%s.ubm' % (UBMS_PATH, ubm.name)
                 ubmfile = open(UBM_PATH, 'wb')
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
-
-if command == 'train-ubms':
-    print('UBM TRAINING\nnumceps = %d' % numceps)
-    t_tot = time.time()
-
-    if 'frac' in parameters:
-        if not os.path.exists(FRAC_GMMS_DIR):
-            os.mkdir(FRAC_GMMS_DIR)
-        if not os.path.exists(FRAC_UBMS_DIR):
-            os.mkdir(FRAC_UBMS_DIR)
-
-        rs = [0.01] + [i/10 for i in range(1, 11)]
-        for r in rs:
-            print('r = %.02f' % r)
-            train_ubms(FRAC_UBMS_DIR, r=r)
-    else:
-        if not os.path.exists(GMMS_DIR):
-            os.mkdir(GMMS_DIR)
-        if not os.path.exists(UBMS_DIR):
-            os.mkdir(UBMS_DIR)
-
-        train_ubms(UBMS_DIR)
 
     t_tot = time.time() - t_tot
     print('Total time: %f seconds' % t_tot)
