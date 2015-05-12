@@ -9,6 +9,7 @@ BASES_DIR = '../bases/'
 CORPORA_DIR = '%scorpora/' % BASES_DIR
 FEATURES_DIR = '%sfeatures/' % BASES_DIR
 GMMS_DIR = '%sgmms/' % BASES_DIR
+SPEAKERS_DIR = '%sspeakers/' % GMMS_DIR
 UBMS_DIR = '%subms/' % GMMS_DIR
 
 EXPERIMENTS_DIR = '../experiments/'

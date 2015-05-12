@@ -13,7 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
-from common import EPS, calculate_eer
+from common import EPS, calculate_eer, SPEAKERS_DIR
 import bases, mixtures
 
 
@@ -46,13 +46,13 @@ if command == 'extract-features':
 
 
 if command == 'train-ubms':
-    print('UBM TRAINING\nnumceps = %d' % numceps)
-    t_tot = time.time()
-
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
     if not os.path.exists(UBMS_DIR):
         os.mkdir(UBMS_DIR)
+
+    print('UBM TRAINING\nnumceps = %d' % numceps)
+    t = time.time()
 
     for M in Ms:
         print('M = %d' % M)
@@ -73,7 +73,6 @@ if command == 'train-ubms':
 
                 # training
                 D = numceps * (1 + delta_order)
-                print('D = %d' % D)
                 ubm_f = mixtures.GMM('f', M // 2, D)
                 ubm_m = mixtures.GMM('m', M // 2, D)
                 for (ubm, featsvec, gender) in zip([ubm_f, ubm_m], [featsvec_f, featsvec_m],
@@ -96,8 +95,57 @@ if command == 'train-ubms':
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
 
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+
+if command == 'train-speakers':
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
+    if not os.path.exists(SPEAKERS_DIR):
+        os.mkdir(SPEAKERS_DIR)
+
+    print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
+    t = time.time()
+
+    for M in Ms:
+        print('M = %d' % M)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            ENROLL_1_PATH = '%smit_%d_%d/enroll_1/' % (FEATURES_DIR, numceps, delta_order)
+            speakers = os.listdir(ENROLL_1_PATH)
+            speakers.sort()
+
+            PATH = '%smit_%d_%d/' % (SPEAKERS_DIR, numceps, delta_order)
+            if not os.path.exists(PATH):
+                os.mkdir(PATH)
+
+            for speaker in speakers:
+                print(speaker)
+                for environment in environments:
+                    downlim = configurations[environment][0]
+                    uplim = configurations[environment][1]
+                    featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
+                                                  speaker, downlim, uplim)
+
+                    D = numceps * (1 + delta_order)
+                    name = '%s_%s_%d' % (speaker, environment, M)
+                    gmm = mixtures.GMM(name, M, D)
+                    while(True):
+                        try:
+                            print('Training GMM %s' % gmm.name)
+                            gmm.train(featsvec)
+                            break
+                        except mixtures.EmptyClusterError as e:
+                            print('%s\nrebooting GMM %s' % (e.msg, gmm.name))
+
+                    GMM_PATH = '%s%s.gmm' % (PATH, gmm.name)
+                    gmmfile = open(GMM_PATH, 'wb')
+                    pickle.dump(gmm, gmmfile)
+                    gmmfile.close()
+
+    t = time.time() - t
+    print('Features extracted in %f seconds' % t)
 
 
 if command == 'adapt-gmms':
@@ -110,15 +158,15 @@ if command == 'adapt-gmms':
         os.mkdir(GMMS_DIR)
 
     if top_C is None:
-        adapted_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
+        adapted_gmm_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
     else:
-        adapted_gmmc_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
-    if not os.path.exists(adapted_gmmc_dir):
-        os.mkdir(adapted_gmmc_dir)
+        adapted_gmm_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
+    if not os.path.exists(adapted_gmm_dir):
+        os.mkdir(adapted_gmm_dir)
 
     print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
-    t_tot = time.time()
+    t = time.time()
 
     for M in Ms:
         print('M = %d' % M)
@@ -129,7 +177,7 @@ if command == 'adapt-gmms':
             speakers.sort()
 
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (adapted_gmmc_dir, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (adapted_gmm_dir, numceps, delta_order)
             if not os.path.exists(GMMS_PATH):
                 os.mkdir(GMMS_PATH)
 
@@ -154,48 +202,48 @@ if command == 'adapt-gmms':
                     gmmfile.close()
 
 
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
 
 if command == 'verify':
-    adaptations = parameters[0]
-    top_C = None
+    verify = 'speakers'
+    adaptations = None
+    if len(parameters) > 0:
+        adaptations = parameters[0]
+        verify = 'adapted_%s' % adaptations
     if len(parameters) > 1:
-        top_C = int(parameters[1])
+        C = parameters[1]
+        verify = '%s_C%s' % (verify, C)
+    verify_dir = '%s%s/' % (VERIFY_DIR, verify)
+    gmm_dir = '%s%s/' % (GMMS_DIR, verify)
 
     if not os.path.exists(VERIFY_DIR):
         os.mkdir(VERIFY_DIR)
-
-    if top_C is None:
-        verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
-    else:
-        verify_dir = '%sadapted_%s_C%d/' % (VERIFY_DIR, adaptations, top_C)
     if not os.path.exists(verify_dir):
         os.mkdir(verify_dir)
 
-    if top_C is None:
-        adapted_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
-    else:
-        adapted_gmmc_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
-
     print('Verification\nnumceps = %d' % numceps)
-    print('adaptations: %s' % adaptations)
-    t_tot = time.time()
+    print('verify: %s' % verify)
+    t = time.time()
 
     for M in Ms:
         print('M = %d' % M)
         for delta_order in delta_orders:
             print('delta_order = %d' % delta_order)
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (adapted_gmmc_dir, numceps, delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
             EXP_PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
             if not os.path.exists(EXP_PATH):
                 os.mkdir(EXP_PATH)
 
             all_gmm_filenames = os.listdir(GMMS_PATH)
+            if adaptations is None:
+                expr = '_%d.gmm' % M
+            else:
+                expr = '_%d_%s.gmm' % (M, adaptations)
             all_gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith('_%d_%s.gmm' % (M, adaptations))]
+                                 if gmm_filename.endswith(expr)]
             all_gmm_filenames.sort()
 
             expdict = dict()
@@ -213,9 +261,12 @@ if command == 'verify':
                     expdict[ubm_key][env_key]['enrolled'] = list()
                     expdict[ubm_key][env_key]['imposter'] = list()
 
+                if adaptations is None:
+                    expr = '_%s_%d.gmm' % (environment, M)
+                else:
+                    expr = '_%s_%d_%s.gmm' % (environment, M, adaptations)
                 gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith('_%s_%d_%s.gmm' % (environment,
-                                                                             M, adaptations))]
+                                 if gmm_filename.endswith(expr)]
 
                 for gmm_filename in gmm_filenames:
                     print(gmm_filename)
@@ -254,24 +305,17 @@ if command == 'verify':
             with open(EXP_FILE_PATH, 'w') as expfile:
                 json.dump(expdict, expfile, indent=4, sort_keys=True)
 
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
 
 if command == 'calc-det-curve':
-    adaptations = parameters[0]
-    top_C = None
-    if len(parameters) > 1:
-        top_C = int(parameters[1])
-
-    if top_C is None:
-        verify_dir = '%sadapted_%s/' % (VERIFY_DIR, adaptations)
-    else:
-        verify_dir = '%sadapted_%s_C%d/' % (VERIFY_DIR, adaptations, top_C)
+    verify = parameters[0]
+    verify_dir = '%s%s/' % (VERIFY_DIR, verify)
 
     print('Calculating DET Curve\nnumceps = %d' % numceps)
-    print('adaptations: %s' % adaptations)
-    t_tot = time.time()
+    print('verify: %s' % verify)
+    t = time.time()
 
     for delta_order in delta_orders:
         print('delta_order = %d' % delta_order)
@@ -318,16 +362,17 @@ if command == 'calc-det-curve':
             with open(DET_FILE_PATH, 'w') as detfile:
                 json.dump(detdict, detfile, indent=4, sort_keys=True)
 
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
 
 if command == 'draw-det-curve':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
+    verify_dirs = ['adapted_m_C5', 'adapted_v_C5', 'adapted_w_C5', 'adapted_wm_C5']
 
     print('Drawing DET Curve\nnumceps = %d' % numceps)
-    t_tot = time.time()
+    t = time.time()
 
     for verify_dir in verify_dirs:
         print('verify_dir: %s' % verify_dir)
@@ -380,8 +425,8 @@ if command == 'draw-det-curve':
                 DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
                 pl.savefig(DET_IMG_PATH, bbox_inches='tight')
 
-    t_tot = time.time() - t_tot
-    print('Total time: %f seconds' % t_tot)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
 
 # Códigos de correção para merdas que fiz anteriormente e demorariam muito tempo
