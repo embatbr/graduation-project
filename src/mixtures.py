@@ -21,40 +21,15 @@ class EmptyClusterError(Exception):
         return self.msg
 
 
-def partition(featsvec, M):
-    """Partionates a vector of features in clusters.
-
-    @param featsvec: the vector of features.
-    @param M: the number of clusters.
-    """
-    np.random.shuffle(featsvec)
-    T = len(featsvec)
-    step = int(T / M)
-
-    clusters = list()
-    means = list()
-
-    for i in range(M):
-        if i == (M - 1):
-            cluster = featsvec[i*step : ]
-        else:
-            cluster = featsvec[i*step : (i + 1)*step]
-        clusters.append(cluster)
-
-        mean = np.mean(cluster, axis=0)
-        means.append(mean)
-
-    means = np.array(means)
-    return means
-
-
 def kmeans(featsvec, M):
     """Clusters a vector of features until total separation.
 
     @param featsvec: the vector of features.
     @param M: the number of clusters.
     """
-    old_means = partition(featsvec, M)
+    indices = list(range(len(featsvec)))
+    chosen = random.sample(indices, M)
+    old_means = featsvec[chosen, :]
     max_diff = FLOAT_MAX
 
     iteration = 0
@@ -91,6 +66,7 @@ def kmeans(featsvec, M):
         variances.append(variance)
     weights = np.array(weights)
     variances = np.array(variances)
+    variances = np.where(variances < MIN_VARIANCE, MIN_VARIANCE, variances)
 
     return (weights, means, variances)
 

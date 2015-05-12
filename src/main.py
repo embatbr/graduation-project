@@ -369,7 +369,6 @@ if command == 'calc-det-curve':
 if command == 'draw-det-curve':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
-    verify_dirs = ['adapted_m_C5', 'adapted_v_C5', 'adapted_w_C5', 'adapted_wm_C5']
 
     print('Drawing DET Curve\nnumceps = %d' % numceps)
     t = time.time()
