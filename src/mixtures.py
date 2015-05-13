@@ -265,5 +265,6 @@ class GMM(object):
             sorted_indices = np.argsort(logprobs_mean)[-top_C : ]
 
             self.weights = self.weights[sorted_indices]
+            self.weights = self.weights / np.sum(self.weights, axis=0)
             self.meansvec = self.meansvec[sorted_indices]
             self.variancesvec = self.variancesvec[sorted_indices]
