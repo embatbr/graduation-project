@@ -310,7 +310,7 @@ if command == 'verify':
     print('Total time: %f seconds' % t)
 
 
-if command == 'calc-det-curve':
+if command == 'calc-det-curves':
     verify = parameters[0]
     verify_dir = '%s%s/' % (VERIFY_DIR, verify)
 
