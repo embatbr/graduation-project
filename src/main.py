@@ -13,7 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
-from common import EPS, calculate_eer, SPEAKERS_DIR
+from common import EPS, calculate_eer, SPEAKERS_DIR, isequal
 import bases, mixtures
 
 
@@ -166,6 +166,8 @@ if command == 'adapt-gmms':
 
     print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
+    if not top_C is None:
+        print('top C: %d' % top_C)
     t = time.time()
 
     for M in Ms:
@@ -200,7 +202,6 @@ if command == 'adapt-gmms':
                     gmmfile = open(GMM_PATH, 'wb')
                     pickle.dump(gmm, gmmfile)
                     gmmfile.close()
-
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
@@ -431,35 +432,43 @@ if command == 'draw-det-curve':
 # Códigos de correção para merdas que fiz anteriormente e demorariam muito tempo
 # para refazer
 
-if command == 'check':
-    directories = os.listdir(GMMS_DIR)
-    directories.sort()
-    print('Directories:', directories)
-
+def check(directory):
     for M in Ms:
         print('M =', M)
         for delta_order in delta_orders:
             print('delta_order =', delta_order)
-            for directory in directories:
-                PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
-                filenames = os.listdir(PATH)
-                filenames.sort()
-                for filename in filenames:
-                    gmmfile = open('%s%s' % (PATH, filename), 'rb')
-                    gmm = pickle.load(gmmfile)
-                    gmmfile.close()
+            PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
+            filenames = os.listdir(PATH)
+            filenames.sort()
 
-                    if np.min(gmm.weights) <= 0 or np.min(gmm.weights) >= 1:
-                        print(PATH, gmm.name)
-                        print('Some of the weights are not between 0 and 1')
-                        print(PATH, gmm.weights)
-                    if (np.sum(gmm.weights) - 1) >= 10*EPS:
-                        print('Weights not summing to 1')
-                        print('sum:', np.sum(gmm.weights))
-                    if np.min(gmm.variancesvec) < MIN_VARIANCE:
-                        print(PATH, gmm.name)
-                        print('Negative variancesvec')
-                        print(gmm.variancesvec[gmm.variancesvec < MIN_VARIANCE])
+            for filename in filenames:
+                gmmfile = open('%s%s' % (PATH, filename), 'rb')
+                gmm = pickle.load(gmmfile)
+                gmmfile.close()
+
+                if np.min(gmm.weights) <= 0 or np.min(gmm.weights) >= 1:
+                    print(PATH, gmm.name)
+                    print('Some of the weights are not between 0 and 1')
+                    print(PATH, gmm.weights)
+                if isequal(np.sum(gmm.weights), 1):
+                    print('Weights not summing to 1')
+                    print('sum:', np.sum(gmm.weights))
+                if np.min(gmm.variancesvec) < MIN_VARIANCE:
+                    print(PATH, gmm.name)
+                    print('Negative variancesvec')
+                    print(gmm.variancesvec[gmm.variancesvec < MIN_VARIANCE])
+
+if command == 'check':
+    directory = parameters[0]
+    print('Directory:', directory)
+    check(directory)
+
+if command == 'check-all':
+    directories = os.listdir(GMMS_DIR)
+    directories.sort()
+    for directory in directories:
+        print('Directory:', directory)
+        check(directory)
 
 
 if command == 'correct-ubms-names':

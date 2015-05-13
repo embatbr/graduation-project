@@ -3,6 +3,7 @@
 
 
 import numpy as np
+import math
 
 
 BASES_DIR = '../bases/'
@@ -21,6 +22,9 @@ ZERO = 1e-323
 EPS = np.finfo(np.float64).eps # 2.2204460492503131e-16
 MIN_VARIANCE = 1e-2
 
+
+def isequal(A, B):
+    return math.fabs(A - B) >= 10*EPS
 
 def calculate_eer(false_detection, false_rejection):
     false_detection = np.array(false_detection)
