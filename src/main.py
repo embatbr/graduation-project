@@ -367,7 +367,67 @@ if command == 'calc-det-curve':
     print('Total time: %f seconds' % t)
 
 
-if command == 'draw-det-curve':
+def draw_det_curves(verify_dir):
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        for M in Ms:
+            print('M = %d' % M)
+            PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
+            DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+            detfile = open(DET_FILE_PATH)
+            detdict = json.load(detfile)
+
+            colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
+            position = 1
+            ticks = np.arange(10, 100, 10)
+            eer_line = np.linspace(0, 100, 101)
+
+            pl.clf()
+            for environment in environments:
+                ubm_key = 'UBM %s' % environment
+                ax = pl.subplot(2, 2, position)
+                ax.set_title(environment, fontsize=10)
+                pl.grid(True)
+                pl.xticks(ticks)
+                pl.yticks(ticks)
+
+                [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
+                [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+
+                if position == 3 or position == 4:
+                    pl.subplots_adjust(hspace=0.3)
+
+                position = position + 1
+                color_index = 0
+
+                for environment in environments:
+                    scores_key = 'SCORES %s' % environment
+                    false_detection = detdict[ubm_key][scores_key]['false_detection']
+                    false_rejection = detdict[ubm_key][scores_key]['false_rejection']
+                    pl.plot(false_detection, false_rejection, colors[color_index])
+                    color_index = color_index + 1
+
+                pl.xlabel('false detection', fontsize=7)
+                pl.ylabel('false rejection', fontsize=7)
+
+            pl.subplot(221)
+            pl.legend(('office','hallway', 'intersection', 'all'),
+                       loc='upper right', prop={'size':7})
+
+            DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
+            pl.savefig(DET_IMG_PATH, bbox_inches='tight')
+
+if command == 'draw-det-curves':
+    verify_dir = parameters[0]
+    print('Drawing DET Curve\nnumceps = %d' % numceps)
+    t = time.time()
+
+    draw_det_curves(verify_dir)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+if command == 'draw-det-curves-all':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
 
@@ -376,54 +436,7 @@ if command == 'draw-det-curve':
 
     for verify_dir in verify_dirs:
         print('verify_dir: %s' % verify_dir)
-        for delta_order in delta_orders:
-            print('delta_order = %d' % delta_order)
-            for M in Ms:
-                print('M = %d' % M)
-                PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
-                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
-                detfile = open(DET_FILE_PATH)
-                detdict = json.load(detfile)
-
-                colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
-                position = 1
-                ticks = np.arange(10, 100, 10)
-                eer_line = np.linspace(0, 100, 101)
-
-                pl.clf()
-                for environment in environments:
-                    ubm_key = 'UBM %s' % environment
-                    ax = pl.subplot(2, 2, position)
-                    ax.set_title(environment, fontsize=10)
-                    pl.grid(True)
-                    pl.xticks(ticks)
-                    pl.yticks(ticks)
-
-                    [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
-                    [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
-
-                    if position == 3 or position == 4:
-                        pl.subplots_adjust(hspace=0.3)
-
-                    position = position + 1
-                    color_index = 0
-
-                    for environment in environments:
-                        scores_key = 'SCORES %s' % environment
-                        false_detection = detdict[ubm_key][scores_key]['false_detection']
-                        false_rejection = detdict[ubm_key][scores_key]['false_rejection']
-                        pl.plot(false_detection, false_rejection, colors[color_index])
-                        color_index = color_index + 1
-
-                    pl.xlabel('false detection', fontsize=7)
-                    pl.ylabel('false rejection', fontsize=7)
-
-                pl.subplot(221)
-                pl.legend(('office','hallway', 'intersection', 'all'),
-                           loc='upper right', prop={'size':7})
-
-                DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
-                pl.savefig(DET_IMG_PATH, bbox_inches='tight')
+        draw_det_curves(verify_dir)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
@@ -446,7 +459,7 @@ def check(directory):
                 gmm = pickle.load(gmmfile)
                 gmmfile.close()
 
-                if np.min(gmm.weights) <= 0 or np.min(gmm.weights) >= 1:
+                if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
                     print(PATH, gmm.name)
                     print('Some of the weights are not between 0 and 1')
                     print(PATH, gmm.weights)
