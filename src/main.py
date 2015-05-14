@@ -98,6 +98,7 @@ if command == 'train-ubms':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
+
 if command == 'train-speakers':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
@@ -481,7 +482,7 @@ def check(directory):
 
                         if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
                             problems.append('%s: exist weight not between 0 and 1' % GMM_PATH)
-                        if isequal(np.sum(gmm.weights), 1):
+                        if isequal(np.sum(gmm.weights, axis=0), 1):
                             problems.append('%s%s: weights not summing to 1: %f' %
                                             (PATH, gmm.name, np.sum(gmm.weights)))
                         if np.min(gmm.variancesvec) < MIN_VARIANCE:

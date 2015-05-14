@@ -7,5 +7,5 @@ The working in progress can be downloaded [here](https://github.com/embatbr/tg/b
 
 #TODO
 
-- Run experiments crossing all conditions.
 - Use the FCM theory and re-run all above.
+    - As the MFCC features present negative values, a shift will be done (the lowest value goes to 1 and the others follow).

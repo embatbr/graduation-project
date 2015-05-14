@@ -205,7 +205,6 @@ class GMM(object):
 
                 self.weights = self.weights / np.sum(self.weights, axis=0)
 
-
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
                 old_log_like = new_log_like
