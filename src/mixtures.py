@@ -203,6 +203,8 @@ class GMM(object):
                     self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
                                                     MIN_VARIANCE, self.variancesvec[i])
 
+                self.weights = self.weights / np.sum(self.weights, axis=0)
+
 
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like

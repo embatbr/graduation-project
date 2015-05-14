@@ -8,3 +8,4 @@ docs/*.toc
 src/__pycache__/
 src/tests/
 experiments*
+check/*

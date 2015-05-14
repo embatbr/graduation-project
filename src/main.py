@@ -13,7 +13,7 @@ import json
 import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
-from common import EPS, calculate_eer, SPEAKERS_DIR, isequal
+from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
 import bases, mixtures
 
 
@@ -90,14 +90,13 @@ if command == 'train-ubms':
                 new_name = '%s_%d' % (environment, M)
                 ubm.merge(ubm_m, new_name)
 
-                UBM_PATH = '%s%s.ubm' % (UBMS_PATH, ubm.name)
+                UBM_PATH = '%s%s.gmm' % (UBMS_PATH, ubm.name)
                 ubmfile = open(UBM_PATH, 'wb')
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
 
 if command == 'train-speakers':
     if not os.path.exists(GMMS_DIR):
@@ -185,7 +184,7 @@ if command == 'adapt-gmms':
 
             for environment in environments:
                 print(environment.upper())
-                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
 
@@ -250,7 +249,7 @@ if command == 'verify':
             expdict = dict()
             for environment in environments:
                 print(environment.upper())
-                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
 
@@ -446,30 +445,55 @@ if command == 'draw-det-curves-all':
 # para refazer
 
 def check(directory):
+    if not os.path.exists(CHECK_DIR):
+        os.mkdir(CHECK_DIR)
+
+    CHECK_PATH = '%s%s.check' % (CHECK_DIR, directory)
+    checkfile = open(CHECK_PATH, 'w')
+    problems = list()
+
+    adaptations = ''
+    if directory.startswith('adapted'):
+        adaptations = '_%s' % directory.split('_')[1]
+
     for M in Ms:
-        print('M =', M)
         for delta_order in delta_orders:
-            print('delta_order =', delta_order)
             PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
             filenames = os.listdir(PATH)
             filenames.sort()
 
-            for filename in filenames:
-                gmmfile = open('%s%s' % (PATH, filename), 'rb')
-                gmm = pickle.load(gmmfile)
-                gmmfile.close()
+            if directory == 'ubms':
+                speakers = [None] # GAMBI
+            else:
+                speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
 
-                if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
-                    print(PATH, gmm.name)
-                    print('Some of the weights are not between 0 and 1')
-                    print(PATH, gmm.weights)
-                if isequal(np.sum(gmm.weights), 1):
-                    print('Weights not summing to 1')
-                    print('sum:', np.sum(gmm.weights))
-                if np.min(gmm.variancesvec) < MIN_VARIANCE:
-                    print(PATH, gmm.name)
-                    print('Negative variancesvec')
-                    print(gmm.variancesvec[gmm.variancesvec < MIN_VARIANCE])
+            for speaker in speakers:
+                for environment in environments:
+                    if directory == 'ubms':
+                        GMM_PATH = '%s%s_%d%s.gmm' % (PATH, environment, M, adaptations)
+                    else:
+                        GMM_PATH = '%s%s_%s_%d%s.gmm' % (PATH, speaker, environment, M, adaptations)
+
+                    if os.path.exists('%s' % GMM_PATH):
+                        gmmfile = open('%s' % GMM_PATH, 'rb')
+                        gmm = pickle.load(gmmfile)
+                        gmmfile.close()
+
+                        if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
+                            problems.append('%s: exist weight not between 0 and 1' % GMM_PATH)
+                        if isequal(np.sum(gmm.weights), 1):
+                            problems.append('%s%s: weights not summing to 1: %f' %
+                                            (PATH, gmm.name, np.sum(gmm.weights)))
+                        if np.min(gmm.variancesvec) < MIN_VARIANCE:
+                            problems.append('%s: negative variances' % GMM_PATH)
+                    else:
+                        problems.append('%s: does not exist' % GMM_PATH)
+
+    if len(problems) == 0:
+        print('OK', file=checkfile)
+    else:
+        for problem in problems:
+            print(problem, file=checkfile)
 
 if command == 'check':
     directory = parameters[0]
@@ -479,6 +503,7 @@ if command == 'check':
 if command == 'check-all':
     directories = os.listdir(GMMS_DIR)
     directories.sort()
+
     for directory in directories:
         print('Directory:', directory)
         check(directory)
@@ -489,14 +514,22 @@ if command == 'correct-ubms-names':
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
             for environment in environments:
-                ubmfile = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+                ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
                 ubm.name = '%s_%d' % (environment, M)
 
-                UBM_PATH = '%s%s.ubm' % (UBMS_PATH, ubm.name)
+                UBM_PATH = '%s%s.gmm' % (UBMS_PATH, ubm.name)
                 ubmfile = open(UBM_PATH, 'wb')
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
 
                 print(UBM_PATH, ubm.name)
+
+
+if command == 'delete-ubm-extensions':
+    for M in Ms:
+        for delta_order in delta_orders:
+            UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
+            for environment in environments:
+                os.remove('%s%s_%d.ubm' % (UBMS_PATH, environment, M))
