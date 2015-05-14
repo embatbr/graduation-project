@@ -21,15 +21,19 @@ class EmptyClusterError(Exception):
         return self.msg
 
 
-def kmeans(featsvec, M):
+def init(featsvec, M):
+    indices = list(range(len(featsvec)))
+    chosen = random.sample(indices, M)
+    meansvec = featsvec[chosen, :]
+    return meansvec
+
+def kmeans(featsvec, M, r=None):
     """Clusters a vector of features until total separation.
 
     @param featsvec: the vector of features.
     @param M: the number of clusters.
     """
-    indices = list(range(len(featsvec)))
-    chosen = random.sample(indices, M)
-    old_means = featsvec[chosen, :]
+    old_means = init(featsvec, M)
     max_diff = FLOAT_MAX
 
     iteration = 0
@@ -62,7 +66,11 @@ def kmeans(featsvec, M):
     variances = list()
     for cluster in clusters:
         weights.append(len(cluster) / T)
-        variance = np.std(cluster, axis=0)**2
+        if r is None:
+            variance = np.std(cluster, axis=0)**2
+        else:
+            mean = np.mean(cluster, axis=0)
+            variance = np.mean((cluster**r - mean**r)**2, axis=0)
         variances.append(variance)
     weights = np.array(weights)
     variances = np.array(variances)
@@ -155,7 +163,7 @@ class GMM(object):
         logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
 
-    def train(self, featsvec, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
+    def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -165,9 +173,14 @@ class GMM(object):
         @param use_kmeans: determines if the k-means algorithm is used. Default, True.
         @param use_EM: determines if the EM algorithm is used. Default, True.
         """
+        # shifting to 1
+        if not r is None:
+            min_featsvec = np.amin(featsvec, axis=0)
+            featsvec = featsvec + (1 - min_featsvec)
+
         if use_kmeans:
             print('kmeans')
-            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M)
+            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M, r=r)
 
         if use_EM:
             print('EM')
@@ -197,9 +210,14 @@ class GMM(object):
                     self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
 
                     #Updating i-th variancesvec
-                    self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
-                    self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
-                    self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                    if r is None:
+                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
+                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
+                        self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                    else:
+                        featsvec_mean = featsvec**r - self.meansvec[i]**r
+                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec_mean**2)
+                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
                     self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
                                                     MIN_VARIANCE, self.variancesvec[i])
 
@@ -207,6 +225,7 @@ class GMM(object):
 
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
+                print('diff:', diff)
                 old_log_like = new_log_like
                 iteration += 1
 

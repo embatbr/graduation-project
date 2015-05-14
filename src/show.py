@@ -42,6 +42,9 @@ if __name__ == '__main__':
     y_axis = int(args[3])
     environment = args[4]
     adaptations = args[5]
+    r = None
+    if len(args) > 6:
+        r = float(args[6])
 
     configurations = {'office' : ('01', '19'), 'hallway' : ('21', '39'),
                       'intersection' : ('41', '59'), 'all' : ('01', '59')}
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     featsvec_m = bases.read_speaker(numceps, delta_order, 'enroll_1', 'm10', dowlim, uplim)
 
     UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-    ubm_file = open('%s%s_%d.ubm' % (UBMS_PATH, environment, M), 'rb')
+    ubm_file = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
     ubm = pickle.load(ubm_file)
     print('ubm:', ubm.weights)
     print('sum:', np.sum(ubm.weights))
@@ -86,13 +89,16 @@ if __name__ == '__main__':
     print('gmm m10_%s: %s' % (environment, gmm.weights))
     print('sum:', np.sum(gmm.weights))
 
-    #ubm = mixtures.GMM('test', M, numceps)
-    #ubm.train(featsvec, use_kmeans=True, use_EM=False)
-    #pl.figure()
-    #pl.subplot(1, 2, 1)
-    #plot_gmm(ubm, featsvec, x_axis, y_axis)
-    #ubm.train(featsvec, use_kmeans=False, use_EM=True)
-    #pl.subplot(1, 2, 2)
-    #plot_gmm(ubm, featsvec, x_axis, y_axis)
+    if not r is None:
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec = featsvec + (1 - min_featsvec)
+    ubm = mixtures.GMM('test', M, numceps)
+    ubm.train(featsvec, r=r, use_kmeans=True, use_EM=False)
+    pl.figure()
+    pl.subplot(1, 2, 1)
+    plot_gmm(ubm, featsvec, x_axis, y_axis)
+    ubm.train(featsvec, r=r, use_kmeans=False, use_EM=True)
+    pl.subplot(1, 2, 2)
+    plot_gmm(ubm, featsvec, x_axis, y_axis)
 
     pl.show()
