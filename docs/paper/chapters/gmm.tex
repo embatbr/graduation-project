@@ -1,7 +1,7 @@
 \chapter{Gaussian Mixture Models}
 \label{ch:gmm}
 
-In \chapterref{speaker-recognition-system} was discussed the use of a model $\lambda_j$ for each enrolled speaker to be identified, and models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for the background composed of all enrolled speakers, respectively, to perform a verification process. As the features from the speech signal (discussed in \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASR to accept random values.
+In \chapterref{speaker-verification-systems} was discussed the use of a model $\lambda_j$ for each enrolled speaker to be identified, and models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for the background composed of all enrolled speakers, respectively, to perform a verification process. As the features from the speech signal (discussed in \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASR to accept random values.
 
 For all sorts of probability distributions, the Gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, due to the central limit theorem. Its equation for a D-dimensional space is
 
@@ -93,6 +93,6 @@ The training and evaluation of an UBM are the same for single speaker GMMs, with
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.7\textwidth]{ubm-diagram}
-    \caption{Gender (a) independent and (b) dependent UBMs. \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000}{}}
+    \caption{Gender (a) independent and (b) dependent UBMs. \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}{}}
     \label{fig:ubm-diagram}
 \end{figure}

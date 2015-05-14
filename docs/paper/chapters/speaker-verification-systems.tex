@@ -25,14 +25,14 @@ The raw speech signal is unfit for use by an ASV. For a correct processing, the 
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-The speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users). The strength of this claim resides on how similar the features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users), the strength of this claim resides on how similar the features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_i} \verifytestB{\alpha}{\mathcal{S}}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to all enrolled users, leading to a misclassification of a imposter as a registred speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to all enrolled users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
@@ -43,7 +43,7 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
     \item $H_1$: $\dvec{X}$ is \underline{not} from the claimed speaker $\mathcal{S}_i$.
 \end{description}
 
-\noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both likelihoods $\postpdf{\dvec{X}}{H_0}$ and $\postpdf{\dvec{X}}{H_1}$,
+\noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both likelihoods $\postpdf{\dvec{X}}{H_0}$ and $\postpdf{\dvec{X}}{H_1}$, \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000},
 
 \begin{equation}
     \frac{\postpdf{\dvec{X}}{H_0}}{\postpdf{\dvec{X}}{H_1}} \verifytestB{\theta}{H_0}
@@ -59,7 +59,7 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
 
 \subsection{Training}
 
-Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-verification-training}.
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-verification-training}:
 
 \begin{figure}[ht]
     \centering

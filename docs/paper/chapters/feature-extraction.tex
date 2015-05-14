@@ -1,7 +1,7 @@
 \chapter{Feature Extraction}
 \label{ch:feature-extraction}
 
-As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASV. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the feature extraction process, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972} the ideal features should:
+As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASV. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the feature extraction process, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
 
 \begin{itemize}\itemsep0pt
     \item occur naturally and frequently in normal speech;
@@ -14,13 +14,13 @@ As an acoustic wave propagated through space over time, the speech signal is not
     \item not be easily modifiable by the speaker.
 \end{itemize}
 
-Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract, e.g. timbre. Spectro-temporal and prosodic occur over time, e.g. rhythm and intonation, and high level features occur during the conversation, e.g. accents.
+Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract, e.g. timbre. Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during the conversation (e.g., accent).
 
 The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} may be divided into those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
 
 \section{Mel-Frequency Cepstral Coefficient}
 
-MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the mode the human ear operates. Despite the fact the ear is divided in three sections, i.e. outer, middle and inner ears, only the last is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the cochlea (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
+MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections, i.e. outer, middle and inner ears, only the last is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the cochlea (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
 
 \begin{figure}[ht]
     \centering
@@ -78,12 +78,12 @@ As the human voice is concentrated in the lower frequencies (see \figureref{pree
     \label{eq:preemphasis}
 \end{equation}
 
-\noindent with values of $a$ usually in the interval $[0.95, 0.98]$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}. This stage is not mandatory in the extraction process of the MFCCs.
+\noindent with values of $a$ usually in the interval $[0.95, 0.98]$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}. This is an optional stage of the MFCC extraction process.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{preemphasis}
-    \caption{Raw (left) and pre-emphasized (right) speech signal, with respective spectral magnitudes (bottom).}
+    \caption{Raw (left) and pre-emphasized (right) speech signal, with respective spectral magnitudes (at bottom in red).}
     \label{fig:preemphasis}
 \end{figure}
 
@@ -165,7 +165,7 @@ In \figureref{mfcc}, the blue line represents the first feature, and as it is ob
 Even an utterance recorded in a quiet environment still suffers with the side effects of any noise captured during the recording, what may degrade the performance. For speeches recorded in regular places (e.g., a living room or a park), the environment robustness is a need. Cepstral Means Subtraction,
 
 \begin{equation}
-    c_n = c_n - \frac{1}{T} \sum_{t=1}^T c_{i,t},
+    c_n = c_n - \frac{1}{T} \sum_{t=1}^T c_{n,t},
     \label{eq:cms}
 \end{equation}
 
@@ -192,8 +192,8 @@ In order to improve the speech parameters, the differences in time of each coeff
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{mfcc_energy_appended_cms_delta_order_2}
-    \caption{MFCCs from \figureref{mfcc_energy_appended_cms} with deltas or order 1 and 2 added.}
+    \caption{MFCCs from \figureref{mfcc_energy_appended_cms} with deltas of order 1 and 2 added.}
     \label{fig:mfcc_energy_appended_cms_delta_order_2}
 \end{figure}
 
-\equationref{deltas} may be used to calculate deltas of any order, just as the acceleration (second order) are derived from the velocity. However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each order of delta delivers lower coefficients, providing a marginal gain with the increase in order.
+\equationref{deltas} may be used to calculate deltas of any order, just as the acceleration (second order) is derived from the velocity (first order). However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each order of delta delivers lower coefficients, providing a more marginal gain with the increase in order.
