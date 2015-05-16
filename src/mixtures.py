@@ -82,7 +82,7 @@ def kmeans(featsvec, M, r=None):
 class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    def __init__(self, name, M, D):
+    def __init__(self, name, M, D, featsvec):
         """Creates a GMM.
 
         @param name: name of the GMM.
@@ -93,8 +93,8 @@ class GMM(object):
         self.D = D
 
         self.weights = np.tile(1 / M, M)
-        self.meansvec = np.zeros((M, D))
-        self.variancesvec = np.ones((M, D))
+        self.meansvec = init(featsvec, M)
+        self.variancesvec = 2500*np.ones((M, D))
 
     def merge(self, gmm, name=None):
         """
@@ -225,7 +225,7 @@ class GMM(object):
 
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
-                print('diff:', diff)
+                #print('diff:', diff)
                 old_log_like = new_log_like
                 iteration += 1
 

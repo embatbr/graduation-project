@@ -1,25 +1,28 @@
 \chapter{Gaussian Mixture Models}
 \label{ch:gmm}
 
-In \chapterref{speaker-verification-systems} was discussed the use of a model $\lambda_j$ for each enrolled speaker to be identified, and models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for the background composed of all enrolled speakers, respectively, to perform a verification process. As the features from the speech signal (discussed in \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASR to accept random values.
+\chapterref{speaker-verification-systems} briefly discussed the use of models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to perform a verification process. As the features from the speech signal (see \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASV to accept random values.
 
-For all sorts of probability distributions, the Gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, due to the central limit theorem. Its equation for a D-dimensional space is
+For all sorts of probability distributions, the gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, due to the central limit theorem. Its equation for a D-dimensional space is
 
 \begin{equation}
     \pdf{\dvec{x}} = p(\dvec{x},\dvec{\mu},\dvec{\Sigma}) = \dgaussian{x}{\mu}{\Sigma},
     \label{eq:gaussian}
 \end{equation}
 
-\noindent where $\dvec{x}$ is a $D$-dimensional input vector, $\dvec{\mu}$ is the $D$-dimensional vector of means and $\dvec{\Sigma}$ is the $D \times D$ matrix of covariances. The vector $(\dvec{x} - \dvec{\mu})'$ is the transposed of the colum-matrix $(\dvec{x} - \dvec{\mu})$.
+\noindent where $\dvec{x}$ is a $D$-dimensional input vector, $\dvec{\mu}$ the $D$-dimensional vector of means, $\dvec{\Sigma}$ the $D \times D$ matrix of covariances, $\dvec{|\Sigma|}$ the determinant of $\dvec{\Sigma}$, and $(\dvec{x} - \dvec{\mu})'$ the transposed of the colum-matrix $(\dvec{x} - \dvec{\mu})$.
 
-For the speaker recognition, a weighted sum of $p_i(\dvec{x})$ is used to model the system, trying to estimate the composition that best represents the training data. This weighted sum is named Gaussian Mixture Model (GMM), \refbib{Reynolds}{reynolds.1992}, and is given by
+\section{Definition}
+\label{sec:gmm-definition}
+
+A weighted sum of $\pdf{\dvec{x}}$'s is used to model the speaker verification system, trying to estimate the composition that best represents the training data. This weighted sum is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and is given by
 
 \begin{equation}
-    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdf{\dvec{x}},
+    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdfi{\dvec{x}},
     \label{eq:gaussian_mixture}
 \end{equation}
 
-\noindent where $M$ is the number of distributions used, $\sum_{i=1}^M w_i = 1$, and $\lambda = \{w_i, \dvec{\mu}_i,\dvec{\Sigma}_i\}$, for $i = 1, ..., M$. Applying \equationref{gaussian} to \equationref{gaussian_mixture}, the likelihood for the GMM is
+\noindent where $M$ is the size of the distribution used, $\sum_{i=1}^M w_i = 1$, and $\lambda = \{w_i, \dvec{\mu}_i, \dvec{\Sigma}_i\}$ is the model representation, for $i = 1, ..., M$. Applying \equationref{gaussian} to \equationref{gaussian_mixture}, the likelihood for the GMM is
 
 \begin{equation}
     \postpdf{\dvec{x}}{\lambda} = \dgaussianmixture.
@@ -36,13 +39,14 @@ The idea behind use a GMM as a model for a speaker $\mathcal{S}$ is to achieve a
 \noindent Unfortunately, this expression is a nonlinear function of the parameters $\lambda$ and direct maximization is not possible, \refbib{Reynolds}{reynolds.1995c}, leading to estimate $\postpdf{\dvec{x}}{\lambda}$ iteratively using the Expectation-Maximization (EM) algorithm.
 
 \section{Expectation-Maximization}
+\label{sec:em}
 
-The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, such that $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration, until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The description ahead for the steps is for a $\lambda$ with all $\dvec{\Sigma}_i$ diagonal, i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i$ of variances.
+The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, such that $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration, until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with diagonal\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i$ of variances).
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{em_algorithm}
-    \caption{Features 2 and 3 before (left) and after (right) the EM algorithm. The dashed blue lines are the 8 gaussians and the solid red lines the mixture.}
+    \caption{Features before (left), with random means and equal variances, and after (right) the EM algorithm. Only the first deviation is shown.}
     \label{fig:em_algorithm}
 \end{figure}
 
@@ -57,7 +61,7 @@ The expectation step consists of estimate the \emph{a posteriori} probabilities 
 
 \subsubsection*{M-Step}
 
-In the maximization step, the parameters are updated, and the algorithm guarantees that each new $\lambda^(j+1)$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the equations below.
+In the maximization step the model is updated by recalculation of the parameters $w_i, \dvec{\mu}_i$ and $\dvec{\Sigma}_i$, and the algorithm guarantees that each new $\lambda^{(j+1)}$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the equations below.
 
 \noindent\\\textbf{Weights:}
 
@@ -81,18 +85,33 @@ In the maximization step, the parameters are updated, and the algorithm guarante
 \end{equation}
 \\
 
-This algorithm is used to train the GMMs described in sections \sectionref{speaker-identification} and \sectionref{speaker-verification} of \chapterref{speaker-recognition-system}. \figureref{em_algorithm} shows the mixture before and after the training.
+This algorithm trains the GMMs used in the ASV shown in \sectionref{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
 
 \section{Universal Background Model}
 \label{sec:ubm}
 
-An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. Its idea is to model a system as if speech signals were recorded by the same microphone with all speakers talking at once, i.e., a background of voices, a situation where it is impossible to understand the content of what each speaker is saying.
+An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. The idea is to generate a model where common characteristics presented in the corpus are well represented. This done, a speech composed of parts of speeches from enrolled speakers is more difficultly misclassified.
 
-The training and evaluation of an UBM are the same for single speaker GMMs, with difference in the time taken (due to the number of speakers composing it). In this paper, there is two types of UBMs. In the first, the subpopulations of male and female speeches are combined and used to train a single, unisex UBM. In the second, each subpopulation is used to train its own model, and then both models are combined in one with twice the number of distributions.
+There are many configurations for an UBM, but, as it is possible to see in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately (also, female voices are more similar to each other than males, leading to more distinct male configurations). The $M$th order UBM is created merging trained male and female models, both of order $M/2$ (see \figureref{ubm-diagram}).
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\textwidth]{ubm-diagram}
-    \caption{Gender (a) independent and (b) dependent UBMs. \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}{}}
+    \includegraphics[width=0.6\textwidth]{ubm-diagram}
+    \caption{UBM with gender trained (a) together and (b) separately and combined. \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}}
     \label{fig:ubm-diagram}
 \end{figure}
+
+\section{Adapted Gaussian Mixture Model}
+\label{sec:adapted-gmm}
+
+TODO colocar algo aqui
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{adapted_wmv}
+    \caption{UBM trained (left) and weights, means and variances adapted for a female speaker (right). The blue dots are the background features and the green the speaker's.}
+    \label{fig:adapted_wmv}
+\end{figure}
+
+%\section{Fractional Gaussian Mixture Model}
+%\label{sec:frac-gmm}

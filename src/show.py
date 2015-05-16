@@ -5,11 +5,11 @@
 import numpy as np
 import pylab as pl
 import pickle
-from common import UBMS_DIR, GMMS_DIR
 from matplotlib.patches import Ellipse
+from common import UBMS_DIR, GMMS_DIR
 
 
-def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1):
+def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, snd_featsvec=None):
     """Plots a GMM and the vector of features used to train it. The plotting is
     in a 2D space.
 
@@ -18,13 +18,16 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1):
     @param x_axis: the dimension plotted in the x axis.
     @param y_axis: the dimension plotted in the y axis.
     """
-    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'bo')
+    if not featsvec is None:
+        pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'bo')
+    if not snd_featsvec is None:
+        pl.plot(snd_featsvec[:, x_axis], snd_featsvec[:, y_axis], 'go')
     pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'ro')
 
     ax = pl.gca()
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
         ellipse = Ellipse(xy=(means[x_axis], means[y_axis]), width=variances[x_axis]**0.5,
-                          height=variances[y_axis]**0.5, edgecolor='r', linewidth=1,
+                          height=variances[y_axis]**0.5, edgecolor='r', linewidth=1.5,
                           fill=False, zorder=2)
         ax.add_artist(ellipse)
 
@@ -34,71 +37,51 @@ if __name__ == '__main__':
     import bases
     import mixtures
 
-    args = sys.argv[1:]
+    command = sys.argv[1]
+    args = sys.argv[2:]
+
     numceps = 19
-    M = int(args[0])
-    delta_order = int(args[1])
-    x_axis = int(args[2])
-    y_axis = int(args[3])
-    environment = args[4]
-    adaptations = args[5]
-    r = None
-    if len(args) > 6:
-        r = float(args[6])
+    speaker = args[0]
+    M = int(args[1])
+    delta_order = int(args[2])
+    x_axis = int(args[3])
+    y_axis = int(args[4])
 
-    configurations = {'office' : ('01', '19'), 'hallway' : ('21', '39'),
-                      'intersection' : ('41', '59'), 'all' : ('01', '59')}
-    dowlim = configurations[environment][0]
-    uplim = configurations[environment][1]
+    if command == 'em':
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
 
-    featsvec = bases.read_background(numceps, delta_order, None, dowlim, uplim)
-    featsvec_f = bases.read_speaker(numceps, delta_order, 'enroll_1', 'f04', dowlim, uplim)
-    featsvec_m = bases.read_speaker(numceps, delta_order, 'enroll_1', 'm10', dowlim, uplim)
+        gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        pl.subplot(2, 2, 1)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
+        gmm.train(featsvec, use_kmeans=True, use_EM=True)
+        pl.subplot(2, 2, 2)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
 
-    UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-    ubm_file = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
-    ubm = pickle.load(ubm_file)
-    print('ubm:', ubm.weights)
-    print('sum:', np.sum(ubm.weights))
+        pl.savefig('../docs/paper/images/em_algorithm.png', bbox_inches='tight')
+        pl.show()
 
-    adapt_gmmc_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
+    if command == 'adapt':
+        adaptations = args[5]
 
-    # female
-    GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
-    gmm_file = open('%sf04_%s_%d_%s.gmm' % (GMMS_PATH, environment, M, adaptations),
-                    'rb')
-    gmm = pickle.load(gmm_file)
-    pl.subplot(2, 2, 1)
-    plot_gmm(ubm, featsvec, x_axis, y_axis)
-    pl.subplot(2, 2, 2)
-    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
-    plot_gmm(gmm, featsvec_f, x_axis, y_axis)
-    print('gmm f04_%s: %s' % (environment, gmm.weights))
-    print('sum:', np.sum(gmm.weights))
+        featsvec_f = bases.read_background(numceps, delta_order, 'f')
+        featsvec_m = bases.read_background(numceps, delta_order, 'm')
+        featsvec = np.vstack((featsvec_f, featsvec_m))
+        featsvec_speaker = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
 
-    # male
-    GMMS_PATH = '%smit_%d_%d/' % (adapt_gmmc_dir, numceps, delta_order)
-    gmm_file = open('%sm10_%s_%d_%s.gmm' % (GMMS_PATH, environment, M, adaptations),
-                    'rb')
-    gmm = pickle.load(gmm_file)
-    pl.subplot(2, 2, 3)
-    plot_gmm(ubm, featsvec, x_axis, y_axis)
-    pl.subplot(2, 2, 4)
-    pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'go')
-    plot_gmm(gmm, featsvec_m, x_axis, y_axis)
-    print('gmm m10_%s: %s' % (environment, gmm.weights))
-    print('sum:', np.sum(gmm.weights))
+        UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
+        ubmfile = open('%sall_%d.gmm' % (UBMS_PATH, M), 'rb')
+        ubm = pickle.load(ubmfile)
+        ubmfile.close()
 
-    if not r is None:
-        min_featsvec = np.amin(featsvec, axis=0)
-        featsvec = featsvec + (1 - min_featsvec)
-    ubm = mixtures.GMM('test', M, numceps)
-    ubm.train(featsvec, r=r, use_kmeans=True, use_EM=False)
-    pl.figure()
-    pl.subplot(1, 2, 1)
-    plot_gmm(ubm, featsvec, x_axis, y_axis)
-    ubm.train(featsvec, r=r, use_kmeans=False, use_EM=True)
-    pl.subplot(1, 2, 2)
-    plot_gmm(ubm, featsvec, x_axis, y_axis)
+        GMMS_PATH = '%sadapted_%s/mit_%d_%d/' % (GMMS_DIR, adaptations, numceps, delta_order)
+        gmmfile = open('%s%s_all_%d_%s.gmm' % (GMMS_PATH, speaker, M, adaptations), 'rb')
+        gmm = pickle.load(gmmfile)
+        gmmfile.close()
 
-    pl.show()
+        pl.subplot(2, 2, 1)
+        plot_gmm(ubm, featsvec, x_axis, y_axis)
+        pl.subplot(2, 2, 2)
+        plot_gmm(gmm, featsvec, x_axis, y_axis, featsvec_speaker)
+
+        pl.savefig('../docs/paper/images/adapted_%s.png' % adaptations, bbox_inches='tight')
+        pl.show()

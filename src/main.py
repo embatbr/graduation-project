@@ -66,8 +66,8 @@ def train_ubms(gmms_dir, ubms_dir, r=None):
 
                 # training
                 D = numceps * (1 + delta_order)
-                ubm_f = mixtures.GMM('f', M // 2, D)
-                ubm_m = mixtures.GMM('m', M // 2, D)
+                ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f)
+                ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m)
                 for (ubm, featsvec, gender) in zip([ubm_f, ubm_m], [featsvec_f, featsvec_m],
                                                    ['female', 'male']):
                     while(True):
@@ -153,7 +153,7 @@ if command == 'train-speakers':
 
                     D = numceps * (1 + delta_order)
                     name = '%s_%s_%d' % (speaker, environment, M)
-                    gmm = mixtures.GMM(name, M, D)
+                    gmm = mixtures.GMM(name, M, D, featsvec)
                     while(True):
                         try:
                             print('Training GMM %s' % gmm.name)
