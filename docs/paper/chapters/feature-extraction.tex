@@ -1,7 +1,7 @@
 \chapter{Feature Extraction}
 \label{ch:feature-extraction}
 
-As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASV. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the feature extraction process, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
+As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASV. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the \textbf{feature extraction process}, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
 
 \begin{itemize}\itemsep0pt
     \item occur naturally and frequently in normal speech;
@@ -20,7 +20,7 @@ The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.
 
 \section{Mel-Frequency Cepstral Coefficient}
 
-MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections, i.e. outer, middle and inner ears, only the last is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the cochlea (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
+MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections, i.e., outer, middle and inner ears, only the last is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the \textbf{cochlea} (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
 
 \begin{figure}[ht]
     \centering
@@ -40,12 +40,12 @@ A key factor in the perception of speech and other sounds is \textbf{loudness}, 
 
 \subsection{The Mel Scale}
 
-The mel scale is the result of an experiment conducted by \refbib{Stevens, Volkmann and Newman}{stevens.volkmann.newman.1937} intended to measure the perception of a pitch and construct a scale based on it. Each observer was asked to listen to two tones, one in the fixed frequencies 125, 200, 300, 400, 700, 1000, 2000, 5000, 8000 and 12000 Hz, and the other free to have its frequency varied by the observer for each fixed frequency of the first tone. An interval of 2 seconds separated both tones. The observers were instructed to say in which frequency the second tone was ``half the loudness" of the first. A geometric mean was taken from the observers' answers and a measure of 1000 mels was assigned to the frequency of 1000 Hz, 500 mels to the frequency sounding half as high (as determined by Fig. 1 in \refbib{Stevens et. al.}{stevens.volkmann.newman.1937}) and so on.
+The \textbf{mel scale} is the result of an experiment conducted by \refbib{Stevens, Volkmann and Newman}{stevens.volkmann.newman.1937} intended to measure the perception of a pitch and construct a scale based on it. Each observer was asked to listen to two tones, one in the fixed frequencies 125, 200, 300, 400, 700, 1000, 2000, 5000, 8000 and 12000 Hz, and the other free to have its frequency varied by the observer for each fixed frequency of the first tone. An interval of 2 seconds separated both tones. The observers were instructed to say in which frequency the second tone was ``half the loudness" of the first. A geometric mean was taken from the observers' answers and a measure of 1000 mels was assigned to the frequency of 1000 Hz, 500 mels to the frequency sounding half as high (as determined by Fig. 1 in \refbib{Stevens et. al.}{stevens.volkmann.newman.1937}) and so on.
 
-Decades after the scale be defined, \refbib{O'Shaughnessy}{oshaughnessy.1987} presented an equation to convert frequencies in Hertz to frequencies in mels.
+Decades after the scale be defined, \refbib{O'Shaughnessy}{oshaughnessy.1987} presented an equation to convert frequencies in Hertz to frequencies in mels:
 
 \begin{equation}
-    f_{mel} = 2595 log_{10}(1 + \frac{f}{700})
+    f_{mel} = 2595 log_{10}(1 + \frac{f}{700}).
     \label{eq:mel_conversion}
 \end{equation}
 
@@ -71,7 +71,7 @@ In an ASV the feature extraction module receives a raw speech signal and returns
 
 %Pre-emphasis
 
-As the human voice is concentrated in the lower frequencies (see \figureref{preemphasis}), the higher ones are enhanced to improve the classification. A first order Finite Impulse Response (FIR) filter is used
+As the human voice is concentrated in the lower frequencies (see \figureref{preemphasis}), the higher ones are enhanced to improve the classification. A first order Finite Impulse Response (FIR) filter is used,
 
 \begin{equation}
     s_{emph}[n] = s[n] - a \cdot s[n - 1],
@@ -162,7 +162,7 @@ In \figureref{mfcc}, the blue line represents the first feature, and as it is ob
 
 %Cepstral Means Subtraction
 
-Even an utterance recorded in a quiet environment still suffers with the side effects of any noise captured during the recording, what may degrade the performance. For speeches recorded in regular places (e.g., a living room or a park), the environment robustness is a need. Cepstral Means Subtraction,
+Even an utterance recorded in a quiet environment still suffers with the side effects of any noise captured during the recording, what may degrade the performance. For speeches recorded in regular places (e.g., a living room or a park), the environment robustness is a need. Cepstral Means Subtraction (CMS),
 
 \begin{equation}
     c_n = c_n - \frac{1}{T} \sum_{t=1}^T c_{n,t},
