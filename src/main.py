@@ -263,25 +263,16 @@ if command == 'verify':
                 os.mkdir(EXP_PATH)
 
             all_gmm_filenames = os.listdir(GMMS_PATH)
-            if adaptations is None:
-                expr = '_%d.gmm' % M
-            else:
-                expr = '_%d_%s.gmm' % (M, adaptations)
-            all_gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith(expr)]
             all_gmm_filenames.sort()
 
             expdict = dict()
             for environment in environments:
                 print(environment.upper())
-                downlim = configurations[environment][0]
-                uplim = configurations[environment][1]
-
                 ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
 
-                ubm_key = 'UBM %s' % ubm.name.split('_')[0]
+                ubm_key = 'UBM %s' % environment
                 expdict[ubm_key] = dict()
                 for env in environments:
                     env_key = 'SCORES %s' % env
@@ -312,8 +303,7 @@ if command == 'verify':
                         dataset = 'imposter' if i > 0 else 'enroll_2'
                         dataset_key = 'imposter' if i > 0 else 'enrolled'
                         featslist = bases.read_features_list(numceps, delta_order,
-                                                             dataset, speaker,
-                                                             downlim, uplim)
+                                                             dataset, speaker)
 
                         for i in range(len(featslist)):
                             feats = featslist[i]
@@ -342,60 +332,57 @@ if command == 'identify':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
 
-    identify_dir = '%sspeakers' % IDENTIFY_DIR
+    identify = 'speakers'
+    identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
+    gmm_dir = '%s%s/' % (GMMS_DIR, identify)
+
     if not os.path.exists(identify_dir):
         os.mkdir(identify_dir)
 
     print('Identification\nnumceps = %d' % numceps)
     t = time.time()
 
-    for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
-        expdict = dict()
+    for M in Ms:
+        print('M = %d' % M)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
+            EXP_PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            if not os.path.exists(EXP_PATH):
+                os.mkdir(EXP_PATH)
 
-        GMMS_PATH = '%smit_%d_%d/' % (SPEAKERS_DIR, numceps, delta_order)
+            all_gmm_filenames = os.listdir(GMMS_PATH)
+            all_gmm_filenames.sort()
 
-        filenames = os.listdir(GMMS_PATH)
-        filenames.sort()
-        all_gmms = list()
-        for filename in filenames:
-            gmmfile = open('%s%s' % (GMMS_PATH, filename), 'rb')
-            all_gmms.append(pickle.load(gmmfile))
-            gmmfile.close()
+            expdict = dict()
+            for environment in environments:
+                print(environment.upper())
+                gmms_key = 'GMMs %s' % environment
+                expdict[gmms_key] = dict()
 
-        for environment in environments:
-            print(environment.upper())
-            downlim = configurations[environment][0]
-            uplim = configurations[environment][1]
+                expr = '_%s_%d.gmm' % (environment, M)
+                gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
+                                 if gmm_filename.endswith(expr)]
+                gmms = list()
+                for gmm_filename in gmm_filenames:
+                    gmmfile = open('%s%s' % (GMMS_PATH, gmm_filename), 'rb')
+                    gmms.append(pickle.load(gmmfile))
+                    gmmfile.close()
 
-            expdict[environment] = dict()
-            num_utterances_environment = 54 if environment == 'all' else 18
-            num_utterances = NUM_SPEAKERS * num_utterances_environment
-
-            for M in Ms:
-                print('M = %d' % M)
-                gmms = [gmm for gmm in all_gmms if gmm.name.endswith('_%s_%d' %
-                                                                     (environment, M))]
-
-                hits = 0
                 for speaker in enrolled_speakers:
                     print(speaker)
-                    featslist = bases.read_features_list(numceps, delta_order, 'enroll_2',
-                                                         speaker, downlim, uplim)
+                    expdict[gmms_key][speaker] = list()
+                    featslist = bases.read_features_list(numceps, delta_order,
+                                                         'enroll_2', speaker)
                     for feats in featslist:
                         log_likes = np.array([gmm.log_likelihood(feats) for gmm in gmms])
                         index = np.argsort(log_likes)[-1]
-                        identity = gmms[index].name
-                        if identity.startswith(speaker):
-                            hits = hits + 1
+                        identity = enrolled_speakers[index]
+                        expdict[gmms_key][speaker].append(identity)
 
-                success_rate = (hits / num_utterances) * 100
-                expdict[environment][M] = success_rate
-                print('success_rate = %f' % success_rate)
-
-        EXP_FILE_PATH = '%s/mit_%d_%d.json' % (identify_dir, numceps, delta_order)
-        with open(EXP_FILE_PATH, 'w') as expfile:
-            json.dump(expdict, expfile, indent=4, sort_keys=True)
+            EXP_FILE_PATH = '%sidentities_M_%d.json' % (EXP_PATH, M)
+            with open(EXP_FILE_PATH, 'w') as expfile:
+                json.dump(expdict, expfile, indent=4, sort_keys=True)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
