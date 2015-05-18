@@ -155,13 +155,12 @@ class GMM(object):
         @param normalize: determines if the log-likelihood is divided by T. By
         default, True.
 
-        @returns: the average (if normalize is True) sum of logarithm of the weighted
-        sum of gaussians for the GMM for each feature vector, aka, the log-likelihood
-        in base 10.
+        @returns: the average sum of the logarithm of the weighted sum of gaussians
+        for the GMM for each feature vector, aka, the log-likelihood in base 10.
         """
         probs = np.array([self.posterior(feats)[0] for feats in featsvec])
         logprobs = np.log10(probs)
-        return np.mean(logprobs, axis=0) # sums logprobs and divides by number of samples (T)
+        return np.mean(logprobs, axis=0) # sums logprobs and divides by the number of samples (T)
 
     def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
         """Trains the given GMM with the sequence of given feature vectors. Uses

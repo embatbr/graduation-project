@@ -14,7 +14,7 @@ import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
-from common import FRAC_GMMS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR, NUM_SPEAKERS
+from common import FRAC_GMMS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR, NUM_ENROLLED_UTTERANCES
 import bases, mixtures
 
 
@@ -515,6 +515,49 @@ if command == 'draw-det-curves-all':
     for verify_dir in verify_dirs:
         print('verify_dir: %s' % verify_dir)
         draw_det_curves(verify_dir)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+
+if command == 'calc-ident-curves':
+    identify = parameters[0]
+    identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
+
+    print('Calculating identification curves\nnumceps = %d' % numceps)
+    print('identify: %s' % identify)
+    t = time.time()
+
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        expdicts = list()
+        for M in Ms:
+            PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            EXP_FILE_PATH = '%sidentities_M_%d.json' % (PATH, M)
+            expfile = open(EXP_FILE_PATH)
+            expdicts.append(json.load(expfile))
+
+        curvedict = dict()
+        for environment in environments:
+            print(environment.upper())
+            env_key = 'GMMs %s' % environment
+            curvedict[env_key] = dict()
+
+            for (M, expdict) in zip(Ms, expdicts):
+                speakers = list(expdict[env_key].keys())
+                speakers.sort()
+
+                numhits = 0
+                for speaker in speakers:
+                    identities = np.array(expdict[env_key][speaker])
+                    identities = identities[identities == speaker]
+                    numhits = numhits + len(identities)
+
+                curvedict[env_key][M] = (numhits / NUM_ENROLLED_UTTERANCES) * 100
+
+        CURVE_FILE_PATH = '%scurve.json' % PATH
+        with open(CURVE_FILE_PATH, 'w') as curvefile:
+            json.dump(curvedict, curvefile, indent=4, sort_keys=True)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
