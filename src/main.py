@@ -14,7 +14,7 @@ import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
-from common import FRAC_GMMS_DIR, FRAC_UBMS_DIR
+from common import FRAC_GMMS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR, NUM_SPEAKERS
 import bases, mixtures
 
 
@@ -27,6 +27,7 @@ Ms = [8, 16, 32, 64, 128] # from 128, the EmptyClusterError starts to be frequen
 configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 environments = ['office', 'hallway', 'intersection', 'all']
+enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
 
 
 if command == 'extract-features':
@@ -273,6 +274,9 @@ if command == 'verify':
             expdict = dict()
             for environment in environments:
                 print(environment.upper())
+                downlim = configurations[environment][0]
+                uplim = configurations[environment][1]
+
                 ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
@@ -308,7 +312,8 @@ if command == 'verify':
                         dataset = 'imposter' if i > 0 else 'enroll_2'
                         dataset_key = 'imposter' if i > 0 else 'enrolled'
                         featslist = bases.read_features_list(numceps, delta_order,
-                                                             dataset, speaker)
+                                                             dataset, speaker,
+                                                             downlim, uplim)
 
                         for i in range(len(featslist)):
                             feats = featslist[i]
@@ -328,6 +333,69 @@ if command == 'verify':
             EXP_FILE_PATH = '%sscores_M_%d.json' % (EXP_PATH, M)
             with open(EXP_FILE_PATH, 'w') as expfile:
                 json.dump(expdict, expfile, indent=4, sort_keys=True)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+
+if command == 'identify':
+    if not os.path.exists(IDENTIFY_DIR):
+        os.mkdir(IDENTIFY_DIR)
+
+    identify_dir = '%sspeakers' % IDENTIFY_DIR
+    if not os.path.exists(identify_dir):
+        os.mkdir(identify_dir)
+
+    print('Identification\nnumceps = %d' % numceps)
+    t = time.time()
+
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        expdict = dict()
+
+        GMMS_PATH = '%smit_%d_%d/' % (SPEAKERS_DIR, numceps, delta_order)
+
+        filenames = os.listdir(GMMS_PATH)
+        filenames.sort()
+        all_gmms = list()
+        for filename in filenames:
+            gmmfile = open('%s%s' % (GMMS_PATH, filename), 'rb')
+            all_gmms.append(pickle.load(gmmfile))
+            gmmfile.close()
+
+        for environment in environments:
+            print(environment.upper())
+            downlim = configurations[environment][0]
+            uplim = configurations[environment][1]
+
+            expdict[environment] = dict()
+            num_utterances_environment = 54 if environment == 'all' else 18
+            num_utterances = NUM_SPEAKERS * num_utterances_environment
+
+            for M in Ms:
+                print('M = %d' % M)
+                gmms = [gmm for gmm in all_gmms if gmm.name.endswith('_%s_%d' %
+                                                                     (environment, M))]
+
+                hits = 0
+                for speaker in enrolled_speakers:
+                    print(speaker)
+                    featslist = bases.read_features_list(numceps, delta_order, 'enroll_2',
+                                                         speaker, downlim, uplim)
+                    for feats in featslist:
+                        log_likes = np.array([gmm.log_likelihood(feats) for gmm in gmms])
+                        index = np.argsort(log_likes)[-1]
+                        identity = gmms[index].name
+                        if identity.startswith(speaker):
+                            hits = hits + 1
+
+                success_rate = (hits / num_utterances) * 100
+                expdict[environment][M] = success_rate
+                print('success_rate = %f' % success_rate)
+
+        EXP_FILE_PATH = '%s/mit_%d_%d.json' % (identify_dir, numceps, delta_order)
+        with open(EXP_FILE_PATH, 'w') as expfile:
+            json.dump(expdict, expfile, indent=4, sort_keys=True)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)

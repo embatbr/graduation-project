@@ -17,6 +17,9 @@ FRAC_UBMS_DIR = '%subms/' % FRAC_GMMS_DIR
 
 EXPERIMENTS_DIR = '../experiments/'
 VERIFY_DIR = '%sverify/' % EXPERIMENTS_DIR
+IDENTIFY_DIR = '%sidentify/' % EXPERIMENTS_DIR
+
+NUM_SPEAKERS = 48
 
 CHECK_DIR = '../check/'
 
