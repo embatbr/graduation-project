@@ -93,4 +93,11 @@ As seen in \equationref{likelihood-ratio-test}, the decision process is based on
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \log \theta$, for an arbitrary value of $\theta$.
+\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$.} of $\theta$ (see \figureref{likelihood_ratio_detector}).
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{likelihood-ratio-detector}
+    \caption{Likelihood-ratio-based speaker verification system, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
+    \label{fig:likelihood_ratio_detector}
+\end{figure}

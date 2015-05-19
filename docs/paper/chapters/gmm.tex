@@ -139,7 +139,7 @@ The adaptation process is composed of two steps. The first is an expectation ste
     \label{eq:E_x2}
 \end{equation}
 
-Finally, these new sufficient statistics from the training data are used to update the old UBM sufficient statistics and adapt the parameters for mixture $i$ (see \figureref{adapted_wmv}) with the equations:
+Finally, these new sufficient statistics from the training data are used to update the old UBM sufficient statistics and adapt the parameters for mixture $i$ (see \figureref{adapted_wmv}) with the equations taken from \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}:
 
 \begin{equation}
     \hat{w_i} = [\alpha_i n_i / T + (1 - \alpha_i)w_i]\gamma
@@ -163,7 +163,7 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
     \label{eq:alpha_i}
 \end{equation}
 
-\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demands that more data be observed in a mixture before new parameters begin replacing old ones.
+\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demands that more data be observed in a mixture before new parameters begin replacing old ones (i.e., more relevance).
 
 %\section{Fractional Gaussian Mixture Model}
 %\label{sec:frac-gmm}
