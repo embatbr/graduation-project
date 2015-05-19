@@ -7,5 +7,5 @@ docs/*.log
 docs/*.toc
 src/__pycache__/
 src/tests/
-experiments*
+experiments/*
 check/*
