@@ -458,7 +458,6 @@ def draw_det_curves(verify_dir):
             colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
             position = 1
             ticks = np.arange(10, 100, 10)
-            eer_line = np.linspace(0, 100, 101)
 
             pl.clf()
             for environment in environments:
@@ -524,7 +523,7 @@ if command == 'calc-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
 
-    print('Calculating identification curves\nnumceps = %d' % numceps)
+    print('Calculating Identification Curves\nnumceps = %d' % numceps)
     print('identify: %s' % identify)
     t = time.time()
 
@@ -537,11 +536,11 @@ if command == 'calc-ident-curves':
             expfile = open(EXP_FILE_PATH)
             expdicts.append(json.load(expfile))
 
-        curvedict = dict()
+        curvesdict = dict()
         for environment in environments:
             print(environment.upper())
             env_key = 'GMMs %s' % environment
-            curvedict[env_key] = dict()
+            curvesdict[env_key] = dict()
 
             for (M, expdict) in zip(Ms, expdicts):
                 speakers = list(expdict[env_key].keys())
@@ -549,15 +548,73 @@ if command == 'calc-ident-curves':
 
                 numhits = 0
                 for speaker in speakers:
-                    identities = np.array(expdict[env_key][speaker])
-                    identities = identities[identities == speaker]
+                    identities = expdict[env_key][speaker]
+                    identities = [identity for identity in identities if
+                                  identity.startswith(speaker)]
                     numhits = numhits + len(identities)
 
-                curvedict[env_key][M] = (numhits / NUM_ENROLLED_UTTERANCES) * 100
+                    # teste
+                    if len(identities) == 0:
+                        print(M, speaker, len(identities), identities)
 
-        CURVE_FILE_PATH = '%scurve.json' % PATH
-        with open(CURVE_FILE_PATH, 'w') as curvefile:
-            json.dump(curvedict, curvefile, indent=4, sort_keys=True)
+                curvesdict[env_key][M] = (numhits / NUM_ENROLLED_UTTERANCES) * 100
+
+        CURVE_FILE_PATH = '%scurves.json' % PATH
+        with open(CURVE_FILE_PATH, 'w') as curvesfile:
+            json.dump(curvesdict, curvesfile, indent=4, sort_keys=True)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+
+if command == 'draw-ident-curves':
+    identify = parameters[0]
+    identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
+    print('Drawing Identification Curves\nnumceps = %d' % numceps)
+    t = time.time()
+
+    colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
+    position = 1
+    xticks = np.array(Ms)
+    yticks = np.arange(0, 101, 10)
+
+    for environment in environments:
+        print(environment.upper())
+        gmms_key = 'GMMs %s' % environment
+        ax = pl.subplot(2, 2, position)
+        ax.set_title(environment, fontsize=10)
+        pl.grid(True)
+
+        if position == 3 or position == 4:
+            pl.subplots_adjust(hspace=0.3)
+
+        position = position + 1
+        color_index = 0
+
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            CURVE_FILE_PATH = '%scurves.json' % PATH
+            curvesfile = open(CURVE_FILE_PATH)
+            curvesdict = json.load(curvesfile)
+
+            keys = list(map(int, curvesdict[gmms_key].keys()))
+            keys.sort()
+            values = [curvesdict[gmms_key][str(key)] for key in keys]
+            pl.plot(keys, values, '.-%s' % colors[color_index])
+            color_index = color_index + 1
+
+        pl.xticks(xticks)
+        pl.yticks(yticks)
+
+        [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+
+    pl.subplot(2, 2, 1)
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':7})
+
+    CURVES_IMG_PATH = '%scurves.png' % identify_dir
+    pl.savefig(CURVES_IMG_PATH, bbox_inches='tight')
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
