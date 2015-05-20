@@ -1,11 +1,9 @@
-\chapter{Speaker Verification Systems}
+\chapter{Speaker Recognition Systems}
 \label{ch:speaker-recognition-systems}
 
 %TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
 
-The process of speaker verification lies on the field of pattern classification, with the speaker's speech signal as input for a classifier. The usage of this type of system is to determine if a claimed identity is true (user is classified as ``enrolled") or false (user is classified as ``imposter").
-
-Differently from the speaker identification process, where the inputted speech is tested for all enrolled speakers and identified as the one with the highest score, in speaker verification only one speaker (the claimed identity) is tested. In order to perform a better comparison, a test against a model representing the other speakers is executed and the resulted score is compared with the score from the previous test, delivering a more reliable process.
+The process of speaker recognition lies on the field of pattern classification, with the speaker's speech signal as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers). The classification is considered correct if the identity given to the speech producer matches his or her real identity. A verification system, on the other hand, is designed to determine if a claimed identity is true (user is classified as ``enrolled") or false (user is classified as ``imposter"). Differently from the speaker identification process, where the inputted speech is tested for all enrolled speakers and identified as the one with the highest score, in speaker verification only one speaker (the claimed identity) is tested. In order to perform a better comparison, a test against a model representing the other speakers is executed and the resulted score is compared with the score from the previous test, delivering a more reliable outcome.
 
 \section{Utterance}
 
@@ -20,19 +18,35 @@ An \textbf{utterance} is a piece of speech produced by a speaker. It may be a wo
 
 \section{Features}
 
-The raw speech signal is unfit for use by an ASV. For a correct processing, the unique features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
+The raw speech signal is unfit for use by an ASR system. For a correct processing, the representative features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
+
+\section{Speaker Identification}
+\label{sec:speaker-identification}
+
+Given the features $\dvec{X}$ extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+
+\begin{equation}
+    \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\mathcal{S}_j},
+    \label{eq:classification_speaker_identification}
+\end{equation}
+
+\noindent for $j = 1, ..., N$ (with $N$ being the size of $\dvec{\mathcal{S}}$).
+
+\subsection{Training}
+
+\subsection{Test}
 
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users), the strength of this claim resides on how similar the features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_i} \verifytestB{\alpha}{\mathcal{S}}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to all enrolled users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to all enrolled users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
