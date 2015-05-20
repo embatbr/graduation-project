@@ -13,6 +13,7 @@ GMMS_DIR = '%sgmms/' % BASES_DIR
 SPEAKERS_DIR = '%sspeakers/' % GMMS_DIR
 UBMS_DIR = '%subms/' % GMMS_DIR
 FRAC_GMMS_DIR = '%sfrac-gmms/' % BASES_DIR
+FRAC_SPEAKERS_DIR = '%sspeakers/' % FRAC_GMMS_DIR
 FRAC_UBMS_DIR = '%subms/' % FRAC_GMMS_DIR
 
 EXPERIMENTS_DIR = '../experiments/'

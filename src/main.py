@@ -14,7 +14,8 @@ import numpy as np
 import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
-from common import FRAC_GMMS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR, NUM_ENROLLED_UTTERANCES
+from common import FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR
+from common import NUM_ENROLLED_UTTERANCES
 import bases, mixtures
 
 
@@ -124,12 +125,20 @@ if command == 'train-ubms-frac':
 
 
 if command == 'train-speakers':
-    if not os.path.exists(GMMS_DIR):
-        os.mkdir(GMMS_DIR)
-    if not os.path.exists(SPEAKERS_DIR):
-        os.mkdir(SPEAKERS_DIR)
+    r = None
+    if len(parameters) > 0:
+        r = float(parameters[0])
+
+    gmms_dir = GMMS_DIR if r is None else FRAC_GMMS_DIR
+    speakers_dir = SPEAKERS_DIR if r is None else FRAC_SPEAKERS_DIR
+    if not os.path.exists(gmms_dir):
+        os.mkdir(gmms_dir)
+    if not os.path.exists(speakers_dir):
+        os.mkdir(speakers_dir)
 
     print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
+    if not r is None:
+        print('r = %f' % r)
     t = time.time()
 
     for M in Ms:
@@ -140,7 +149,7 @@ if command == 'train-speakers':
             speakers = os.listdir(ENROLL_1_PATH)
             speakers.sort()
 
-            PATH = '%smit_%d_%d/' % (SPEAKERS_DIR, numceps, delta_order)
+            PATH = '%smit_%d_%d/' % (speakers_dir, numceps, delta_order)
             if not os.path.exists(PATH):
                 os.mkdir(PATH)
 
@@ -153,12 +162,15 @@ if command == 'train-speakers':
                                                   speaker, downlim, uplim)
 
                     D = numceps * (1 + delta_order)
-                    name = '%s_%s_%d' % (speaker, environment, M)
+                    if r is None:
+                        name = '%s_%s_%d' % (speaker, environment, M)
+                    else:
+                        name = '%s_%s_%d_%.02f' % (speaker, environment, M, r)
                     gmm = mixtures.GMM(name, M, D, featsvec)
                     while(True):
                         try:
                             print('Training GMM %s' % gmm.name)
-                            gmm.train(featsvec)
+                            gmm.train(featsvec, r)
                             break
                         except mixtures.EmptyClusterError as e:
                             print('%s\nrebooting GMM %s' % (e.msg, gmm.name))
