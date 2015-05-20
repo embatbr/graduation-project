@@ -3,7 +3,7 @@
 
 %TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
 
-The process of speaker recognition lies on the field of pattern classification, with the speaker's speech signal as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers). The classification is considered correct if the identity given to the speech producer matches his or her real identity. A verification system, on the other hand, is designed to determine if a claimed identity is true (user is classified as ``enrolled") or false (user is classified as ``imposter"). Differently from the speaker identification process, where the inputted speech is tested for all enrolled speakers and identified as the one with the highest score, in speaker verification only one speaker (the claimed identity) is tested. In order to perform a better comparison, a test against a model representing the other speakers is executed and the resulted score is compared with the score from the previous test, delivering a more reliable outcome.
+The process of speaker recognition lies on the field of pattern classification, with the speaker's speech signal as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers). The classification is considered correct if the identity assigned to the speaker matches his or her real identity. A verification system, on the other hand, is designed to determine if a claimed identity is true (user is classified as ``enrolled") or false (user is classified as ``imposter"). Differently from the speaker identification process, where the inputted speech is tested for all enrolled speakers and identified as the one with the highest score, in speaker verification only one speaker (the claimed identity) is tested. In order to perform a better comparison, a test against a model representing the other speakers is executed and the resulted score is compared with the score from the previous test, delivering a more reliable outcome.
 
 \section{Utterance}
 
@@ -30,23 +30,50 @@ Given the features $\dvec{X}$ extracted from a speech signal $\dvec{Y}$ spoken b
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., N$ (with $N$ being the size of $\dvec{\mathcal{S}}$).
+\noindent for $j = 1, ..., S$ (with $S$ being the size of $\dvec{\mathcal{S}}$).
 
 \subsection{Training}
 
+The features extracted from speech signals are used to train models for the speakers. Each speaker $\mathcal{S}_i$ is represented by a model $\lambda_i$, generated using only the features belonging to the particular speaker.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{speaker-recognition-training}
+    \caption{The statistical model of $\mathcal{S}$ is created from the speech signal $\dvec{Y}$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
+    \label{fig:speaker-recognition-training}
+\end{figure}
+
+The SGMM, initially referenced in \sectionref{gmm}, is a perfect choice to model the $\lambda_i$'s.
+
 \subsection{Test}
+
+The system test is performed replacing $\mathcal{S}_i$ in \equationref{classification_speaker_identification} by the model $\lambda_i$, leading to
+
+\begin{equation}
+    \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j},
+    \label{eq:speaker_identification}
+\end{equation}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{speaker-identification}
+    \caption{Speaker identification test, \refbib{Reynolds}{reynolds.1995a}.}
+    \label{fig:speaker_identification}
+\end{figure}
+
+\noindent where the model with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
 
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by $\mathcal{S}$, are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$ are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_i} \verifytestB{\alpha}{\mathcal{S}}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to all enrolled users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
@@ -73,14 +100,7 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
 
 \subsection{Training}
 
-Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-verification-training}:
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{speaker-verification-training}
-    \caption{The statistical model of $\mathcal{S}$ is created from the speech signal $\dvec{Y}$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
-    \label{fig:speaker-verification-training}
-\end{figure}
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-recognition-training}:
 
 Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_i$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_i$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the weight of each $\mathcal{S}_i$ is minimized.
 
@@ -107,11 +127,11 @@ As seen in \equationref{likelihood-ratio-test}, the decision process is based on
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$.} of $\theta$ (see \figureref{likelihood_ratio_detector}).
+\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$.} of $\theta$ (see \figureref{speaker-verification}).
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.75\textwidth]{likelihood-ratio-detector}
+    \includegraphics[width=\textwidth]{speaker-verification}
     \caption{Likelihood-ratio-based speaker verification system, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
-    \label{fig:likelihood_ratio_detector}
+    \label{fig:speaker-verification}
 \end{figure}
