@@ -1,7 +1,7 @@
 \chapter{Feature Extraction}
 \label{ch:feature-extraction}
 
-As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASV. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the \textbf{feature extraction process}, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
+As an acoustic wave propagated through space over time, the speech signal is not appropriate to be evaluated by an ASR system. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the \textbf{feature extraction process}, which transforms a speech signal into a sequence of characterized measurements, i.e. features. The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
 
 \begin{itemize}\itemsep0pt
     \item occur naturally and frequently in normal speech;
@@ -14,7 +14,7 @@ As an acoustic wave propagated through space over time, the speech signal is not
     \item not be easily modifiable by the speaker.
 \end{itemize}
 
-Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract, e.g. timbre. Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during the conversation (e.g., accent).
+Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g. timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during the conversation (e.g., accent).
 
 The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} may be divided into those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
 
@@ -60,7 +60,7 @@ Decades after the scale be defined, \refbib{O'Shaughnessy}{oshaughnessy.1987} pr
 
 \subsection{Extraction Process}
 
-In an ASV the feature extraction module receives a raw speech signal and returns a vector of cepstral features in mel scale (see \figureref{mfcc-flow}). The number of features in each frame is defined at the moment of extraction (e.g., 6, 13 or 19), but the user has the option to append time variations of the MFCCs (i.e., delta coefficients) in order to improve the representation.
+In an ASR system the feature extraction module receives a raw speech signal and returns a vector of cepstral features in mel scale (see \figureref{mfcc-flow}). The number of features in each frame is defined at the moment of extraction (e.g., 6, 13 or 19), but the user has the option to append time variations of the MFCCs (i.e., delta coefficients) in order to improve the representation.
 
 \begin{figure}[ht]
     \centering
@@ -89,7 +89,7 @@ As the human voice is concentrated in the lower frequencies (see \figureref{pree
 
 %Framing
 
-The first mandatory stage of the feature process is the division of the input signal in overlapping frames, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width in the order of milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width, or the frames will not be overlapped. Usual values for the window's width are between 20 and 40, and for the shift, 10.
+The first mandatory stage of the feature process is the division of the input signal in overlapping frames, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width in the order of milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width, or the frames will not overlap. Usual values for the window's width are between 20 and 40, and for the shift, 10.
 
 \begin{figure}[ht]
     \centering
@@ -145,13 +145,13 @@ Until now the features are in the mel scale, but are not yet ``cepstral". The la
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{mfcc}
-    \caption{6 MFCCs for each frame.}
+    \caption{6 MFCCs for each frame over.}
     \label{fig:mfcc}
 \end{figure}
 
 %Append Energy
 
-In \figureref{mfcc}, the blue line represents the first feature, and as it is obvious, its values over time are much higher than the values of the others. To correct this discrepancy, the feature is changed by the summed energy of each frame, bringing it closer to the others (see \figureref{mfcc_energy_appended}).
+In \figureref{mfcc}, the blue line represents the first feature, and as it is clear, its values over time are much higher than the values of the others. To correct this discrepancy, the feature is changed by the summed energy of each frame, bringing it closer to the others (see \figureref{mfcc_energy_appended}).
 
 \begin{figure}[ht]
     \centering
@@ -169,18 +169,18 @@ Even an utterance recorded in a quiet environment still suffers with the side ef
     \label{eq:cms}
 \end{equation}
 
-\noindent reduces the disturbing channel effect before the ASV be trained, delivering a cleaner signal to the models, \refbib{Westphal}{westphal.1997}.
+\noindent reduces the disturbing channel effect before the ASR system be trained, delivering a cleaner signal to the models, \refbib{Westphal}{westphal.1997}.
 
 %Delta Coefficients
 
-In order to improve the speech parameters, the differences in time of each coefficient may be added as new features. In a vector with 6 features per frame, the velocity and acceleration of each coefficient may be added, providing 12 more features to the parametrization, all of them related to the ones previously extracted. These new features are the \textbf{deltas} of the MFCCs, given by
+In order to improve the speech parameters, the differences in time around each coefficient may be added as new features. In a vector with 6 features per frame, the velocity and acceleration of each coefficient may be added, providing 12 more features to the parametrization, all of them related to the ones previously extracted. These new features are the \textbf{deltas} of the MFCCs, given by
 
 \begin{equation}
     d_t = \frac{\sum_{n=1}^N n(c_{t+n} - c_{t-n})}{2\sum_{n=1}^N n^2}.
     \label{eq:deltas}
 \end{equation}
 
-\noindent where $N$ (by default 2) determines how far from the frame $t$ the calculation is taken. \figureref{mfcc_energy_appended_cms_delta_order_2} shows the MFCCs from \figureref{mfcc_energy_appended_cms} improved by the addition of deltas of first and second orders.
+\noindent where $N$ determines how far from the frame $t$ the calculation is taken. \figureref{mfcc_energy_appended_cms_delta_order_2} shows the MFCCs from \figureref{mfcc_energy_appended_cms} improved by the addition of deltas of first and second orders.
 
 \begin{figure}[ht]
     \centering

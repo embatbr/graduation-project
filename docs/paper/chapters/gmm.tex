@@ -1,9 +1,9 @@
 \chapter{Gaussian Mixture Models}
 \label{ch:gmm}
 
-\chapterref{speaker-verification-systems} briefly discussed the use of models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to perform a verification process. As the features from the speech signal (see \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASV to accept random values.
+\chapterref{speaker-recognition-systems} briefly discussed the use of models $\lambda_i$ to perform an identification process and models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to a verification process. As the features from the speech signal (see \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASR system to accept random values.
 
-For all sorts of probability distributions, the gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, due to the central limit theorem. Its equation for a D-dimensional space is
+For all sorts of probability distributions, the gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, as demonstrated by the central limit theorem. Its equation for a D-dimensional space is
 
 \begin{equation}
     \pdf{\dvec{x}} = p(\dvec{x},\dvec{\mu},\dvec{\Sigma}) = \dgaussian{x}{\mu}{\Sigma},
@@ -15,7 +15,7 @@ For all sorts of probability distributions, the gaussian (or normal) is the one 
 \section{Definition}
 \label{sec:gmm-definition}
 
-A weighted sum of $\pdf{\dvec{x}}$'s is used to model the speaker verification system, trying to estimate the composition that best represents the training data. This weighted sum is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and is given by
+A weighted sum of $\pdf{\dvec{x}}$'s is used to model the ASR system, estimating the composition that best represents the training data. This weighted sum is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and is given by
 
 \begin{equation}
     \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdfi{\dvec{x}},
@@ -41,7 +41,7 @@ The idea behind use a GMM as a model for a speaker $\mathcal{S}$ is to achieve a
 \section{Expectation-Maximization}
 \label{sec:em}
 
-The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, such that $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration, until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i$ of variances).
+The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, that obeys $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i$ of variances).
 
 \begin{figure}[ht]
     \centering
@@ -85,14 +85,14 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \end{equation}
 \\
 
-This algorithm trains the GMMs used in the ASV shown in \sectionref{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
+This algorithm trains the GMMs used in the ASR system shown in \sectionrefTWO{speaker-identification}{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
 
 \section{Universal Background Model}
 \label{sec:ubm}
 
-An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. The idea is to generate a model where common characteristics presented in the corpus are well represented. This done, a speech mostly composed of common characteristics from enrolled speakers is more difficult to pass the likelihood ratio test (see \equationref{likelihood-ratio-test}).
+An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. The idea is to generate a model where common characteristics present in the corpus are well represented. This done, a speech mostly composed of common characteristics from enrolled speakers is more difficult to pass the likelihood ratio test (see \equationref{likelihood-ratio-test}).
 
-There are many configurations for an UBM, but, as it is possible to see in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately (also, female voices are more similar to each other than males, leading to more distinct male configurations). The $M$-th order UBM in this study is created merging trained male and female models, both of order $M/2$ (see \figureref{ubm-diagram}).
+There are many configurations for an UBM, but, as it is possible to see in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately. Also, female voices have more intrasimilarities than males, leading to more distinct male configurations. The $M$-th order UBM in this study is created merging trained male and female models, both of order $M/2$ (see \figureref{ubm-diagram}).
 
 \begin{figure}[ht]
     \centering
@@ -101,7 +101,7 @@ There are many configurations for an UBM, but, as it is possible to see in \refb
     \label{fig:ubm-diagram}
 \end{figure}
 
-As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{hyp}$ and $\lambda_{bkg}$. The default ASV is a GMM-UBM system, turning \equationref{score_of_X} into
+As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{hyp}$ and $\lambda_{bkg}$. The default ASR system is a GMM-UBM system, turning \equationref{score_of_X} in
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{GMM}) - \log p(\dvec{X}|\lambda_{UBM}).
@@ -111,7 +111,7 @@ As shown in \sectionref{speaker-verification}, the likelihood ratio test is perf
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-verification-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of a GMM for each enrolled speaker, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the GMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a GMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the GMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The Adapted GMM from UBM technique is shortened to Adapt-GMM-UBM.
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of Speaker Gaussian Mixture Models (SGMMs) for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the GMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a GMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the GMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Adapted Speaker Gaussian Mixture Model (ASGMM).
 
 The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian does not well represent a portion of the data, the change is relevant, as seen in \figureref{adapted_wmv}.
 
@@ -163,7 +163,7 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
     \label{eq:alpha_i}
 \end{equation}
 
-\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demands that more data be observed in a mixture before new parameters begin replacing old ones (i.e., more relevance).
+\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demand that more data be observed in a mixture before new parameters begin replacing old ones (i.e., more relevant).
 
 %\section{Fractional Gaussian Mixture Model}
 %\label{sec:frac-gmm}
