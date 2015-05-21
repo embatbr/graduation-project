@@ -3,9 +3,10 @@
 
 
 import numpy as np
+import os, os.path
 import random
 from math import pi as PI
-from common import FLOAT_MAX, ZERO, MIN_VARIANCE
+from common import FLOAT_MAX, ZERO, MIN_VARIANCE, CHECK_DIR
 
 
 EM_THRESHOLD = 1E-3
@@ -224,7 +225,18 @@ class GMM(object):
 
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
-                #print('diff:', diff)
+
+                if diff < 0:
+                    if not os.path.exists(CHECK_DIR):
+                        os.mkdir(CHECK_DIR)
+
+                    delta_order = featsvec.shape[1] / 19 - 1# (numceps = 19)
+                    with open('%s%.02f.err' % (CHECK_DIR, r), 'a') as errorfile:
+                        print('%s: EM, delta=%d, iteration=%d' % (self.name,
+                              delta_order, iteration), file=errorfile)
+                        print('(%f) - (%f) = %f\n' % (new_log_like, old_log_like,
+                              diff), file=errorfile)
+
                 old_log_like = new_log_like
                 iteration += 1
 

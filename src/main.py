@@ -138,7 +138,7 @@ if command == 'train-speakers':
 
     print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
     if not r is None:
-        print('r = %f' % r)
+        print('r = %.02f' % r)
     t = time.time()
 
     for M in Ms:
