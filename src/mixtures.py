@@ -226,6 +226,7 @@ class GMM(object):
                 new_log_like = self.log_likelihood(featsvec)
                 diff = new_log_like - old_log_like
 
+                # DEBUG
                 if diff < 0:
                     if not os.path.exists(CHECK_DIR):
                         os.mkdir(CHECK_DIR)
@@ -239,6 +240,9 @@ class GMM(object):
 
                 old_log_like = new_log_like
                 iteration += 1
+
+            if not r is None:
+                self.meansvec = self.meansvec - (1 - min_featsvec)
 
             print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 

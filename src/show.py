@@ -60,6 +60,37 @@ if __name__ == '__main__':
         pl.savefig('../docs/paper/images/em_algorithm.png', bbox_inches='tight')
         pl.show()
 
+    if command == 'frac-em':
+        r = float(args[5])
+
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
+
+        gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        pl.subplot(2, 2, 1)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
+        gmm.train(featsvec, use_kmeans=True, use_EM=True)
+        pl.subplot(2, 2, 2)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
+
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec_draw = featsvec + (1 - min_featsvec)
+
+        gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        pl.subplot(2, 2, 3)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
+        gmm.train(featsvec, r=r, use_kmeans=True, use_EM=True)
+        pl.subplot(2, 2, 4)
+        plot_gmm(gmm, featsvec, x_axis, y_axis)
+
+        featslist = bases.read_features_list(numceps, delta_order, 'enroll_2', speaker)
+        log_likes = list()
+        for feats in featslist:
+            log_likes.append(gmm.log_likelihood(feats))
+        print(log_likes)
+
+        pl.savefig('../docs/paper/images/frac-em_algorithm.png', bbox_inches='tight')
+        pl.show()
+
     if command == 'adapt':
         adaptations = args[5]
 

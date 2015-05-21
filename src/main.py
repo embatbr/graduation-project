@@ -344,14 +344,24 @@ if command == 'identify':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
 
+    r = None
+    if len(parameters) > 0:
+        r = float(parameters[0])
+
     identify = 'speakers'
-    identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
-    gmm_dir = '%s%s/' % (GMMS_DIR, identify)
+    if r is None:
+        identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
+        gmm_dir = '%s%s/' % (GMMS_DIR, identify)
+    else:
+        identify_dir = '%s%s_%.02f/' % (IDENTIFY_DIR, identify, r)
+        gmm_dir = '%s%s/' % (FRAC_GMMS_DIR, identify)
 
     if not os.path.exists(identify_dir):
         os.mkdir(identify_dir)
 
     print('Identification\nnumceps = %d' % numceps)
+    if not r is None:
+        print('r = %.02f' % r)
     t = time.time()
 
     for M in Ms:
@@ -372,7 +382,10 @@ if command == 'identify':
                 gmms_key = 'GMMs %s' % environment
                 expdict[gmms_key] = dict()
 
-                expr = '_%s_%d.gmm' % (environment, M)
+                if r is None:
+                    expr = '_%s_%d.gmm' % (environment, M)
+                else:
+                    expr = '_%s_%d_%.02f.gmm' % (environment, M, r)
                 gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
                                  if gmm_filename.endswith(expr)]
                 gmms = list()
