@@ -33,6 +33,15 @@ EPS = np.finfo(np.float64).eps # 2.2204460492503131e-16
 MIN_VARIANCE = 1e-2
 
 
+def frange(start, stop, step):
+    ret = list()
+
+    while start < stop:
+        ret.append(start)
+        start = start + step
+
+    return ret
+
 def isequal(A, B):
     return math.fabs(A - B) >= 10*EPS
 

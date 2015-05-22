@@ -112,9 +112,9 @@ class GMM(object):
         self.meansvec = np.vstack((self.meansvec, gmm.meansvec))
         self.variancesvec = np.vstack((self.variancesvec, gmm.variancesvec))
 
-    def clone(self, name=None):
+    def clone(self, featsvec, name=None):
         clonename = self.name if name is None else name
-        clone = GMM(clonename, self.M, self.D)
+        clone = GMM(clonename, self.M, self.D, featsvec)
 
         clone.weights = np.copy(self.weights)
         clone.meansvec = np.copy(self.meansvec)
@@ -163,7 +163,8 @@ class GMM(object):
         logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sums logprobs and divides by the number of samples (T)
 
-    def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True, use_EM=True):
+    def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True,
+              use_EM=True, debug=False):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -227,16 +228,17 @@ class GMM(object):
                 diff = new_log_like - old_log_like
 
                 # DEBUG
-                if diff < 0:
-                    if not os.path.exists(CHECK_DIR):
-                        os.mkdir(CHECK_DIR)
+                if (not r is None) and debug:
+                    if diff < 0:
+                        if not os.path.exists(CHECK_DIR):
+                            os.mkdir(CHECK_DIR)
 
-                    delta_order = featsvec.shape[1] / 19 - 1# (numceps = 19)
-                    with open('%s%.02f.err' % (CHECK_DIR, r), 'a') as errorfile:
-                        print('%s: EM, delta=%d, iteration=%d' % (self.name,
-                              delta_order, iteration), file=errorfile)
-                        print('(%f) - (%f) = %f\n' % (new_log_like, old_log_like,
-                              diff), file=errorfile)
+                        delta_order = featsvec.shape[1] / 19 - 1# (numceps = 19)
+                        with open('%s%.02f.err' % (CHECK_DIR, r), 'a') as errorfile:
+                            print('%s: EM, delta=%d, iteration=%d' % (self.name,
+                                  delta_order, iteration), file=errorfile)
+                            print('(%f) - (%f) = %f\n' % (new_log_like, old_log_like,
+                                  diff), file=errorfile)
 
                 old_log_like = new_log_like
                 iteration += 1

@@ -15,12 +15,9 @@ import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
 from common import FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR
-from common import NUM_ENROLLED_UTTERANCES
+from common import NUM_ENROLLED_UTTERANCES, frange
 import bases, mixtures
 
-
-command = sys.argv[1]
-parameters = sys.argv[2 : ]
 
 numceps = 19 # 26 is the default number of filters.
 delta_orders = [0, 1, 2]
@@ -29,6 +26,11 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 environments = ['office', 'hallway', 'intersection', 'all']
 enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
+rs = frange(0.95, 1.06, 0.01)
+print(rs)
+
+command = sys.argv[1]
+parameters = sys.argv[2 : ]
 
 
 if command == 'extract-features':
@@ -45,8 +47,10 @@ if command == 'extract-features':
         bases.extract(winlen, winstep, numceps, delta_order)
 
     t = time.time() - t
-    print('Features extracted in %f seconds' % t)
+    print('Total time: %f seconds' % t)
 
+
+#UBM TRAINING SECTION
 
 def train_ubms(gmms_dir, ubms_dir, r=None):
     for M in Ms:
@@ -108,8 +112,6 @@ if command == 'train-ubms':
     print('Total time: %f seconds' % t)
 
 if command == 'train-ubms-frac':
-    r = float(parameters[0])
-
     if not os.path.exists(FRAC_GMMS_DIR):
         os.mkdir(FRAC_GMMS_DIR)
     if not os.path.exists(FRAC_UBMS_DIR):
@@ -118,29 +120,16 @@ if command == 'train-ubms-frac':
     print('UBM TRAINING\nnumceps = %d' % numceps)
     t = time.time()
 
-    train_ubms(FRAC_GMMS_DIR, FRAC_UBMS_DIR, r=r)
+    for r in rs:
+        train_ubms(FRAC_GMMS_DIR, FRAC_UBMS_DIR, r=r)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
 
-if command == 'train-speakers':
-    r = None
-    if len(parameters) > 0:
-        r = float(parameters[0])
+#SPEAKER'S GMMs TRAINING SECTION
 
-    gmms_dir = GMMS_DIR if r is None else FRAC_GMMS_DIR
-    speakers_dir = SPEAKERS_DIR if r is None else FRAC_SPEAKERS_DIR
-    if not os.path.exists(gmms_dir):
-        os.mkdir(gmms_dir)
-    if not os.path.exists(speakers_dir):
-        os.mkdir(speakers_dir)
-
-    print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
-    if not r is None:
-        print('r = %.02f' % r)
-    t = time.time()
-
+def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
     for M in Ms:
         print('M = %d' % M)
         for delta_order in delta_orders:
@@ -170,7 +159,7 @@ if command == 'train-speakers':
                     while(True):
                         try:
                             print('Training GMM %s' % gmm.name)
-                            gmm.train(featsvec, r)
+                            gmm.train(featsvec, r, debug=debug)
                             break
                         except mixtures.EmptyClusterError as e:
                             print('%s\nrebooting GMM %s' % (e.msg, gmm.name))
@@ -180,9 +169,39 @@ if command == 'train-speakers':
                     pickle.dump(gmm, gmmfile)
                     gmmfile.close()
 
-    t = time.time() - t
-    print('Features extracted in %f seconds' % t)
+if command == 'train-speakers':
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
+    if not os.path.exists(SPEAKERS_DIR):
+        os.mkdir(SPEAKERS_DIR)
 
+    print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
+    t = time.time()
+
+    train_speakers(GMMS_DIR, SPEAKERS_DIR)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+if command == 'train-speakers-frac':
+    if not os.path.exists(FRAC_GMMS_DIR):
+        os.mkdir(FRAC_GMMS_DIR)
+    if not os.path.exists(FRAC_SPEAKERS_DIR):
+        os.mkdir(FRAC_SPEAKERS_DIR)
+
+    print('SPEAKERS TRAINING (fractional)\nnumceps = %d' % numceps)
+    print('r = %.02f' % r)
+    t = time.time()
+
+    for r in rs:
+        print('r = %.02f' % r)
+        train_speakers(FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, r=r, debug=True)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+
+#GMMs ADAPTATION SECTION
 
 if command == 'adapt-gmms':
     adaptations = parameters[0]
@@ -231,7 +250,8 @@ if command == 'adapt-gmms':
                     print(speaker)
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
-                    gmm = ubm.clone('%s_%s_%d_%s' % (speaker, environment, M, adaptations))
+                    gmm = ubm.clone(featsvec, '%s_%s_%d_%s' % (speaker, environment,
+                                                               M, adaptations))
                     gmm.adapt_gmm(featsvec, adaptations, top_C)
 
                     GMM_PATH = '%s%s.gmm' % (GMMS_PATH, gmm.name)
@@ -242,6 +262,8 @@ if command == 'adapt-gmms':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
+
+#TESTING SECTION
 
 if command == 'verify':
     verify = 'speakers'
@@ -412,6 +434,8 @@ if command == 'identify':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
+
+#CURVE GENERATION SECTION
 
 if command == 'calc-det-curves':
     verify = parameters[0]
