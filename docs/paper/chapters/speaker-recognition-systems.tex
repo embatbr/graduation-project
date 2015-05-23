@@ -3,11 +3,25 @@
 
 %TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
 
-The process of speaker recognition lies on the field of pattern classification, with the speaker's speech signal as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers). The classification is considered correct if the identity assigned to the speaker matches his or her real identity. A verification system, on the other hand, is designed to determine if a claimed identity is true (user is classified as ``enrolled") or false (user is classified as ``imposter"). Differently from the speaker identification process, where the inputted speech is tested for all enrolled speakers and identified as the one with the highest score, in speaker verification only one speaker (the claimed identity) is tested. In order to perform a better comparison, a test against a model representing the other speakers is executed and the resulted score is compared with the score from the previous test, delivering a more reliable outcome.
+The speaker recognition process lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a claimed speaker identity is ``enrolled" or ``imposter").
 
-\section{Utterance}
+ASR systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
 
-An \textbf{utterance} is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but from herenow speech signal will be defined as an utterance recorded, digitalized and ready to be processed. An example is shown in \figureref{speech_signal}.
+\begin{equation}
+    \postprob{\mathcal{S}}{\boldsymbol{Y}} = \frac{\postpdf{\boldsymbol{Y}}{\mathcal{S}} \prob{\mathcal{S}}}{\pdf{\boldsymbol{Y}}}.
+    \label{eq:bayes_equation}
+\end{equation}
+
+\noindent As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ and the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization) can be removed with no loss to the analysis. \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$.
+
+\section{Basic Concepts}
+\label{sec:basic-concepts}
+
+Before start the discussion about the types of ASR systems, some basic concepts must be elucidated. Those are \textbf{utterance} and \textbf{features}.
+
+\subsection{Utterance}
+
+An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but from herenow speech signal will be defined as an utterance recorded, digitalized and ready to be processed. An example is shown in \figureref{speech_signal}.
 
 \begin{figure}[ht]
     \centering
@@ -16,7 +30,7 @@ An \textbf{utterance} is a piece of speech produced by a speaker. It may be a wo
     \label{fig:speech_signal}
 \end{figure}
 
-\section{Features}
+\subsection{Features}
 
 The raw speech signal is unfit for use by an ASR system. For a correct processing, the representative features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
 
@@ -30,7 +44,7 @@ Given the features $\dvec{X}$ extracted from a speech signal $\dvec{Y}$ spoken b
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., S$ (with $S$ being the size of $\dvec{\mathcal{S}}$).
+\noindent for $j = 1, ..., S$ (where $S$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by $\boldsymbol{X}$ in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
 
 \subsection{Training}
 
@@ -43,7 +57,7 @@ The features extracted from speech signals are used to train models for the spea
     \label{fig:speaker-recognition-training}
 \end{figure}
 
-The SGMM, initially referenced in \sectionref{gmm}, is a perfect choice to model the $\lambda_i$'s.
+The idea behind the training stage is to make $\lambda_i$ memorize the distinct characteristics present in the speaker's vocal tract that allows the identification to be performed. The GMSM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_i$'s.
 
 \subsection{Test}
 
@@ -54,14 +68,14 @@ The system test is performed replacing $\mathcal{S}_i$ in \equationref{classific
     \label{eq:speaker_identification}
 \end{equation}
 
+\noindent where the $\lambda_i$ with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
+
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{speaker-identification}
     \caption{Speaker identification test, \refbib{Reynolds}{reynolds.1995a}.}
     \label{fig:speaker_identification}
 \end{figure}
-
-\noindent where the model with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
 
 \section{Speaker Verification}
 \label{sec:speaker-verification}
@@ -73,7 +87,7 @@ If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 

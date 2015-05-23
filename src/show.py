@@ -7,11 +7,12 @@
 import numpy as np
 import pylab as pl
 import pickle
+import time
 from matplotlib.patches import Ellipse
 from common import UBMS_DIR, GMMS_DIR, frange
 
 
-def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, snd_featsvec=None):
+def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'):
     """Plots a GMM and the vector of features used to train it. The plotting is
     in a 2D space.
 
@@ -20,18 +21,34 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, snd_featsvec=None):
     @param x_axis: the dimension plotted in the x axis.
     @param y_axis: the dimension plotted in the y axis.
     """
-    if not featsvec is None:
-        pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'b.')
-    if not snd_featsvec is None:
-        pl.plot(snd_featsvec[:, x_axis], snd_featsvec[:, y_axis], 'g.')
-    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'r.')
+    # features
+    if type(featsvec) is list:
+        for (feats, param) in zip(featsvec, param_feats):
+            pl.plot(feats[:, x_axis], feats[:, y_axis], param)
+    else:
+        pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], param_feats)
 
+    # mixture of gaussians
+    param_gauss = param_mix[0] if type(param_mix) is list else param_mix
+    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], param_gauss)
     ax = pl.gca()
+    M = len(gmm.meansvec)
+    m = 0
+
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
+        if not (type(param_mix) is list):
+            color = param_mix[0]
+        elif m < M//2:
+            color = param_mix[0][0]
+        else:
+            color = param_mix[1][0]
+        m = m + 1
+
         ellipse = Ellipse(xy=(means[x_axis], means[y_axis]), width=variances[x_axis]**0.5,
-                          height=variances[y_axis]**0.5, edgecolor='r', linewidth=1.5,
-                          fill=False, zorder=2)
+                          height=variances[y_axis]**0.5, edgecolor=color,
+                          linewidth=1.5, fill=False, zorder=2)
         ax.add_artist(ellipse)
+
 
 
 if __name__ == '__main__':
@@ -49,8 +66,15 @@ if __name__ == '__main__':
     x_axis = int(args[3])
     y_axis = int(args[4])
 
+    show = True
+    t = time.time()
+
     if command == 'em':
-        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
+        if len(args) > 5:
+            show = False if args[5].lower() == 'false' else show
+
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
+                                      downlim='01', uplim='59')
 
         gmm = mixtures.GMM(speaker, M, numceps, featsvec)
         pl.subplot(2, 2, 1)
@@ -60,11 +84,12 @@ if __name__ == '__main__':
         plot_gmm(gmm, featsvec, x_axis, y_axis)
 
         pl.savefig('../docs/paper/images/em_algorithm.png', bbox_inches='tight')
-        pl.show()
 
-    if command == 'frac-em':
+    elif command == 'frac-em':
+        show = False
         rs = frange(0.95, 1.06, 0.01)
-        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
+                                      downlim='01', uplim='19')
 
         untrained_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
         trained_gmm = untrained_gmm.clone(featsvec)
@@ -86,7 +111,8 @@ if __name__ == '__main__':
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
             print('Fractional likelihoods')
-            featslist = bases.read_features_list(numceps, delta_order, 'enroll_2', speaker)
+            featslist = bases.read_features_list(numceps, delta_order, 'enroll_2',
+                                                 speaker, downlim='01', uplim='19')
             log_likes = list()
             for feats in featslist:
                 log_likes.append(frac_gmm.log_likelihood(feats))
@@ -96,47 +122,51 @@ if __name__ == '__main__':
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
-    if command == 'ubm':
-        r = None
+    elif command == 'ubm':
         if len(args) > 5:
-            r = float(args[5])
+            show = False if args[5].lower() == 'false' else show
 
-        featsvec_f = bases.read_background(numceps, delta_order, 'f')
-        featsvec_m = bases.read_background(numceps, delta_order, 'm')
-        featsvec = np.vstack((featsvec_f, featsvec_m))
+        featsvec_f = bases.read_background(numceps, delta_order, 'f', downlim='01',
+                                           uplim='19')
+        featsvec_m = bases.read_background(numceps, delta_order, 'm', downlim='01',
+                                           uplim='19')
 
         # training
         D = numceps * (1 + delta_order)
-        ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f, r=r)
-        ubm_f.train(featsvec)
-        ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m, r=r)
-        ubm_m.train(featsvec)
+        ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f)
+        ubm_f.train(featsvec_f)
+        ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m)
+        ubm_m.train(featsvec_m)
 
         pl.subplot(1, 3, 1)
         plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
         pl.subplot(1, 3, 2)
-        plot_gmm(ubm_m, featsvec_m, x_axis, y_axis)
+        plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='g.')
 
         # combination
         ubm = ubm_f
-        r_apx = '' if r is None else '_%.02f' % r
-        new_name = 'all_%d%s' % (M, r_apx)
+        new_name = 'all_%d%s' % M
         ubm.absorb(ubm_m, new_name)
 
-        pl.subplot(1, 3, 3)
-        plot_gmm(ubm, featsvec, x_axis, y_axis)
-
-        FILE_PATH = '../docs/paper/images/ubm_%d_%s.png' % (M, r_apx)
-        pl.savefig(FILE_PATH, bbox_inches='tight')
-        pl.show()
-
-    if command == 'adapt':
-        adaptations = args[5]
-
-        featsvec_f = bases.read_background(numceps, delta_order, 'f')
-        featsvec_m = bases.read_background(numceps, delta_order, 'm')
         featsvec = np.vstack((featsvec_f, featsvec_m))
-        featsvec_speaker = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker)
+        pl.subplot(1, 3, 3)
+        plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'g.'])
+
+        FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d%s.png' % M
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+
+    elif command == 'adapt':
+        adaptations = args[5]
+        if len(args) > 6:
+            show = False if args[6].lower() == 'false' else show
+
+        featsvec_f = bases.read_background(numceps, delta_order, 'f', downlim='01',
+                                           uplim='59')
+        featsvec_m = bases.read_background(numceps, delta_order, 'm', downlim='01',
+                                           uplim='59')
+        featsvec = np.vstack((featsvec_f, featsvec_m))
+        featsvec_speaker = bases.read_speaker(numceps, delta_order, 'enroll_1',
+                                              speaker, downlim='01', uplim='59')
 
         UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
         ubmfile = open('%sall_%d.gmm' % (UBMS_PATH, M), 'rb')
@@ -151,8 +181,14 @@ if __name__ == '__main__':
         pl.subplot(2, 2, 1)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
         pl.subplot(2, 2, 2)
-        plot_gmm(gmm, featsvec, x_axis, y_axis, featsvec_speaker)
+        plot_gmm(gmm, [featsvec, featsvec_speaker], x_axis, y_axis,
+                 param_feats=['b.', 'g.'])
 
-        FILE_PATH = '../docs/paper/images/adapted_%s_%s.png' % (speaker, adaptations)
+        FILE_PATH = '../docs/paper/images/adapted_%s.png' % adaptations
         pl.savefig(FILE_PATH, bbox_inches='tight')
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+    if show:
         pl.show()

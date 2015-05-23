@@ -87,7 +87,7 @@ def train_ubms(gmms_dir, ubms_dir, r=None):
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
 
-if command == 'train-ubms':
+elif command == 'train-ubms':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
     if not os.path.exists(UBMS_DIR):
@@ -101,7 +101,7 @@ if command == 'train-ubms':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-if command == 'train-ubms-frac':
+elif command == 'train-ubms-frac':
     if not os.path.exists(FRAC_GMMS_DIR):
         os.mkdir(FRAC_GMMS_DIR)
     if not os.path.exists(FRAC_UBMS_DIR):
@@ -151,7 +151,7 @@ def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
                     pickle.dump(gmm, gmmfile)
                     gmmfile.close()
 
-if command == 'train-speakers':
+elif command == 'train-speakers':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
     if not os.path.exists(SPEAKERS_DIR):
@@ -165,7 +165,7 @@ if command == 'train-speakers':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-if command == 'train-speakers-frac':
+elif command == 'train-speakers-frac':
     if not os.path.exists(FRAC_GMMS_DIR):
         os.mkdir(FRAC_GMMS_DIR)
     if not os.path.exists(FRAC_SPEAKERS_DIR):
@@ -184,7 +184,7 @@ if command == 'train-speakers-frac':
 
 #GMMs ADAPTATION SECTION
 
-if command == 'adapt-gmms':
+elif command == 'adapt-gmms':
     adaptations = parameters[0]
     top_C = None
     if len(parameters) > 1:
@@ -247,7 +247,7 @@ if command == 'adapt-gmms':
 
 #TESTING SECTION
 
-if command == 'verify':
+elif command == 'verify':
     verify = 'speakers'
     adaptations = None
     if len(parameters) > 0:
@@ -388,7 +388,7 @@ def identify(gmm_dir, identify_dir, r=None):
             with open(EXP_FILE_PATH, 'w') as expfile:
                 json.dump(expdict, expfile, indent=4, sort_keys=True)
 
-if command == 'identify':
+elif command == 'identify':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
 
@@ -405,7 +405,7 @@ if command == 'identify':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-if command == 'identify-frac':
+elif command == 'identify-frac':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
 
@@ -427,7 +427,7 @@ if command == 'identify-frac':
 
 #CURVE GENERATION SECTION
 
-if command == 'calc-det-curves':
+elif command == 'calc-det-curves':
     verify = parameters[0]
     verify_dir = '%s%s/' % (VERIFY_DIR, verify)
 
@@ -533,7 +533,7 @@ def draw_det_curves(verify_dir):
             DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
             pl.savefig(DET_IMG_PATH, bbox_inches='tight')
 
-if command == 'draw-det-curves':
+elif command == 'draw-det-curves':
     verify_dir = parameters[0]
     print('Drawing DET Curve\nnumceps = %d' % numceps)
     t = time.time()
@@ -543,7 +543,7 @@ if command == 'draw-det-curves':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-if command == 'draw-det-curves-all':
+elif command == 'draw-det-curves-all':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
 
@@ -558,7 +558,7 @@ if command == 'draw-det-curves-all':
     print('Total time: %f seconds' % t)
 
 
-if command == 'calc-ident-curves':
+elif command == 'calc-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
 
@@ -606,7 +606,7 @@ if command == 'calc-ident-curves':
     print('Total time: %f seconds' % t)
 
 
-if command == 'draw-ident-curves':
+elif command == 'draw-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
     print('Drawing Identification Curves\nnumceps = %d' % numceps)
@@ -713,12 +713,12 @@ def check(directory):
         for problem in problems:
             print(problem, file=checkfile)
 
-if command == 'check':
+elif command == 'check':
     directory = parameters[0]
     print('Directory:', directory)
     check(directory)
 
-if command == 'check-all':
+elif command == 'check-all':
     directories = os.listdir(GMMS_DIR)
     directories.sort()
 
@@ -727,7 +727,7 @@ if command == 'check-all':
         check(directory)
 
 
-if command == 'correct-ubms-names':
+elif command == 'correct-ubms-names':
     for M in Ms:
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
@@ -745,7 +745,7 @@ if command == 'correct-ubms-names':
                 print(UBM_PATH, ubm.name)
 
 
-if command == 'delete-ubm-extensions':
+elif command == 'delete-ubm-extensions':
     for M in Ms:
         for delta_order in delta_orders:
             UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
