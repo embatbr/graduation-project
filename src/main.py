@@ -27,7 +27,6 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
 environments = ['office', 'hallway', 'intersection', 'all']
 enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
 rs = frange(0.95, 1.06, 0.01)
-print(rs)
 
 command = sys.argv[1]
 parameters = sys.argv[2 : ]
@@ -72,25 +71,16 @@ def train_ubms(gmms_dir, ubms_dir, r=None):
 
                 # training
                 D = numceps * (1 + delta_order)
-                ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f)
-                ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m)
-                for (ubm, featsvec, gender) in zip([ubm_f, ubm_m], [featsvec_f, featsvec_m],
-                                                   ['female', 'male']):
-                    while(True):
-                        try:
-                            print('Training %s GMM' % gender)
-                            ubm.train(featsvec, r=r)
-                            break
-                        except mixtures.EmptyClusterError as e:
-                            print('%s\nrebooting %s GMM' % (e.msg, gender))
+                ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f, r=r)
+                ubm_f.train(featsvec)
+                ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m, r=r)
+                ubm_m.train(featsvec)
 
                 # combination
                 ubm = ubm_f
-                if r is None:
-                    new_name = '%s_%d' % (environment, M)
-                else:
-                    new_name = '%s_%d_%.02f' % (environment, M, r)
-                ubm.merge(ubm_m, new_name)
+                r_apx = '' if r is None else '_%.02f' % r
+                new_name = '%s_%d%s' % (environment, M, r_apx)
+                ubm.absorb(ubm_m, new_name)
 
                 UBM_PATH = '%s%s.gmm' % (UBMS_PATH, ubm.name)
                 ubmfile = open(UBM_PATH, 'wb')
@@ -150,19 +140,11 @@ def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
 
+                    r_apx = '' if r is None else '_%.02f' % r
+                    name = '%s_%s_%d%s' % (speaker, environment, M, r_apx)
                     D = numceps * (1 + delta_order)
-                    if r is None:
-                        name = '%s_%s_%d' % (speaker, environment, M)
-                    else:
-                        name = '%s_%s_%d_%.02f' % (speaker, environment, M, r)
-                    gmm = mixtures.GMM(name, M, D, featsvec)
-                    while(True):
-                        try:
-                            print('Training GMM %s' % gmm.name)
-                            gmm.train(featsvec, r, debug=debug)
-                            break
-                        except mixtures.EmptyClusterError as e:
-                            print('%s\nrebooting GMM %s' % (e.msg, gmm.name))
+                    gmm = mixtures.GMM(name, M, D, featsvec, r=r)
+                    gmm.train(featsvec, r, debug=debug)
 
                     GMM_PATH = '%s%s.gmm' % (PATH, gmm.name)
                     gmmfile = open(GMM_PATH, 'wb')
@@ -193,6 +175,7 @@ if command == 'train-speakers-frac':
     print('r = %.02f' % r)
     t = time.time()
 
+    rs.remove(1) # retirar isso depois
     for r in rs:
         print('r = %.02f' % r)
         train_speakers(FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, r=r, debug=True)
@@ -250,8 +233,9 @@ if command == 'adapt-gmms':
                     print(speaker)
                     featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1',
                                                   speaker, downlim, uplim)
-                    gmm = ubm.clone(featsvec, '%s_%s_%d_%s' % (speaker, environment,
-                                                               M, adaptations))
+
+                    clone_name = '%s_%s_%d_%s' % (speaker, environment, M, adaptations)
+                    gmm = ubm.clone(featsvec, clone_name)
                     gmm.adapt_gmm(featsvec, adaptations, top_C)
 
                     GMM_PATH = '%s%s.gmm' % (GMMS_PATH, gmm.name)

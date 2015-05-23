@@ -22,10 +22,18 @@ class EmptyClusterError(Exception):
         return self.msg
 
 
-def init(featsvec, M):
+def partitionate(featsvec, M):
+    """Partitionate the date in M means.
+
+    @param featsvec: the vector of features.
+    @param M: the number of means.
+
+    @returns: the means.
+    """
     indices = list(range(len(featsvec)))
     chosen = random.sample(indices, M)
     meansvec = featsvec[chosen, :]
+
     return meansvec
 
 def kmeans(featsvec, M, r=None):
@@ -33,8 +41,14 @@ def kmeans(featsvec, M, r=None):
 
     @param featsvec: the vector of features.
     @param M: the number of clusters.
+
+    @returns: the weights, means and variances.
     """
-    old_means = init(featsvec, M)
+    if not r is None:
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec = featsvec + (1 - min_featsvec)
+
+    old_means = partitionate(featsvec, M)
     max_diff = FLOAT_MAX
 
     iteration = 0
@@ -65,6 +79,7 @@ def kmeans(featsvec, M, r=None):
     T = len(featsvec)
     weights = list()
     variances = list()
+
     for cluster in clusters:
         weights.append(len(cluster) / T)
         if r is None:
@@ -73,6 +88,7 @@ def kmeans(featsvec, M, r=None):
             mean = np.mean(cluster, axis=0)
             variance = np.mean((cluster**r - mean**r)**2, axis=0)
         variances.append(variance)
+
     weights = np.array(weights)
     variances = np.array(variances)
     variances = np.where(variances < MIN_VARIANCE, MIN_VARIANCE, variances)
@@ -83,7 +99,7 @@ def kmeans(featsvec, M, r=None):
 class GMM(object):
     """Represents a GMM with number of mixtures M and a D-variate gaussian.
     """
-    def __init__(self, name, M, D, featsvec):
+    def __init__(self, name, M, D, featsvec, r=None, use_kmeans=True):
         """Creates a GMM.
 
         @param name: name of the GMM.
@@ -92,20 +108,26 @@ class GMM(object):
         self.name = name
         self.M = M
         self.D = D
+        self.r = r
+        self.weights = self.meansvec = self.variancesvec = None
 
-        self.weights = np.tile(1 / M, M)
-        self.meansvec = init(featsvec, M)
-        self.variancesvec = 2500*np.ones((M, D))
+        while(use_kmeans):
+            try:
+                print('Using k-means in %s' % self.name)
+                (w, m, v) = kmeans(featsvec, self.M, self.r)
+                (self.weights, self.meansvec, self.variancesvec) = (w, m, v)
+                break
+            except mixtures.EmptyClusterError as e:
+                print('%s\nrebooting k-means' % e.msg)
 
-    def merge(self, gmm, name=None):
+    def absorb(self, gmm, name=None):
         """
-        Merges the GMM object with another GMM object.
+        Absorbs a GMM object.
 
-        @param gmm: the other GMM object to be merged.
-        @param name: the new name of the merged object. Default, None.
+        @param gmm: the GMM object to be absorbed.
+        @param name: the new name of the absorbed object. Default, None.
         """
-        if not name is None:
-            self.name = name
+        self.name = name if name is None else name
         self.M = self.M + gmm.M
         self.weights = np.hstack((self.weights, gmm.weights))
         self.weights = self.weights / np.sum(self.weights, axis=0)
@@ -113,8 +135,15 @@ class GMM(object):
         self.variancesvec = np.vstack((self.variancesvec, gmm.variancesvec))
 
     def clone(self, featsvec, name=None):
+        """Copies a GMM object.
+
+        @param featsvec: the vector of features.
+        @param name: the new name of the absorbed object. Default, None.
+
+        @returns: a copy of the GMM object.
+        """
         clonename = self.name if name is None else name
-        clone = GMM(clonename, self.M, self.D, featsvec)
+        clone = GMM(clonename, self.M, self.D, featsvec, r=self.r, use_kmeans=False)
 
         clone.weights = np.copy(self.weights)
         clone.meansvec = np.copy(self.meansvec)
@@ -163,8 +192,7 @@ class GMM(object):
         logprobs = np.log10(probs)
         return np.mean(logprobs, axis=0) # sums logprobs and divides by the number of samples (T)
 
-    def train(self, featsvec, r=None, threshold=EM_THRESHOLD, use_kmeans=True,
-              use_EM=True, debug=False):
+    def train(self, featsvec, threshold=EM_THRESHOLD, debug=False):
         """Trains the given GMM with the sequence of given feature vectors. Uses
         the EM algorithm.
 
@@ -175,78 +203,72 @@ class GMM(object):
         @param use_EM: determines if the EM algorithm is used. Default, True.
         """
         # shifting to 1
-        if not r is None:
+        if not self.r is None:
             min_featsvec = np.amin(featsvec, axis=0)
             featsvec = featsvec + (1 - min_featsvec)
 
-        if use_kmeans:
-            print('kmeans')
-            (self.weights, self.meansvec, self.variancesvec) = kmeans(featsvec, self.M, r=r)
+        T = len(featsvec)
+        posteriors = np.zeros((T, self.M))
+        old_log_like = self.log_likelihood(featsvec)
+        print('log_like = %f' % old_log_like)
 
-        if use_EM:
-            print('EM')
-            T = len(featsvec)
-            posteriors = np.zeros((T, self.M))
-            old_log_like = self.log_likelihood(featsvec)
-            print('log_like = %f' % old_log_like)
+        iteration = 0
+        diff = FLOAT_MAX
+        while diff > threshold:
+            # E-Step
+            for t in range(T):
+                (posterior_in_t, w_gaussians) = self.posterior(featsvec[t]) # one for each one of M mixtures
+                posteriors[t] = w_gaussians / posterior_in_t
 
-            iteration = 0
-            diff = FLOAT_MAX
-            while diff > threshold:
-                # E-Step
-                for t in range(T):
-                    (posterior_in_t, w_gaussians) = self.posterior(featsvec[t]) # one for each one of M mixtures
-                    posteriors[t] = w_gaussians / posterior_in_t
+            #Summation of posteriors from 1 to T
+            sum_posteriors = np.sum(posteriors, axis=0)
 
-                #Summation of posteriors from 1 to T
-                sum_posteriors = np.sum(posteriors, axis=0)
+            # M-Step
+            for i in range(self.M):
+                #Updating i-th weight
+                self.weights[i] = sum_posteriors[i] / T
 
-                # M-Step
-                for i in range(self.M):
-                    #Updating i-th weight
-                    self.weights[i] = sum_posteriors[i] / T
+                #Updating i-th meansvec
+                self.meansvec[i] = np.dot(posteriors[:, i], featsvec)
+                self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
 
-                    #Updating i-th meansvec
-                    self.meansvec[i] = np.dot(posteriors[:, i], featsvec)
-                    self.meansvec[i] = self.meansvec[i] / sum_posteriors[i]
+                #Updating i-th variancesvec
+                if self.r is None:
+                    self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
+                    self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
+                    self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
+                else:
+                    featsvec_mean = featsvec**self.r - self.meansvec[i]**self.r
+                    self.variancesvec[i] = np.dot(posteriors[:, i], featsvec_mean**2)
+                    self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
+                self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
+                                                MIN_VARIANCE, self.variancesvec[i])
 
-                    #Updating i-th variancesvec
-                    if r is None:
-                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec**2)
-                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
-                        self.variancesvec[i] = self.variancesvec[i] - self.meansvec[i]**2
-                    else:
-                        featsvec_mean = featsvec**r - self.meansvec[i]**r
-                        self.variancesvec[i] = np.dot(posteriors[:, i], featsvec_mean**2)
-                        self.variancesvec[i] = self.variancesvec[i] / sum_posteriors[i]
-                    self.variancesvec[i] = np.where(self.variancesvec[i] < MIN_VARIANCE,
-                                                    MIN_VARIANCE, self.variancesvec[i])
+            self.weights = self.weights / np.sum(self.weights, axis=0)
 
-                self.weights = self.weights / np.sum(self.weights, axis=0)
+            new_log_like = self.log_likelihood(featsvec)
+            diff = new_log_like - old_log_like
 
-                new_log_like = self.log_likelihood(featsvec)
-                diff = new_log_like - old_log_like
+            # DEBUG
+            if (not self.r is None) and debug:
+                if diff < 0:
+                    if not os.path.exists(CHECK_DIR):
+                        os.mkdir(CHECK_DIR)
 
-                # DEBUG
-                if (not r is None) and debug:
-                    if diff < 0:
-                        if not os.path.exists(CHECK_DIR):
-                            os.mkdir(CHECK_DIR)
+                    delta_order = featsvec.shape[1] / 19 - 1# (numceps = 19)
+                    with open('%s%.02f.err' % (CHECK_DIR, self.r), 'a') as errorfile:
+                        print('%s: EM, delta=%d, iteration=%d' % (self.name,
+                              delta_order, iteration), file=errorfile)
+                        print('(%f) - (%f) = %f\n' % (new_log_like, old_log_like,
+                              diff), file=errorfile)
 
-                        delta_order = featsvec.shape[1] / 19 - 1# (numceps = 19)
-                        with open('%s%.02f.err' % (CHECK_DIR, r), 'a') as errorfile:
-                            print('%s: EM, delta=%d, iteration=%d' % (self.name,
-                                  delta_order, iteration), file=errorfile)
-                            print('(%f) - (%f) = %f\n' % (new_log_like, old_log_like,
-                                  diff), file=errorfile)
+            old_log_like = new_log_like
+            iteration += 1
 
-                old_log_like = new_log_like
-                iteration += 1
+        if not self.r is None:
+            self.meansvec = self.meansvec - (1 - min_featsvec)
 
-            if not r is None:
-                self.meansvec = self.meansvec - (1 - min_featsvec)
-
-            print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
+        print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 
     def adapt_gmm(self, featsvec, adaptations='wmv', top_C=None, relevance_factor=16):
         """
