@@ -1,3 +1,5 @@
+#!/usr/bin/python3.4
+
 """Module with code to exhibit data on the screen.
 """
 
@@ -19,10 +21,10 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, snd_featsvec=None):
     @param y_axis: the dimension plotted in the y axis.
     """
     if not featsvec is None:
-        pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'bo')
+        pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], 'b.')
     if not snd_featsvec is None:
-        pl.plot(snd_featsvec[:, x_axis], snd_featsvec[:, y_axis], 'go')
-    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'ro')
+        pl.plot(snd_featsvec[:, x_axis], snd_featsvec[:, y_axis], 'g.')
+    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], 'r.')
 
     ax = pl.gca()
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
@@ -76,10 +78,10 @@ if __name__ == '__main__':
             plot_gmm(trained_gmm, featsvec, x_axis, y_axis)
 
             print('Fractional')
-            frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+            frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
             pl.subplot(2, 2, 3)
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
-            frac_gmm.train(featsvec, r=r)
+            frac_gmm.train(featsvec)
             pl.subplot(2, 2, 4)
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
@@ -90,9 +92,43 @@ if __name__ == '__main__':
                 log_likes.append(frac_gmm.log_likelihood(feats))
             print('max = %f, min = %f' % (max(log_likes), min(log_likes)))
 
-            pl.savefig('../docs/paper/images/em_algorithm_r%.2f.png' % r,
-                       bbox_inches='tight')
+            FILE_PATH = '../docs/paper/images/em_algorithm_r%.2f.png' % r
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
+
+    if command == 'ubm':
+        r = None
+        if len(args) > 5:
+            r = float(args[5])
+
+        featsvec_f = bases.read_background(numceps, delta_order, 'f')
+        featsvec_m = bases.read_background(numceps, delta_order, 'm')
+        featsvec = np.vstack((featsvec_f, featsvec_m))
+
+        # training
+        D = numceps * (1 + delta_order)
+        ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f, r=r)
+        ubm_f.train(featsvec)
+        ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m, r=r)
+        ubm_m.train(featsvec)
+
+        pl.subplot(1, 3, 1)
+        plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
+        pl.subplot(1, 3, 2)
+        plot_gmm(ubm_m, featsvec_m, x_axis, y_axis)
+
+        # combination
+        ubm = ubm_f
+        r_apx = '' if r is None else '_%.02f' % r
+        new_name = 'all_%d%s' % (M, r_apx)
+        ubm.absorb(ubm_m, new_name)
+
+        pl.subplot(1, 3, 3)
+        plot_gmm(ubm, featsvec, x_axis, y_axis)
+
+        FILE_PATH = '../docs/paper/images/ubm_%d_%s.png' % (M, r_apx)
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+        pl.show()
 
     if command == 'adapt':
         adaptations = args[5]
@@ -117,5 +153,6 @@ if __name__ == '__main__':
         pl.subplot(2, 2, 2)
         plot_gmm(gmm, featsvec, x_axis, y_axis, featsvec_speaker)
 
-        pl.savefig('../docs/paper/images/adapted_%s.png' % adaptations, bbox_inches='tight')
+        FILE_PATH = '../docs/paper/images/adapted_%s_%s.png' % (speaker, adaptations)
+        pl.savefig(FILE_PATH, bbox_inches='tight')
         pl.show()
