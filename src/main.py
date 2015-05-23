@@ -26,7 +26,7 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 environments = ['office', 'hallway', 'intersection', 'all']
 enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
-rs = frange(0.95, 1.06, 0.01)
+rs = [1, 0.99, 1.01, 0.98, 1.02, 0.97, 1.03, 0.96, 1.04, 0.95, 1.05]
 
 command = sys.argv[1]
 parameters = sys.argv[2 : ]
