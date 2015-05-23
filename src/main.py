@@ -144,7 +144,7 @@ def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
                     name = '%s_%s_%d%s' % (speaker, environment, M, r_apx)
                     D = numceps * (1 + delta_order)
                     gmm = mixtures.GMM(name, M, D, featsvec, r=r)
-                    gmm.train(featsvec, r, debug=debug)
+                    gmm.train(featsvec, debug=debug)
 
                     GMM_PATH = '%s%s.gmm' % (PATH, gmm.name)
                     gmmfile = open(GMM_PATH, 'wb')
@@ -172,10 +172,8 @@ if command == 'train-speakers-frac':
         os.mkdir(FRAC_SPEAKERS_DIR)
 
     print('SPEAKERS TRAINING (fractional)\nnumceps = %d' % numceps)
-    print('r = %.02f' % r)
     t = time.time()
 
-    rs.remove(1) # retirar isso depois
     for r in rs:
         print('r = %.02f' % r)
         train_speakers(FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, r=r, debug=True)
@@ -346,30 +344,7 @@ if command == 'verify':
     print('Total time: %f seconds' % t)
 
 
-if command == 'identify':
-    if not os.path.exists(IDENTIFY_DIR):
-        os.mkdir(IDENTIFY_DIR)
-
-    r = None
-    if len(parameters) > 0:
-        r = float(parameters[0])
-
-    identify = 'speakers'
-    if r is None:
-        identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
-        gmm_dir = '%s%s/' % (GMMS_DIR, identify)
-    else:
-        identify_dir = '%s%s_%.02f/' % (IDENTIFY_DIR, identify, r)
-        gmm_dir = '%s%s/' % (FRAC_GMMS_DIR, identify)
-
-    if not os.path.exists(identify_dir):
-        os.mkdir(identify_dir)
-
-    print('Identification\nnumceps = %d' % numceps)
-    if not r is None:
-        print('r = %.02f' % r)
-    t = time.time()
-
+def identify(gmm_dir, identify_dir, r=None):
     for M in Ms:
         print('M = %d' % M)
         for delta_order in delta_orders:
@@ -388,10 +363,8 @@ if command == 'identify':
                 gmms_key = 'GMMs %s' % environment
                 expdict[gmms_key] = dict()
 
-                if r is None:
-                    expr = '_%s_%d.gmm' % (environment, M)
-                else:
-                    expr = '_%s_%d_%.02f.gmm' % (environment, M, r)
+                r_apx = '' if r is None else '_%.02f' % r
+                expr = '_%s_%d%s.gmm' % (environment, M, r_apx)
                 gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
                                  if gmm_filename.endswith(expr)]
                 gmms = list()
@@ -414,6 +387,39 @@ if command == 'identify':
             EXP_FILE_PATH = '%sidentities_M_%d.json' % (EXP_PATH, M)
             with open(EXP_FILE_PATH, 'w') as expfile:
                 json.dump(expdict, expfile, indent=4, sort_keys=True)
+
+if command == 'identify':
+    if not os.path.exists(IDENTIFY_DIR):
+        os.mkdir(IDENTIFY_DIR)
+
+    identify_dir = '%sspeakers/' % IDENTIFY_DIR
+    gmm_dir = '%sspeakers/' % GMMS_DIR
+    if not os.path.exists(identify_dir):
+        os.mkdir(identify_dir)
+
+    print('Identification\nnumceps = %d' % numceps)
+    t = time.time()
+
+    identify(gmm_dir, identify_dir)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+if command == 'identify-frac':
+    if not os.path.exists(IDENTIFY_DIR):
+        os.mkdir(IDENTIFY_DIR)
+
+    identify_dir = '%sspeakers/' % IDENTIFY_DIR
+    gmm_dir = '%sspeakers/' % GMMS_DIR
+    if not os.path.exists(identify_dir):
+        os.mkdir(identify_dir)
+
+    print('Identification\nnumceps = %d' % numceps)
+    t = time.time()
+
+    for r in rs:
+        print('r = %.02f' % r)
+        identify(gmm_dir, identify_dir, r)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
