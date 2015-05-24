@@ -14,13 +14,13 @@ As an acoustic wave propagated through space over time, the speech signal is not
     \item not be easily modifiable by the speaker.
 \end{itemize}
 
-Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g. timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during the conversation (e.g., accent).
+Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g. timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during conversation (e.g., accent).
 
 The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} may be divided into those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
 
 \section{Mel-Frequency Cepstral Coefficient}
 
-MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections, i.e., outer, middle and inner ears, only the last is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the \textbf{cochlea} (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
+MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections (i.e., outer, middle and inner ears), only the innermost is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the \textbf{cochlea} (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
 
 \begin{figure}[ht]
     \centering
@@ -42,14 +42,14 @@ A key factor in the perception of speech and other sounds is \textbf{loudness}, 
 
 The \textbf{mel scale} is the result of an experiment conducted by \refbib{Stevens, Volkmann and Newman}{stevens.volkmann.newman.1937} intended to measure the perception of a pitch and construct a scale based on it. Each observer was asked to listen to two tones, one in the fixed frequencies 125, 200, 300, 400, 700, 1000, 2000, 5000, 8000 and 12000 Hz, and the other free to have its frequency varied by the observer for each fixed frequency of the first tone. An interval of 2 seconds separated both tones. The observers were instructed to say in which frequency the second tone was ``half the loudness" of the first. A geometric mean was taken from the observers' answers and a measure of 1000 mels was assigned to the frequency of 1000 Hz, 500 mels to the frequency sounding half as high (as determined by Fig. 1 in \refbib{Stevens et. al.}{stevens.volkmann.newman.1937}) and so on.
 
-Decades after the scale be defined, \refbib{O'Shaughnessy}{oshaughnessy.1987} presented an equation to convert frequencies in Hertz to frequencies in mels:
+Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} presented an equation to convert frequencies in Hertz to frequencies in mels:
 
 \begin{equation}
     f_{mel} = 2595 log_{10}(1 + \frac{f}{700}).
     \label{eq:mel_conversion}
 \end{equation}
 
-\noindent Being logarithmic, the growth of a mel-frequency curve is slow when \equationref{mel_conversion} is applied to a linear growth of the frequency in Hertz. Sometimes the mel conversion is used only for frequencies higher than 1000 Hz, while in lower, $f_{mel}$ and $f_{Hz}$ share the same value. In this work all conversions will use \equationref{mel_conversion}, as shown by \figureref{mel_scale}.
+\noindent Being logarithmic, the growth of a mel-frequency curve is slow when \equationref{mel_conversion} is applied to a linear growth of the frequency in Hertz. Sometimes the mel conversion is used only for frequencies higher than 1000 Hz, while in lower, $f_{mel}$ and $f_{Hz}$ share the same value. In this work all conversions used \equationref{mel_conversion}, as shown by \figureref{mel_scale}.
 
 \begin{figure}[ht]
     \centering
@@ -74,22 +74,22 @@ In an ASR system the feature extraction module receives a raw speech signal and 
 As the human voice is concentrated in the lower frequencies (see \figureref{preemphasis}), the higher ones are enhanced to improve the classification. A first order Finite Impulse Response (FIR) filter is used,
 
 \begin{equation}
-    s_{emph}[n] = s[n] - a \cdot s[n - 1],
+    s_{emph}[n] = s[n] - \alpha \cdot s[n - 1],
     \label{eq:preemphasis}
 \end{equation}
 
-\noindent with values of $a$ usually in the interval $[0.95, 0.98]$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}. This is an optional stage of the MFCC extraction process.
+\noindent with values of $\alpha$ usually in the interval $[0.95, 0.98]$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}. This is an optional stage of the MFCC extraction process.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{preemphasis}
-    \caption{Raw (left) and pre-emphasized (right) speech signal, with respective spectral magnitudes (at bottom in red).}
+    \caption{Raw and pre-emphasized ($\alpha = 0.97$) speech signals, with respective spectral magnitudes.}
     \label{fig:preemphasis}
 \end{figure}
 
 %Framing
 
-The first mandatory stage of the feature process is the division of the input signal in overlapping frames, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width in the order of milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width, or the frames will not overlap. Usual values for the window's width are between 20 and 40, and for the shift, 10.
+The first mandatory stage of the feature process is the division of the input signal in overlapping frames, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width usually between 20 and 40 milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width (commonly 10 milliseconds), or the frames will not overlap.
 
 \begin{figure}[ht]
     \centering
@@ -100,7 +100,7 @@ The first mandatory stage of the feature process is the division of the input si
 
 %Fourier Transform
 
-For each frame the Fast Fourier Transform (FFT) is calculated, with number of points greater than the width of the window (usually 512). Finally, the modulus of the FFT is calculated and the power spectrum is obtained. Due to its symmetry, only half of the points are kept.
+For each frame the Fast Fourier Transform (FFT) is calculated, with number of points greater than the width of the window (usually 512). Finally, the modulus of the FFT is calculated and the power spectrum is obtained. Due to its symmetry, only the non-negative half is kept.
 
 \begin{figure}[ht]
     \centering

@@ -26,7 +26,7 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 environments = ['office', 'hallway', 'intersection', 'all']
 enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
-rs = [1, 0.99, 1.01, 0.98, 1.02, 0.97, 1.03, 0.96, 1.04, 0.95, 1.05]
+rs = [1, 0.99, 1.01, 0.95, 1.05, 0.9, 1.1]
 
 command = sys.argv[1]
 parameters = sys.argv[2 : ]
@@ -296,6 +296,7 @@ elif command == 'train-ubms-frac':
     t = time.time()
 
     for r in rs:
+        print('r = %.02f' % r)
         train_ubms(FRAC_GMMS_DIR, FRAC_UBMS_DIR, r=r)
 
     t = time.time() - t
@@ -512,9 +513,6 @@ elif command == 'identify-frac':
     print('Identification\nnumceps = %d' % numceps)
     t = time.time()
 
-    rs = [0.99]
-    Ms = [8]
-
     for r in rs:
         print('r = %.02f' % r)
         identify_dir = '%sspeakers_%.02f/' % (IDENTIFY_DIR, r)
@@ -642,7 +640,7 @@ elif command == 'calc-ident-curves':
 
                     # teste
                     if len(identities) == 0:
-                        print(M, speaker, len(identities), identities)
+                        print('EMPTY:', M, speaker, len(identities), identities)
 
                 curvesdict[env_key][M] = (numhits / NUM_ENROLLED_UTTERANCES) * 100
 

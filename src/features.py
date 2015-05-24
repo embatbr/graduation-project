@@ -250,8 +250,8 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 if __name__ == '__main__':
     import scipy.io.wavfile as wavf
 
-    PATH = '../bases/corpora/mit/enroll_1/f00/phrase01_16k.wav'
-    (samplerate, signal) = wavf.read(PATH)
+    SIGNAL_PATH = '../bases/corpora/mit/enroll_1/f00/phrase01_16k.wav'
+    (samplerate, signal) = wavf.read(SIGNAL_PATH)
     winlen = 0.02
     winstep = 0.01
     nfilt = 26

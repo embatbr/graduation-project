@@ -6,10 +6,12 @@
 
 import numpy as np
 import pylab as pl
+import scipy.io.wavfile as wavf
 import pickle
 import time
 from matplotlib.patches import Ellipse
 from common import UBMS_DIR, GMMS_DIR, frange
+import features
 
 
 def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'):
@@ -60,15 +62,92 @@ if __name__ == '__main__':
     import mixtures
 
     command = sys.argv[1]
-    args = sys.argv[2:]
+    args = sys.argv[2:] if len(sys.argv) > 2 else None
 
     numceps = 19
     show = True
     t = time.time()
 
-    if command == 'mfcc':
-        pass
-        # TODO gerar as imagens do MFCC para o capítulo 3
+    if command == 'utterance':
+        show = False
+
+        SIGNAL_PATH = '../bases/corpora/mit/enroll_1/f00/phrase02_16k.wav'
+        (samplerate, signal) = wavf.read(SIGNAL_PATH)
+
+        # plotting utterance "karen livescu"
+        duration = np.linspace(0, len(signal) / samplerate, len(signal))
+        ax = pl.subplot(3, 1, 1)
+        pl.grid(True)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        pl.plot(duration, signal, 'b')
+        pl.savefig('../docs/paper/images/speech_signal.png', bbox_inches='tight')
+
+    elif command == 'mfcc':
+        show = False
+        nfilt = 26
+        preemph = 0.97
+        NFFT = 512
+
+        SIGNAL_PATH = '../bases/corpora/mit/enroll_1/f00/phrase02_16k.wav'
+        (samplerate, signal) = wavf.read(SIGNAL_PATH)
+
+        # hertz-mel relation
+        lowfreq_mel = 0
+        highfreq_mel = features.hz2mel(samplerate/2)
+        melpoints = np.linspace(lowfreq_mel, highfreq_mel, nfilt + 2) # equally spaced in mel scale
+        hzpoints = features.mel2hz(melpoints)
+
+        # plotting hertz-mel relation
+        ax = pl.subplot(2, 1, 1)
+        pl.grid(True)
+        ticks = np.arange(0, samplerate/2 + 1, 1000)
+        pl.xticks(ticks)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        pl.plot(hzpoints, melpoints, 'r')
+        pl.savefig('../docs/paper/images/mel_scale.png', bbox_inches='tight')
+        pl.clf()
+
+        # plotting signal and preemphasized signal
+        duration = np.linspace(0, len(signal) / samplerate, len(signal))
+        ax = pl.subplot(2, 2, 1)
+        ax.set_title('signal', fontsize=10)
+        pl.grid(True)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        pl.plot(duration, signal, 'b')
+        ax = pl.subplot(2, 2, 2)
+        ax.set_title('pre-emphasized signal', fontsize=10)
+        pl.grid(True)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        emph_signal = features.preemphasis(signal, preemph)
+        pl.plot(duration, emph_signal, 'b')
+
+        # plotting spectrum
+        frequencies = np.linspace(0, samplerate//2, NFFT//2 + 1)
+        ticks = np.arange(0, samplerate//2 + 1, 2000)
+        ax = pl.subplot(2, 2, 3)
+        ax.set_title('signal\'s spectrum', fontsize=10)
+        pl.grid(True)
+        pl.xticks(ticks)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        magspec = features.magspec(signal)
+        pl.fill_between(frequencies, magspec, edgecolor='red', facecolor='red')
+        ax = pl.subplot(2, 2, 4)
+        ax.set_title('pre-emphasized signal\'s spectrum', fontsize=10)
+        pl.grid(True)
+        pl.xticks(ticks)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        emph_magspec = features.magspec(emph_signal)
+        pl.fill_between(frequencies, emph_magspec, edgecolor='red', facecolor='red')
+        pl.savefig('../docs/paper/images/preemphasis.png', bbox_inches='tight')
+        pl.clf()
+
+        # TODO gerar figura 'framing' do capítulo 3
 
     elif command == 'em':
         speaker = args[0]
@@ -154,10 +233,12 @@ if __name__ == '__main__':
         ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m)
         ubm_m.train(featsvec_m)
 
-        pl.subplot(2, 2, 1)
+        ax = pl.subplot(2, 2, 1)
+        ax.set_title('female', fontsize=10)
         plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
-        pl.subplot(2, 2, 2)
-        plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='g.')
+        ax = pl.subplot(2, 2, 2)
+        ax.set_title('male', fontsize=10)
+        plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='y.')
 
         # combination
         ubm = ubm_f
@@ -165,9 +246,11 @@ if __name__ == '__main__':
         ubm.absorb(ubm_m, new_name)
 
         featsvec = np.vstack((featsvec_f, featsvec_m))
-        pl.subplot(2, 2, 3)
-        plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'g.'])
-        pl.subplot(2, 2, 4)
+        ax = pl.subplot(2, 2, 3)
+        ax.set_title('female and male', fontsize=10)
+        plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'y.'])
+        ax = pl.subplot(2, 2, 4)
+        ax.set_title('combined UBM', fontsize=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
 
         FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d.png' % M
