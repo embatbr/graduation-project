@@ -88,6 +88,8 @@ if __name__ == '__main__':
         nfilt = 26
         preemph = 0.97
         NFFT = 512
+        winlen = 0.02
+        winstep = 0.01
 
         SIGNAL_PATH = '../bases/corpora/mit/enroll_1/f00/phrase02_16k.wav'
         (samplerate, signal) = wavf.read(SIGNAL_PATH)
@@ -111,13 +113,13 @@ if __name__ == '__main__':
 
         # plotting signal and preemphasized signal
         duration = np.linspace(0, len(signal) / samplerate, len(signal))
-        ax = pl.subplot(2, 2, 1)
+        ax = pl.subplot(3, 2, 1)
         ax.set_title('signal', fontsize=10)
         pl.grid(True)
         [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
         [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
         pl.plot(duration, signal, 'b')
-        ax = pl.subplot(2, 2, 2)
+        ax = pl.subplot(3, 2, 2)
         ax.set_title('pre-emphasized signal', fontsize=10)
         pl.grid(True)
         [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
@@ -128,7 +130,8 @@ if __name__ == '__main__':
         # plotting spectrum
         frequencies = np.linspace(0, samplerate//2, NFFT//2 + 1)
         ticks = np.arange(0, samplerate//2 + 1, 2000)
-        ax = pl.subplot(2, 2, 3)
+        ax = pl.subplot(3, 2, 3)
+        pl.subplots_adjust(hspace=0.4)
         ax.set_title('signal\'s spectrum', fontsize=10)
         pl.grid(True)
         pl.xticks(ticks)
@@ -136,7 +139,8 @@ if __name__ == '__main__':
         [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
         magspec = features.magspec(signal)
         pl.fill_between(frequencies, magspec, edgecolor='red', facecolor='red')
-        ax = pl.subplot(2, 2, 4)
+        ax = pl.subplot(3, 2, 4)
+        pl.subplots_adjust(hspace=0.4)
         ax.set_title('pre-emphasized signal\'s spectrum', fontsize=10)
         pl.grid(True)
         pl.xticks(ticks)
@@ -147,7 +151,23 @@ if __name__ == '__main__':
         pl.savefig('../docs/paper/images/preemphasis.png', bbox_inches='tight')
         pl.clf()
 
-        # TODO gerar figura 'framing' do capítulo 3
+        # plotting framing
+        frames = features.framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
+        frames = frames[50]
+        begin = int(50*winstep*samplerate)
+        end = int((50*winstep + winlen)*samplerate)
+        length = int(winlen*samplerate)
+        duration = np.linspace(begin, end, length)
+        ticks = np.arange(begin, end, 50)
+        ax = pl.subplot(3, 1, 1)
+        pl.grid(True)
+        pl.xticks(ticks)
+        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        pl.plot(duration, frames, 'g')
+        pl.savefig('../docs/paper/images/framing.png', bbox_inches='tight')
+
+        # TODO gerar figura 'fft' do capítulo 3
 
     elif command == 'em':
         speaker = args[0]

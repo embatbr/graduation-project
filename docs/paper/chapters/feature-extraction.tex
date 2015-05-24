@@ -54,7 +54,7 @@ Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} pr
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{mel_scale}
-    \caption{The logarithm curve of the mel scale.}
+    \caption{The logarithmic curve of the mel scale.}
     \label{fig:mel_scale}
 \end{figure}
 
@@ -94,13 +94,13 @@ The first mandatory stage of the feature process is the division of the input si
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{framing}
-    \caption{51º and 52º frames. Notice the initial and final samples of each figure.}
+    \caption{51st frame. The samples at the ends are thinner than the ones at the middle.}
     \label{fig:framing}
 \end{figure}
 
 %Fourier Transform
 
-For each frame the Fast Fourier Transform (FFT) is calculated, with number of points greater than the width of the window (usually 512). Finally, the modulus of the FFT is calculated and the power spectrum is obtained. Due to its symmetry, only the non-negative half is kept.
+For each frame the Fast Fourier Transform (FFT) is calculated, with number of points greater than the width of the window (usually 512). Finally, the modulus of the FFT is taken and the power spectrum is obtained. Due to its symmetry, only the non-negative half is kept.
 
 \begin{figure}[ht]
     \centering
