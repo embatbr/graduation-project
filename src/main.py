@@ -32,24 +32,7 @@ command = sys.argv[1]
 parameters = sys.argv[2 : ]
 
 
-if command == 'extract-features':
-    if not os.path.exists(FEATURES_DIR):
-        os.mkdir(FEATURES_DIR)
-
-    print('FEATURE EXTRACTION\nnumceps = %d' % numceps)
-
-    winlen = 0.02
-    winstep = 0.01
-    t = time.time()
-
-    for delta_order in delta_orders:
-        bases.extract(winlen, winstep, numceps, delta_order)
-
-    t = time.time() - t
-    print('Total time: %f seconds' % t)
-
-
-#UBM TRAINING SECTION
+# FUNCTIONS
 
 def train_ubms(gmms_dir, ubms_dir, r=None):
     for M in Ms:
@@ -87,37 +70,6 @@ def train_ubms(gmms_dir, ubms_dir, r=None):
                 pickle.dump(ubm, ubmfile)
                 ubmfile.close()
 
-elif command == 'train-ubms':
-    if not os.path.exists(GMMS_DIR):
-        os.mkdir(GMMS_DIR)
-    if not os.path.exists(UBMS_DIR):
-        os.mkdir(UBMS_DIR)
-
-    print('UBM TRAINING\nnumceps = %d' % numceps)
-    t = time.time()
-
-    train_ubms(GMMS_DIR, UBMS_DIR)
-
-    t = time.time() - t
-    print('Total time: %f seconds' % t)
-
-elif command == 'train-ubms-frac':
-    if not os.path.exists(FRAC_GMMS_DIR):
-        os.mkdir(FRAC_GMMS_DIR)
-    if not os.path.exists(FRAC_UBMS_DIR):
-        os.mkdir(FRAC_UBMS_DIR)
-
-    print('UBM TRAINING\nnumceps = %d' % numceps)
-    t = time.time()
-
-    for r in rs:
-        train_ubms(FRAC_GMMS_DIR, FRAC_UBMS_DIR, r=r)
-
-    t = time.time() - t
-    print('Total time: %f seconds' % t)
-
-
-#SPEAKER'S GMMs TRAINING SECTION
 
 def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
     for M in Ms:
@@ -151,6 +103,204 @@ def train_speakers(gmms_dir, speakers_dir, r=None, debug=False):
                     pickle.dump(gmm, gmmfile)
                     gmmfile.close()
 
+
+def identify(gmm_dir, identify_dir, r=None):
+    for M in Ms:
+        print('M = %d' % M)
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
+            EXP_PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            if not os.path.exists(EXP_PATH):
+                os.mkdir(EXP_PATH)
+
+            all_gmm_filenames = os.listdir(GMMS_PATH)
+            all_gmm_filenames.sort()
+
+            expdict = dict()
+            for environment in environments:
+                print(environment.upper())
+                gmms_key = 'GMMs %s' % environment
+                expdict[gmms_key] = dict()
+
+                r_apx = '' if r is None else '_%.02f' % r
+                expr = '_%s_%d%s.gmm' % (environment, M, r_apx)
+                gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
+                                 if gmm_filename.endswith(expr)]
+
+                gmms = list()
+                for gmm_filename in gmm_filenames:
+                    gmmfile = open('%s%s' % (GMMS_PATH, gmm_filename), 'rb')
+                    gmm = pickle.load(gmmfile)
+                    gmms.append(gmm)
+                    gmmfile.close()
+
+                for speaker in enrolled_speakers:
+                    print(speaker)
+                    expdict[gmms_key][speaker] = list()
+                    featslist = bases.read_features_list(numceps, delta_order,
+                                                         'enroll_2', speaker)
+                    for feats in featslist:
+                        log_likes = np.array([gmm.log_likelihood(feats) for gmm in gmms])
+                        index = np.argsort(log_likes)[-1]
+                        identity = enrolled_speakers[index]
+                        expdict[gmms_key][speaker].append(identity)
+
+            EXP_FILE_PATH = '%sidentities_M_%d.json' % (EXP_PATH, M)
+            with open(EXP_FILE_PATH, 'w') as expfile:
+                json.dump(expdict, expfile, indent=4, sort_keys=True)
+
+
+def draw_det_curves(verify_dir):
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        for M in Ms:
+            print('M = %d' % M)
+            PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
+            DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+            detfile = open(DET_FILE_PATH)
+            detdict = json.load(detfile)
+
+            colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
+            position = 1
+            ticks = np.arange(10, 100, 10)
+
+            pl.clf()
+            for environment in environments:
+                ubm_key = 'UBM %s' % environment
+                ax = pl.subplot(2, 2, position)
+                ax.set_title(environment, fontsize=10)
+                pl.grid(True)
+                pl.xticks(ticks)
+                pl.yticks(ticks)
+
+                [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
+                [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+
+                if position == 3 or position == 4:
+                    pl.subplots_adjust(hspace=0.3)
+
+                position = position + 1
+                color_index = 0
+
+                for environment in environments:
+                    scores_key = 'SCORES %s' % environment
+                    false_detection = detdict[ubm_key][scores_key]['false_detection']
+                    false_rejection = detdict[ubm_key][scores_key]['false_rejection']
+                    pl.plot(false_detection, false_rejection, colors[color_index])
+                    color_index = color_index + 1
+
+                pl.xlabel('false detection', fontsize=7)
+                pl.ylabel('false rejection', fontsize=7)
+
+            pl.subplot(221)
+            pl.legend(('office','hallway', 'intersection', 'all'),
+                       loc='upper right', prop={'size':7})
+
+            DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
+            pl.savefig(DET_IMG_PATH, bbox_inches='tight')
+
+
+# Used to correct some shits
+def check(directory):
+    if not os.path.exists(CHECK_DIR):
+        os.mkdir(CHECK_DIR)
+
+    CHECK_PATH = '%s%s.check' % (CHECK_DIR, directory)
+    checkfile = open(CHECK_PATH, 'w')
+    problems = list()
+
+    adaptations = ''
+    if directory.startswith('adapted'):
+        adaptations = '_%s' % directory.split('_')[1]
+
+    for M in Ms:
+        for delta_order in delta_orders:
+            PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
+            filenames = os.listdir(PATH)
+            filenames.sort()
+
+            if directory == 'ubms':
+                speakers = [None] # GAMBI
+            else:
+                speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
+
+            for speaker in speakers:
+                for environment in environments:
+                    if directory == 'ubms':
+                        GMM_PATH = '%s%s_%d%s.gmm' % (PATH, environment, M, adaptations)
+                    else:
+                        GMM_PATH = '%s%s_%s_%d%s.gmm' % (PATH, speaker, environment, M, adaptations)
+
+                    if os.path.exists('%s' % GMM_PATH):
+                        gmmfile = open('%s' % GMM_PATH, 'rb')
+                        gmm = pickle.load(gmmfile)
+                        gmmfile.close()
+
+                        if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
+                            problems.append('%s: exist weight not between 0 and 1' % GMM_PATH)
+                        if isequal(np.sum(gmm.weights, axis=0), 1):
+                            problems.append('%s%s: weights not summing to 1: %f' %
+                                            (PATH, gmm.name, np.sum(gmm.weights)))
+                        if np.min(gmm.variancesvec) < MIN_VARIANCE:
+                            problems.append('%s: negative variances' % GMM_PATH)
+                    else:
+                        problems.append('%s: does not exist' % GMM_PATH)
+
+    if len(problems) == 0:
+        print('OK', file=checkfile)
+    else:
+        for problem in problems:
+            print(problem, file=checkfile)
+
+
+# COMMANDS
+
+if command == 'extract-features':
+    if not os.path.exists(FEATURES_DIR):
+        os.mkdir(FEATURES_DIR)
+
+    print('FEATURE EXTRACTION\nnumceps = %d' % numceps)
+
+    winlen = 0.02
+    winstep = 0.01
+    t = time.time()
+
+    for delta_order in delta_orders:
+        bases.extract(winlen, winstep, numceps, delta_order)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+elif command == 'train-ubms':
+    if not os.path.exists(GMMS_DIR):
+        os.mkdir(GMMS_DIR)
+    if not os.path.exists(UBMS_DIR):
+        os.mkdir(UBMS_DIR)
+
+    print('UBM TRAINING\nnumceps = %d' % numceps)
+    t = time.time()
+
+    train_ubms(GMMS_DIR, UBMS_DIR)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+elif command == 'train-ubms-frac':
+    if not os.path.exists(FRAC_GMMS_DIR):
+        os.mkdir(FRAC_GMMS_DIR)
+    if not os.path.exists(FRAC_UBMS_DIR):
+        os.mkdir(FRAC_UBMS_DIR)
+
+    print('UBM TRAINING\nnumceps = %d' % numceps)
+    t = time.time()
+
+    for r in rs:
+        train_ubms(FRAC_GMMS_DIR, FRAC_UBMS_DIR, r=r)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
 elif command == 'train-speakers':
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
@@ -180,9 +330,6 @@ elif command == 'train-speakers-frac':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
-
-#GMMs ADAPTATION SECTION
 
 elif command == 'adapt-gmms':
     adaptations = parameters[0]
@@ -243,9 +390,6 @@ elif command == 'adapt-gmms':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
-
-#TESTING SECTION
 
 elif command == 'verify':
     verify = 'speakers'
@@ -343,51 +487,6 @@ elif command == 'verify':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-
-def identify(gmm_dir, identify_dir, r=None):
-    for M in Ms:
-        print('M = %d' % M)
-        for delta_order in delta_orders:
-            print('delta_order = %d' % delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
-            EXP_PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
-            if not os.path.exists(EXP_PATH):
-                os.mkdir(EXP_PATH)
-
-            all_gmm_filenames = os.listdir(GMMS_PATH)
-            all_gmm_filenames.sort()
-
-            expdict = dict()
-            for environment in environments:
-                print(environment.upper())
-                gmms_key = 'GMMs %s' % environment
-                expdict[gmms_key] = dict()
-
-                r_apx = '' if r is None else '_%.02f' % r
-                expr = '_%s_%d%s.gmm' % (environment, M, r_apx)
-                gmm_filenames = [gmm_filename for gmm_filename in all_gmm_filenames
-                                 if gmm_filename.endswith(expr)]
-                gmms = list()
-                for gmm_filename in gmm_filenames:
-                    gmmfile = open('%s%s' % (GMMS_PATH, gmm_filename), 'rb')
-                    gmms.append(pickle.load(gmmfile))
-                    gmmfile.close()
-
-                for speaker in enrolled_speakers:
-                    print(speaker)
-                    expdict[gmms_key][speaker] = list()
-                    featslist = bases.read_features_list(numceps, delta_order,
-                                                         'enroll_2', speaker)
-                    for feats in featslist:
-                        log_likes = np.array([gmm.log_likelihood(feats) for gmm in gmms])
-                        index = np.argsort(log_likes)[-1]
-                        identity = enrolled_speakers[index]
-                        expdict[gmms_key][speaker].append(identity)
-
-            EXP_FILE_PATH = '%sidentities_M_%d.json' % (EXP_PATH, M)
-            with open(EXP_FILE_PATH, 'w') as expfile:
-                json.dump(expdict, expfile, indent=4, sort_keys=True)
-
 elif command == 'identify':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
@@ -409,23 +508,23 @@ elif command == 'identify-frac':
     if not os.path.exists(IDENTIFY_DIR):
         os.mkdir(IDENTIFY_DIR)
 
-    identify_dir = '%sspeakers/' % IDENTIFY_DIR
-    gmm_dir = '%sspeakers/' % GMMS_DIR
-    if not os.path.exists(identify_dir):
-        os.mkdir(identify_dir)
-
+    gmm_dir = '%sspeakers/' % FRAC_GMMS_DIR
     print('Identification\nnumceps = %d' % numceps)
     t = time.time()
 
+    rs = [0.99]
+    Ms = [8]
+
     for r in rs:
         print('r = %.02f' % r)
+        identify_dir = '%sspeakers_%.02f/' % (IDENTIFY_DIR, r)
+        if not os.path.exists(identify_dir):
+            os.mkdir(identify_dir)
+
         identify(gmm_dir, identify_dir, r)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
-
-#CURVE GENERATION SECTION
 
 elif command == 'calc-det-curves':
     verify = parameters[0]
@@ -483,56 +582,6 @@ elif command == 'calc-det-curves':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-
-def draw_det_curves(verify_dir):
-    for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
-        for M in Ms:
-            print('M = %d' % M)
-            PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
-            DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
-            detfile = open(DET_FILE_PATH)
-            detdict = json.load(detfile)
-
-            colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
-            position = 1
-            ticks = np.arange(10, 100, 10)
-
-            pl.clf()
-            for environment in environments:
-                ubm_key = 'UBM %s' % environment
-                ax = pl.subplot(2, 2, position)
-                ax.set_title(environment, fontsize=10)
-                pl.grid(True)
-                pl.xticks(ticks)
-                pl.yticks(ticks)
-
-                [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
-
-                if position == 3 or position == 4:
-                    pl.subplots_adjust(hspace=0.3)
-
-                position = position + 1
-                color_index = 0
-
-                for environment in environments:
-                    scores_key = 'SCORES %s' % environment
-                    false_detection = detdict[ubm_key][scores_key]['false_detection']
-                    false_rejection = detdict[ubm_key][scores_key]['false_rejection']
-                    pl.plot(false_detection, false_rejection, colors[color_index])
-                    color_index = color_index + 1
-
-                pl.xlabel('false detection', fontsize=7)
-                pl.ylabel('false rejection', fontsize=7)
-
-            pl.subplot(221)
-            pl.legend(('office','hallway', 'intersection', 'all'),
-                       loc='upper right', prop={'size':7})
-
-            DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
-            pl.savefig(DET_IMG_PATH, bbox_inches='tight')
-
 elif command == 'draw-det-curves':
     verify_dir = parameters[0]
     print('Drawing DET Curve\nnumceps = %d' % numceps)
@@ -556,7 +605,6 @@ elif command == 'draw-det-curves-all':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
 
 elif command == 'calc-ident-curves':
     identify = parameters[0]
@@ -604,7 +652,6 @@ elif command == 'calc-ident-curves':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
 
 elif command == 'draw-ident-curves':
     identify = parameters[0]
@@ -658,61 +705,6 @@ elif command == 'draw-ident-curves':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-
-# Códigos de correção para merdas que fiz anteriormente e demorariam muito tempo
-# para refazer
-
-def check(directory):
-    if not os.path.exists(CHECK_DIR):
-        os.mkdir(CHECK_DIR)
-
-    CHECK_PATH = '%s%s.check' % (CHECK_DIR, directory)
-    checkfile = open(CHECK_PATH, 'w')
-    problems = list()
-
-    adaptations = ''
-    if directory.startswith('adapted'):
-        adaptations = '_%s' % directory.split('_')[1]
-
-    for M in Ms:
-        for delta_order in delta_orders:
-            PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
-            filenames = os.listdir(PATH)
-            filenames.sort()
-
-            if directory == 'ubms':
-                speakers = [None] # GAMBI
-            else:
-                speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
-
-            for speaker in speakers:
-                for environment in environments:
-                    if directory == 'ubms':
-                        GMM_PATH = '%s%s_%d%s.gmm' % (PATH, environment, M, adaptations)
-                    else:
-                        GMM_PATH = '%s%s_%s_%d%s.gmm' % (PATH, speaker, environment, M, adaptations)
-
-                    if os.path.exists('%s' % GMM_PATH):
-                        gmmfile = open('%s' % GMM_PATH, 'rb')
-                        gmm = pickle.load(gmmfile)
-                        gmmfile.close()
-
-                        if np.min(gmm.weights) <= 0 or np.max(gmm.weights) >= 1:
-                            problems.append('%s: exist weight not between 0 and 1' % GMM_PATH)
-                        if isequal(np.sum(gmm.weights, axis=0), 1):
-                            problems.append('%s%s: weights not summing to 1: %f' %
-                                            (PATH, gmm.name, np.sum(gmm.weights)))
-                        if np.min(gmm.variancesvec) < MIN_VARIANCE:
-                            problems.append('%s: negative variances' % GMM_PATH)
-                    else:
-                        problems.append('%s: does not exist' % GMM_PATH)
-
-    if len(problems) == 0:
-        print('OK', file=checkfile)
-    else:
-        for problem in problems:
-            print(problem, file=checkfile)
-
 elif command == 'check':
     directory = parameters[0]
     print('Directory:', directory)
@@ -725,7 +717,6 @@ elif command == 'check-all':
     for directory in directories:
         print('Directory:', directory)
         check(directory)
-
 
 elif command == 'correct-ubms-names':
     for M in Ms:
@@ -743,7 +734,6 @@ elif command == 'correct-ubms-names':
                 ubmfile.close()
 
                 print(UBM_PATH, ubm.name)
-
 
 elif command == 'delete-ubm-extensions':
     for M in Ms:

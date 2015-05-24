@@ -29,12 +29,15 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'
         pl.plot(featsvec[:, x_axis], featsvec[:, y_axis], param_feats)
 
     # mixture of gaussians
-    param_gauss = param_mix[0] if type(param_mix) is list else param_mix
-    pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], param_gauss)
-    ax = pl.gca()
     M = len(gmm.meansvec)
-    m = 0
+    if type(param_mix) is list:
+        pl.plot(gmm.meansvec[: M//2, x_axis], gmm.meansvec[: M//2, y_axis], param_mix[0])
+        pl.plot(gmm.meansvec[M//2 :, x_axis], gmm.meansvec[M//2 :, y_axis], param_mix[1])
+    else:
+        pl.plot(gmm.meansvec[:, x_axis], gmm.meansvec[:, y_axis], param_mix)
+    ax = pl.gca()
 
+    m = 0
     for (means, variances) in zip(gmm.meansvec, gmm.variancesvec):
         if not (type(param_mix) is list):
             color = param_mix[0]
@@ -60,16 +63,19 @@ if __name__ == '__main__':
     args = sys.argv[2:]
 
     numceps = 19
-    speaker = args[0]
-    M = int(args[1])
-    delta_order = int(args[2])
-    x_axis = int(args[3])
-    y_axis = int(args[4])
-
     show = True
     t = time.time()
 
-    if command == 'em':
+    if command == 'mfcc':
+        pass
+        # TODO gerar as imagens do MFCC para o capítulo 3
+
+    elif command == 'em':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
         if len(args) > 5:
             show = False if args[5].lower() == 'false' else show
 
@@ -86,6 +92,12 @@ if __name__ == '__main__':
         pl.savefig('../docs/paper/images/em_algorithm.png', bbox_inches='tight')
 
     elif command == 'frac-em':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
+
         show = False
         rs = frange(0.95, 1.06, 0.01)
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
@@ -123,8 +135,12 @@ if __name__ == '__main__':
             pl.clf()
 
     elif command == 'ubm':
-        if len(args) > 5:
-            show = False if args[5].lower() == 'false' else show
+        M = int(args[0])
+        delta_order = int(args[1])
+        x_axis = int(args[2])
+        y_axis = int(args[3])
+        if len(args) > 4:
+            show = False if args[4].lower() == 'false' else show
 
         featsvec_f = bases.read_background(numceps, delta_order, 'f', downlim='01',
                                            uplim='19')
@@ -138,24 +154,31 @@ if __name__ == '__main__':
         ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m)
         ubm_m.train(featsvec_m)
 
-        pl.subplot(1, 3, 1)
+        pl.subplot(2, 2, 1)
         plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
-        pl.subplot(1, 3, 2)
+        pl.subplot(2, 2, 2)
         plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='g.')
 
         # combination
         ubm = ubm_f
-        new_name = 'all_%d%s' % M
+        new_name = 'all_%d' % M
         ubm.absorb(ubm_m, new_name)
 
         featsvec = np.vstack((featsvec_f, featsvec_m))
-        pl.subplot(1, 3, 3)
+        pl.subplot(2, 2, 3)
         plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'g.'])
+        pl.subplot(2, 2, 4)
+        plot_gmm(ubm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d%s.png' % M
+        FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d.png' % M
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'adapt':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
         adaptations = args[5]
         if len(args) > 6:
             show = False if args[6].lower() == 'false' else show

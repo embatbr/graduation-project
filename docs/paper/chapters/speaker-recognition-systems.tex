@@ -3,16 +3,16 @@
 
 %TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
 
-The speaker recognition process lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a claimed speaker identity is ``enrolled" or ``imposter").
+The speaker recognition process lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a claimed speaker identity is \emph{enrolled} or \emph{imposter}).
 
 ASR systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
 
 \begin{equation}
-    \postprob{\mathcal{S}}{\boldsymbol{Y}} = \frac{\postpdf{\boldsymbol{Y}}{\mathcal{S}} \prob{\mathcal{S}}}{\pdf{\boldsymbol{Y}}}.
+    \postprob{\mathcal{S}}{\boldsymbol{Y}} = \frac{\postpdf{\boldsymbol{Y}}{\mathcal{S}} \prob{\mathcal{S}}}{\pdf{\boldsymbol{Y}}},
     \label{eq:bayes_equation}
 \end{equation}
 
-\noindent As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ and the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization) can be removed with no loss to the analysis. \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$.
+\noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ and the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization) can be removed with no loss to the analysis. \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$.
 
 \section{Basic Concepts}
 \label{sec:basic-concepts}
@@ -32,7 +32,7 @@ An utterance is a piece of speech produced by a speaker. It may be a word, a sta
 
 \subsection{Features}
 
-The raw speech signal is unfit for use by an ASR system. For a correct processing, the representative features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significancy", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
+The raw speech signal is unfit for use by an ASR system. For a correct processing, the representative features from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significance", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
 
 \section{Speaker Identification}
 \label{sec:speaker-identification}
@@ -48,7 +48,7 @@ Given the features $\dvec{X}$ extracted from a speech signal $\dvec{Y}$ spoken b
 
 \subsection{Training}
 
-The features extracted from speech signals are used to train models for the speakers. Each speaker $\mathcal{S}_i$ is represented by a model $\lambda_i$, generated using only the features belonging to the particular speaker.
+The features extracted from speech signals are used to train models for the speakers. Each speaker $\mathcal{S}_j$ is represented by a model $\lambda_j$, generated using only features from the speaker.
 
 \begin{figure}[ht]
     \centering
@@ -57,18 +57,18 @@ The features extracted from speech signals are used to train models for the spea
     \label{fig:speaker-recognition-training}
 \end{figure}
 
-The idea behind the training stage is to make $\lambda_i$ memorize the distinct characteristics present in the speaker's vocal tract that allows the identification to be performed. The GMSM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_i$'s.
+The idea behind the training stage is to make $\lambda_j$ ``memorize" the distinct characteristics present in the speaker's vocal tract that perform the identification. The GMSM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_j$'s.
 
 \subsection{Test}
 
-The system test is performed replacing $\mathcal{S}_i$ in \equationref{classification_speaker_identification} by the model $\lambda_i$, leading to
+The system test is performed replacing $\mathcal{S}_j$ in \equationref{classification_speaker_identification} by the model $\lambda_j$, leading to
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j},
     \label{eq:speaker_identification}
 \end{equation}
 
-\noindent where the $\lambda_i$ with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
+\noindent where the $\lambda_j$ with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
 
 \begin{figure}[ht]
     \centering
@@ -120,7 +120,7 @@ Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for trai
 
 \subsection{Test}
 
-As seen in \equationref{likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_j$ for its corresponding model, the likelihood of a $\lambda_j$ given $\dvec{X}$ can be written as
+As seen in \equationref{likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_j$ for its corresponding model, the likelihood of a $\lambda_j$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
 
 \begin{equation}
     p(\dvec{X}|\lambda_j) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_j).
