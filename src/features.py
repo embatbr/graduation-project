@@ -197,7 +197,8 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
     @param winlen: the length of the analysis window in seconds.
     @param winstep: the step between successive windows in seconds.
     @param samplerate: the samplerate of the signal we are working with.
-    @param nfilt: the number of filters in the filterbank. Default 26.
+    @param nfilt: the number of filters in the filterbank. Also used as number
+    of coefficients to the DCT. Default 26.
     @param NFFT: the FFT size. Default is 512.
     @param preemph: apply preemphasis filter with preemph as coefficient. 0 is
     no filter. Default is 0.97.
@@ -228,7 +229,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     featsvec = np.dot(powframes, fbank.T)
     featsvec = 20*np.log10(featsvec) #dB
-    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps]
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps] # TODO colocar n=26?
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:
