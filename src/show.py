@@ -56,6 +56,23 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'
         ax.add_artist(ellipse)
 
 
+def set_plot_params(ax, fontsize=10, grid=False, xticks=None, yticks=None):
+    """Changes the size of ticks on axes x and y.
+
+    @param ax: the object containing the axes x and y.
+    @param fontsize: the size of the font. Default, 10.
+    @param grid: determines if must show a grid. Default, True.
+    @param xticks: the x ticks. Default, None.
+    @param yticks: the y ticks. Default, None.
+    """
+    pl.grid(grid)
+    if not (xticks is None):
+        pl.xticks(xticks)
+    if not (yticks is None):
+        pl.yticks(yticks)
+    [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
+    [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
+
 
 if __name__ == '__main__':
     import sys
@@ -78,14 +95,14 @@ if __name__ == '__main__':
         # plotting utterance "karen livescu"
         duration = np.linspace(0, len(signal) / samplerate, len(signal))
         ax = pl.subplot(3, 1, 1)
-        pl.grid(True)
-        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        set_plot_params(ax, grid=True)
         pl.plot(duration, signal, 'b')
-        pl.savefig('../docs/paper/images/speech_signal.png', bbox_inches='tight')
 
-    elif command == 'mfcc':
-        mask = '1' * 10
+        FILE_PATH = '../docs/paper/images/speech_signal.png'
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+
+    elif command == 'mfcc-images':
+        mask = '1' * 7
         if len(args) > 0:
             mask = args[0]
 
@@ -107,79 +124,74 @@ if __name__ == '__main__':
             highfreq_mel = features.hz2mel(samplerate/2)
             melpoints = np.linspace(lowfreq_mel, highfreq_mel, nfilt + 2) # equally spaced in mel scale
             hzpoints = features.mel2hz(melpoints)
+
             ax = pl.subplot(2, 1, 1)
-            pl.grid(True)
-            ticks = np.arange(0, samplerate/2 + 1, 1000)
-            pl.xticks(ticks)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            xticks = np.arange(0, samplerate/2 + 1, 1000)
+            set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(hzpoints, melpoints, 'r')
-            pl.savefig('../docs/paper/images/mel_scale.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/mel_scale.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[1] == '1':
             print('plotting signal and preemphasized signal')
+
+            # plotting signals
             duration = np.linspace(0, len(signal) / samplerate, len(signal))
             ax = pl.subplot(3, 2, 1)
             ax.set_title('signal', fontsize=10)
-            pl.grid(True)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, grid=True)
             pl.plot(duration, signal, 'b')
             ax = pl.subplot(3, 2, 2)
             ax.set_title('pre-emphasized signal', fontsize=10)
-            pl.grid(True)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, grid=True)
             emph_signal = features.preemphasis(signal, preemph)
             pl.plot(duration, emph_signal, 'b')
 
-            # plotting spectrum
+            # plotting spectra
             frequencies = np.linspace(0, samplerate//2, NFFT//2 + 1)
-            ticks = np.arange(0, samplerate//2 + 1, 2000)
+            xticks = np.arange(0, samplerate//2 + 1, 2000)
             ax = pl.subplot(3, 2, 3)
             pl.subplots_adjust(hspace=0.4)
             ax.set_title('signal\'s spectrum', fontsize=10)
-            pl.grid(True)
-            pl.xticks(ticks)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, grid=True, xticks=xticks)
             signal_magspec = features.magspec(signal)
             pl.fill_between(frequencies, signal_magspec, edgecolor='red', facecolor='red')
             ax = pl.subplot(3, 2, 4)
             pl.subplots_adjust(hspace=0.4)
             ax.set_title('pre-emphasized signal\'s spectrum', fontsize=10)
-            pl.grid(True)
-            pl.xticks(ticks)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, grid=True, xticks=xticks)
             emph_magspec = features.magspec(emph_signal)
             pl.fill_between(frequencies, emph_magspec, edgecolor='red', facecolor='red')
-            pl.savefig('../docs/paper/images/preemphasis.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/preemphasis.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[2] == '1':
             print('plotting framing')
+
             frames = features.framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
             frame = frames[50]
             begin = int(50*winstep*samplerate)
             end = int((50*winstep + winlen)*samplerate)
             length = int(winlen*samplerate)
             duration = np.linspace(begin, end, length)
-            ticks = np.arange(begin, end, 50)
+            xticks = np.arange(begin, end, 50)
             ax = pl.subplot(3, 1, 1)
-            pl.grid(True)
-            pl.xticks(ticks)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(duration, frame, 'g')
-            pl.savefig('../docs/paper/images/framing.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/framing.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[3] == '1':
             print('plotting FFT')
+
             frequencies = np.linspace(0, samplerate//2, NFFT//2 + 1)
-            ticks = np.arange(0, samplerate//2 + 1, 1000)
+            xticks = np.arange(0, samplerate//2 + 1, 1000)
             position = 1
             for func in [features.magspec, features.powspec]:
                 func_frames = func(frames)
@@ -187,52 +199,53 @@ if __name__ == '__main__':
                 if position == 2:
                     pl.subplots_adjust(hspace=0.2)
                 position = position + 1
-                pl.grid(True)
-                pl.xticks(ticks)
-                [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+                set_plot_params(ax, grid=True, xticks=xticks)
                 for magframe in func_frames:
                     pl.plot(frequencies, magframe)
-            pl.savefig('../docs/paper/images/fft.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/fft.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[4] == '1':
             print('plotting filterbank')
+
             frequencies = np.linspace(0, samplerate//2, NFFT//2 + 1)
             fbank = features.filterbank(samplerate, nfilt, NFFT)
-            ticks = np.arange(0, samplerate//2 + 1, 1000)
+            xticks = np.arange(0, samplerate//2 + 1, 1000)
             ax = pl.subplot(3, 1, 1)
-            pl.xticks(ticks)
-            [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-            [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+            set_plot_params(ax, xticks=xticks)
             for f in fbank:
                 pl.plot(frequencies, f, 'y')
-            pl.savefig('../docs/paper/images/filterbank.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/filterbank.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[5] == '1':
             print('plotting features_and_featuresdB')
+
             emph_signal = features.preemphasis(signal, preemph)
             frames = features.framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
             powframes = features.powspec(frames, NFFT)
             fbank = features.filterbank(samplerate, nfilt, NFFT)
             featsvec = np.dot(powframes, fbank.T)
-            ticks = np.arange(0, len(featsvec) + 1, 20)
+            xticks = np.arange(0, len(featsvec) + 1, 20)
             for position in [1, 2]:
                 ax = pl.subplot(2, 2, position)
-                pl.grid(True)
-                pl.xticks(ticks)
-                [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+                set_plot_params(ax, grid=True, xticks=xticks)
                 if position == 2:
                     featsvec = 20*np.log10(featsvec) #dB
                 for feats in featsvec.T:
                     pl.plot(feats)
-            pl.savefig('../docs/paper/images/features_and_featuresdB.png', bbox_inches='tight')
+
+            FILE_PATH = '../docs/paper/images/features_and_featuresdB.png'
+            pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
         if mask[6] == '1':
             print('plotting mfcc')
+
             emph_signal = features.preemphasis(signal, preemph)
             frames = features.framesignal(emph_signal, winlen*samplerate, winstep*samplerate)
             powframes = features.powspec(frames, NFFT)
@@ -242,15 +255,14 @@ if __name__ == '__main__':
             featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps] # TODO colocar n=26?
             featsvec = features.lifter(featsvec, ceplifter)
 
-            ticks = np.arange(0, len(featsvec) + 1, 20)
-            for (append_energy, filename, applyCMS, delta_order) in\
-            [(False, 'mfcc', False, 0), (True, 'mfcc_energy_appended', False, 0),
-             (True, 'mfcc_energy_appended_cms_delta_order_2', True, 2)]:
+            xticks = np.arange(0, len(featsvec) + 1, 20)
+            configs = [(False, False, 0, 'mfcc'),
+                       (True, False, 0, 'mfcc_energy_appended'),
+                       (True, True, 0, 'mfcc_energy_appended_cms'),
+                       (True, True, 2, 'mfcc_energy_appended_cms_delta_order_2')]
+            for (append_energy, applyCMS, delta_order, filename) in configs:
                 ax = pl.subplot(3, 1, 1)
-                pl.xticks(ticks)
-                pl.grid(True)
-                [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+                set_plot_params(ax, grid=True, xticks=xticks)
 
                 if append_energy:
                     energy = np.sum(powframes, axis=1) # stores the total energy of each frame
@@ -267,7 +279,8 @@ if __name__ == '__main__':
 
                 pl.plot(featsvec)
 
-                pl.savefig('../docs/paper/images/%s.png' % filename, bbox_inches='tight')
+                FILE_PATH = '../docs/paper/images/%s.png' % filename
+                pl.savefig(FILE_PATH, bbox_inches='tight')
                 pl.clf()
 
     elif command == 'em':
@@ -284,16 +297,15 @@ if __name__ == '__main__':
 
         gmm = mixtures.GMM(speaker, M, numceps, featsvec)
         ax = pl.subplot(2, 2, 1)
-        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        set_plot_params(ax)
         plot_gmm(gmm, featsvec, x_axis, y_axis)
         gmm.train(featsvec)
         ax = pl.subplot(2, 2, 2)
-        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        set_plot_params(ax)
         plot_gmm(gmm, featsvec, x_axis, y_axis)
 
-        pl.savefig('../docs/paper/images/em_algorithm.png', bbox_inches='tight')
+        FILE_PATH = '../docs/paper/images/em_algorithm.png'
+        pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'frac-em':
         speaker = args[0]
@@ -307,6 +319,7 @@ if __name__ == '__main__':
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
                                       downlim='01', uplim='19')
 
+        print('Training without FCM')
         untrained_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
         trained_gmm = untrained_gmm.clone(featsvec)
         trained_gmm.train(featsvec)
@@ -326,7 +339,7 @@ if __name__ == '__main__':
             pl.subplot(2, 2, 4)
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
-            print('Fractional likelihoods')
+            print('Testing fractional likelihoods')
             featslist = bases.read_features_list(numceps, delta_order, 'enroll_2',
                                                  speaker, downlim='01', uplim='19')
             log_likes = list()
@@ -410,12 +423,10 @@ if __name__ == '__main__':
         gmmfile.close()
 
         ax = pl.subplot(2, 2, 1)
-        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        set_plot_params(ax)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
         ax = pl.subplot(2, 2, 2)
-        [tick.label.set_fontsize(10) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(10) for tick in ax.yaxis.get_major_ticks()]
+        set_plot_params(ax)
         plot_gmm(gmm, [featsvec, featsvec_speaker], x_axis, y_axis,
                  param_feats=['b.', 'g.'])
 
