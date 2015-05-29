@@ -315,7 +315,7 @@ if __name__ == '__main__':
         y_axis = int(args[4])
 
         show = False
-        rs = frange(0.95, 1.06, 0.01)
+        rs = [0.95, 0.99, 1, 1.01, 1.05]
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
                                       downlim='01', uplim='19')
 

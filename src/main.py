@@ -26,7 +26,7 @@ configurations = {'office': ('01', '19'), 'hallway': ('21', '39'),
                   'intersection': ('41', '59'), 'all': ('01', '59')}
 environments = ['office', 'hallway', 'intersection', 'all']
 enrolled_speakers = ['f%02d' % i for i in range(22)] + ['m%02d' % i for i in range(26)]
-rs = [1, 0.99, 1.01, 0.95, 1.05, 0.9, 1.1]
+rs = [1, 0.99, 1.01, 0.95, 1.05]
 
 command = sys.argv[1]
 parameters = sys.argv[2 : ]
@@ -202,7 +202,7 @@ def draw_det_curves(verify_dir):
 
 
 # Used to correct some shits
-def check(directory):
+def check(directory, gmms_dir):
     if not os.path.exists(CHECK_DIR):
         os.mkdir(CHECK_DIR)
 
@@ -216,7 +216,7 @@ def check(directory):
 
     for M in Ms:
         for delta_order in delta_orders:
-            PATH = '%s%s/mit_%d_%d/' % (GMMS_DIR, directory, numceps, delta_order)
+            PATH = '%s%s/mit_%d_%d/' % (gmms_dir, directory, numceps, delta_order)
             filenames = os.listdir(PATH)
             filenames.sort()
 
@@ -706,7 +706,7 @@ elif command == 'draw-ident-curves':
 elif command == 'check':
     directory = parameters[0]
     print('Directory:', directory)
-    check(directory)
+    check(directory, GMMS_DIR)
 
 elif command == 'check-all':
     directories = os.listdir(GMMS_DIR)
@@ -714,7 +714,20 @@ elif command == 'check-all':
 
     for directory in directories:
         print('Directory:', directory)
-        check(directory)
+        check(directory, GMMS_DIR)
+
+elif command == 'check-frac':
+    directory = parameters[0]
+    print('Directory:', directory)
+    check(directory, FRAC_GMMS_DIR)
+
+elif command == 'check-frac-all':
+    directories = os.listdir(FRAC_GMMS_DIR)
+    directories.sort()
+
+    for directory in directories:
+        print('Directory:', directory)
+        check(directory, FRAC_GMMS_DIR)
 
 elif command == 'correct-ubms-names':
     for M in Ms:
