@@ -11,7 +11,7 @@ Current commercial products based on voice technology (e.g., Dragon Naturally Sp
 \section{Speaker Recognition}
 \label{sec:speaker-recognition}
 
-As stated in \refbib{Reynolds \& Campbell}{reynolds.campbell.2008}, speaker recognition may be divided in two subareas. The first is \textbf{speaker identification}, aimed to determine the identity of a speaker from a non-unitary set of known speakers. This task is also named speaker identification in \textbf{closed set}. In the second, \textbf{speaker verification}, the goal is to determine if a speaker is who he or she claims to be, not an imposter. As the set of imposters is unknown, this is an \textbf{open set} problem. An intermediate task is \textbf{open set identification}, when an ``unmatched class" is added in order to categorize all unknown speakers.
+As stated in \refbib{Reynolds \& Campbell}{reynolds.campbell.2008}, speaker recognition may be divided in two subareas. The first is \textbf{speaker identification}, aimed to determine the identity of a speaker from a non-unitary set of known speakers. This task is also named speaker identification in \textbf{closed set}. In the second, \textbf{speaker verification}, the goal is to determine if a speaker is who he or she claims to be, not an imposter. As the set of imposters is unknown, this is an \textbf{open set} problem. An intermediate task that may be considered is \textbf{open set identification}, when an ``unmatched class" is added in order to categorize all unknown speakers.
 
 \begin{figure}[ht]
     \centering
@@ -25,9 +25,9 @@ The text inputted may have constraints, such as type (e.g., digits and letters),
 \section{Gaussian Mixture Models}
 \label{sec:gmm}
 
-The focus of this paper is on \textbf{text-independent speaker recognition} (both identification and verification), and as independence of the spoken context is a key characteristic of the problem, the most appropriate approach is to consider the training data as a stochastic variable. The best suited distribution to represent random data is the gaussian (or normal), leading to the choice of GMMs to model an ASR system.
+The focus of this paper is on \textbf{text-independent speaker recognition} (both identification and verification), and as independence on the message spoken is a key characteristic of the problem, the most appropriate approach is to consider the training data as a stochastic variable. The best suited distribution to represent random data is the gaussian (or normal), leading to the choice of GMMs to model an ASR system.
 
-Recognition systems are constructed using several techniques based on GMM. For the identification process a GMM is trained for each enrolled speaker, referred to as Gaussian Mixture Speaker Model (GMSM), with the identity given by the model with higher likelihood. Verification systems are designed using an Universal Background Model-Gaussian Mixture Model (UBM-GMM) trained to represent all speakers as a single background and a GMSM or a bayesian adaptation of the UBM-GMM, \refbib{Brown, Lee and Spohrer}{brown.lee.spohrer.1983}, named Adapted Gaussian Mixture Speaker Model (AGMSM). A likelihood ratio test is used to evaluate a speech signal and to decide if it belongs or not to the claimed speaker. All techniques are detailed in \chapterref{gmm}.
+Recognition systems are constructed using several techniques based on GMM. For the identification process a GMM is trained for each enrolled speaker, referred to as Gaussian Mixture Speaker Model (GMSM), with the identity given by the model with higher likelihood. Verification systems are designed using an Universal Background Model-Gaussian Mixture Model (UBM-GMM) trained to represent all speakers as a single background and a GMSM or a bayesian adaptation of the UBM-GMM, \refbib{Brown, Lee and Spohrer}{brown.lee.spohrer.1983}, named Adapted Gaussian Mixture Speaker Model (AGMSM). A likelihood ratio test is used to evaluate a speech signal and to decide if it belongs or not to the claimed speaker. Besides the previously cited, a new model is suggested using Fractional Covariance Matrix (FCM), \refbib{Gao, Zhou \& Pu}{gao.zhou.pu.2013}, named Fractional Gaussian Mixture Model (FGMM). All techniques are detailed in \chapterref{gmm}.
 
 % possible paragraph about FCM + GMM
 
@@ -40,9 +40,9 @@ This study is aimed to implement ASR systems (for both identification and verifi
     \item False detection and false rejection rates for speaker verification using a DET curve, \refbib{Martin et al.}{martin.et.al.1997}.
     \item Accuracy of a speaker verification system for different sizes of mixture and features.
     \item Comparison between GMSM and AGMSM verifications.
-    %\item [possible item] Improvement when using FCM
+    \item Explore the suggested FGMM in speaker identification and compare with the traditional GMM.
 \end{itemize}
 
 \section{Document Structure}
 
-\chapterref{speaker-recognition-systems} contains basic information about ASR systems, as well as its basic architectures. The feature extraction process is explained in \chapterref{feature-extraction}, from the reasons for its use to the chosen technique (Mel-Frequency Cepstral Coefficient, MFCC). In \chapterref{gmm} the theories of GMM, UBM-GMM and AGMSM are presented. Experiments are described in \chapterref{experiments}, as well as its results. Finally, \chapterref{conclusion} concludes the study. Furthermore, important contents are presented in the appendices. \appendixref{gmsm-verify-results} shows the results and curves for GMSM verification and \appendixref{agmsm-verify-results} for AGMSM verification.
+\chapterref{speaker-recognition-systems} contains basic information about ASR systems, as well as its basic architectures. The feature extraction process is explained in \chapterref{feature-extraction}, from the reasons for its use to the chosen technique (Mel-Frequency Cepstral Coefficient, MFCC). In \chapterref{gmm} the theories of GMM, UBM-GMM, AGMSM and FGMM are presented. Experiments are described in \chapterref{experiments}, as well as its results. Finally, \chapterref{conclusion} concludes the study. Furthermore, important contents are presented in the appendices. \appendixref{gmsm-verify-results} shows the results and curves for GMSM verification and \appendixref{agmsm-verify-results} for AGMSM verification.

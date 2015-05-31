@@ -16,7 +16,7 @@ As an acoustic wave propagated through space over time, the speech signal is not
 
 Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g. timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during conversation (e.g., accent).
 
-The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} may be divided into those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
+The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} may be divided in those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and in those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
 
 \section{Mel-Frequency Cepstral Coefficient}
 
@@ -49,7 +49,7 @@ Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} pr
     \label{eq:mel_conversion}
 \end{equation}
 
-\noindent Being logarithmic, the growth of a mel-frequency curve is slow when \equationref{mel_conversion} is applied to a linear growth of the frequency in Hertz. Sometimes the mel conversion is used only for frequencies higher than 1000 Hz, while in lower, $f_{mel}$ and $f_{Hz}$ share the same value. In this work all conversions used \equationref{mel_conversion}, as shown by \figureref{mel_scale}.
+\noindent Being logarithmic, the growth of a mel-frequency curve is slow when \equationref{mel_conversion} is applied to a linear growth of the frequency in Hertz. Sometimes the mel conversion is used only for frequencies higher than 1000 Hz, while in lower, $f_{mel}$ and $f_{Hz}$ share the same value. In this work all conversions use \equationref{mel_conversion}, as shown by \figureref{mel_scale}.
 
 \begin{figure}[ht]
     \centering
@@ -89,7 +89,7 @@ As the human voice is concentrated in the lower frequencies (see \figureref{pree
 
 %Framing
 
-The first mandatory stage of the feature process is the division of the input signal in overlapping frames, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width usually between 20 and 40 milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width (commonly 10 milliseconds), or the frames will not overlap.
+The first mandatory stage of the feature process is the division of the input signal in \textbf{overlapping frames}, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width usually between 20 and 40 milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width (commonly 10 milliseconds), or the frames will not overlap.
 
 \begin{figure}[ht]
     \centering
@@ -111,7 +111,7 @@ For each frame the Fast Fourier Transform (FFT) is calculated, with number of po
 
 %Filterbank
 
-To get the envelope (and to reduce the size of spectral coefficients), the spectrum is multiplied by a filterbank in the mel scale. As seen in \figureref{filterbank}, the width of the filters enlarge when the frequency increases (these frequencies bands have the same width in mels). This is an approximation of the filtering process executed by the cochlea (see \figureref{cochlea}), and is done this way due to the higher accuracy of human hearing in lower frequencies than in higher ones. The result of the filtering is the energy in each sample of the frame (see \figureref{features_and_featuresdB}).
+To get the envelope (and to reduce the size of spectral coefficients), the spectrum is multiplied by a \textbf{filterbank} in the mel scale. As seen in \figureref{filterbank}, the width of the filters enlarge when the frequency increases (these frequencies bands have the same width in mels). This is an approximation of the filtering process executed by the cochlea (see \figureref{cochlea}), and is done this way due to the higher accuracy of human hearing in lower frequencies than in higher ones. The result of the filtering is the energy in each sample of the frame (see \figureref{features_and_featuresdB}).
 
 \begin{figure}[ht]
     \centering
@@ -133,7 +133,7 @@ The spectral coefficients are then converted to dB by the application of the fun
 
 %DCT
 
-Until now the features are in the mel scale, but are not yet ``cepstral". The last necessary stage is to apply a Discrete Cosine Transform (DCT) to the spectral coefficients in order to yield the cepstral coefficients:
+Until now the features are in the mel scale, but are not yet ``cepstral". The last necessary stage is to apply a Discrete Cosine Transform (DCT) to the spectral coefficients in order to yield the \textbf{cepstral coefficients}:
 
 \begin{equation}
     c_n = \sum_{k=1}^K S_k\cdot\cos\left[n\left(k - \frac{1}{2}\right)\frac{\pi}{K}\right],\qquad n = 1, 2, ..., L,
@@ -145,7 +145,7 @@ Until now the features are in the mel scale, but are not yet ``cepstral". The la
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{mfcc}
-    \caption{6 MFCCs for each frame over.}
+    \caption{6 MFCCs for each frame over time.}
     \label{fig:mfcc}
 \end{figure}
 

@@ -5,7 +5,7 @@
 
 The speaker recognition process lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a claimed speaker identity is \emph{enrolled} or \emph{imposter}).
 
-ASR systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
+Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
 
 \begin{equation}
     \postprob{\mathcal{S}}{\boldsymbol{Y}} = \frac{\postpdf{\boldsymbol{Y}}{\mathcal{S}} \prob{\mathcal{S}}}{\pdf{\boldsymbol{Y}}},
@@ -120,7 +120,7 @@ Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for trai
 
 \subsection{Test}
 
-As seen in \equationref{likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_j$ for its corresponding model, the likelihood of a $\lambda_j$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
+As seen in \equationref{log-likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_j$ for its corresponding model, the likelihood of a $\lambda_j$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
 
 \begin{equation}
     p(\dvec{X}|\lambda_j) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_j).
@@ -134,14 +134,14 @@ As seen in \equationref{likelihood-ratio-test}, the decision process is based on
     \label{eq:log-likelihood-sum}
 \end{equation}
 
-\noindent where the term $\frac{1}{T}$ is used to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{log-likelihood-ratio-test} becomes
+\noindent where the term $\frac{1}{T}$ is added to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{log-likelihood-ratio-test} becomes
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{hyp}) - \log p(\dvec{X}|\lambda_{bkg}),
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$.} of $\theta$ (see \figureref{speaker-verification}).
+\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$, but $\theta$ can be used as the system designer prefers, leading to $\Lambda(\dvec{X}) \geq \theta$.} of $\theta$ (see \figureref{speaker-verification}).
 
 \begin{figure}[ht]
     \centering

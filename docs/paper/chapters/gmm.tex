@@ -38,6 +38,8 @@ The idea behind use a GMM as a model for a speaker $\mathcal{S}$ is to achieve a
 
 \noindent Unfortunately, this expression is a nonlinear function of the parameters $\lambda$ and direct maximization is not possible, \refbib{Reynolds}{reynolds.1995c}, leading to estimate $\postpdf{\dvec{x}}{\lambda}$ iteratively using the Expectation-Maximization (EM) algorithm.
 
+In this paper, the GMM that models a single speaker will be reffered to as Gaussian Mixture Speaker Model (GMSM), as initially cited in \sectionref{gmm}.
+
 \section{Expectation-Maximization}
 \label{sec:em}
 
@@ -46,7 +48,7 @@ The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{em_algorithm}
-    \caption{Features before (left), with random means and equal variances, and after (right) the EM algorithm. Only the first deviation is shown.}
+    \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. Only the first deviation is shown.}
     \label{fig:em_algorithm}
 \end{figure}
 
@@ -63,7 +65,6 @@ The \textbf{expectation step} consists of estimating the \emph{a posteriori} pro
 
 In the \textbf{maximization step} the model is updated by recalculation of the parameters $w_i, \dvec{\mu}_i$ and $\dvec{\Sigma}_i$, and the algorithm guarantees that each new $\lambda^{(j+1)}$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are given by the equations below.
 
-\pagebreak
 \noindent\\\textbf{Weights:}
 
 \begin{equation}
@@ -166,5 +167,5 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
 
 \noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demand that more data be observed in a mixture before new parameters begin replacing old ones (i.e., more relevant).
 
-%\section{Fractional Gaussian Mixture Model}
-%\label{sec:frac-gmm}
+\section{Fractional Gaussian Mixture Model}
+\label{sec:frac-gmm}
