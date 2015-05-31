@@ -201,6 +201,54 @@ def draw_det_curves(verify_dir):
             pl.savefig(DET_IMG_PATH, bbox_inches='tight')
 
 
+def draw_ident_curves(identify_dir):
+    colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
+    position = 1
+    xticks = np.array(Ms)
+    yticks = np.arange(0, 101, 10)
+
+    for environment in environments:
+        print(environment.upper())
+        gmms_key = 'GMMs %s' % environment
+        ax = pl.subplot(2, 2, position)
+        ax.set_title(environment, fontsize=10)
+        pl.grid(True)
+
+        if position == 3 or position == 4:
+            pl.subplots_adjust(hspace=0.3)
+
+        position = position + 1
+        color_index = 0
+
+        for delta_order in delta_orders:
+            print('delta_order = %d' % delta_order)
+            PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            CURVE_FILE_PATH = '%scurves.json' % PATH
+            curvesfile = open(CURVE_FILE_PATH)
+            curvesdict = json.load(curvesfile)
+
+            keys = list(map(int, curvesdict[gmms_key].keys()))
+            keys.sort()
+            values = [curvesdict[gmms_key][str(key)] for key in keys]
+            pl.plot(keys, values, '.-%s' % colors[color_index])
+            color_index = color_index + 1
+
+        pl.xticks(xticks)
+        pl.yticks(yticks)
+
+        [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+        ax.set_xscale('log', basex=2)
+        ax.xaxis.set_major_formatter(pl.ScalarFormatter())
+
+    pl.subplot(2, 2, 1)
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':7})
+
+    CURVES_IMG_PATH = '%scurves.png' % identify_dir
+    pl.savefig(CURVES_IMG_PATH, bbox_inches='tight')
+    pl.clf()
+
+
 # Used to correct some shits
 def check(directory, gmms_dir):
     if not os.path.exists(CHECK_DIR):
@@ -654,51 +702,26 @@ elif command == 'calc-ident-curves':
 elif command == 'draw-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
-    print('Drawing Identification Curves\nnumceps = %d' % numceps)
+
+    print('Drawing identification curves\nnumceps = %d' % numceps)
     t = time.time()
 
-    colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
-    position = 1
-    xticks = np.array(Ms)
-    yticks = np.arange(0, 101, 10)
+    draw_ident_curves(identify_dir)
 
-    for environment in environments:
-        print(environment.upper())
-        gmms_key = 'GMMs %s' % environment
-        ax = pl.subplot(2, 2, position)
-        ax.set_title(environment, fontsize=10)
-        pl.grid(True)
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
-        if position == 3 or position == 4:
-            pl.subplots_adjust(hspace=0.3)
+elif command == 'draw-ident-curves-all':
+    identify_dirs = os.listdir(IDENTIFY_DIR)
+    identify_dirs.sort()
 
-        position = position + 1
-        color_index = 0
+    print('Drawing all identification curves\nnumceps = %d' % numceps)
+    t = time.time()
 
-        for delta_order in delta_orders:
-            print('delta_order = %d' % delta_order)
-            PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
-            CURVE_FILE_PATH = '%scurves.json' % PATH
-            curvesfile = open(CURVE_FILE_PATH)
-            curvesdict = json.load(curvesfile)
-
-            keys = list(map(int, curvesdict[gmms_key].keys()))
-            keys.sort()
-            values = [curvesdict[gmms_key][str(key)] for key in keys]
-            pl.plot(keys, values, '.-%s' % colors[color_index])
-            color_index = color_index + 1
-
-        pl.xticks(xticks)
-        pl.yticks(yticks)
-
-        [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
-
-    pl.subplot(2, 2, 1)
-    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':7})
-
-    CURVES_IMG_PATH = '%scurves.png' % identify_dir
-    pl.savefig(CURVES_IMG_PATH, bbox_inches='tight')
+    for identify_dir in identify_dirs:
+        print(identify_dir)
+        identify_dir = '%s%s/' % (IDENTIFY_DIR, identify_dir)
+        draw_ident_curves(identify_dir)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
