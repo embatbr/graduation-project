@@ -75,15 +75,15 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \noindent\\\textbf{Means:}
 
 \begin{equation}
-    \overline{\dvec{\mu}}_i = \frac{1}{T} \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}},
+    \overline{\dvec{\mu}}_i = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}},
     \label{eq:m-step-means}
 \end{equation}
 
 \noindent\textbf{Variances:}
 
 \begin{equation}
-    \overline{\dvec{\sigma}}_i = \frac{1}{T} \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2.
-    \label{eq:m-step-means}
+    \overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2.
+    \label{eq:m-step-variances}
 \end{equation}
 \\
 
@@ -169,3 +169,21 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
 
 \section{Fractional Gaussian Mixture Model}
 \label{sec:frac-gmm}
+
+\refbib{Gao et. al.}{gao.zhou.pu.2013} uses the definition and applications of fractional moments to propose a new technique applying Fractional Covariance Matrix (FCM) in Principal Component Analysis (PCA) and Two-Dimensional Principal Component Analysis (2D-PCA), called Fractional Principal Component Analysis (FPCA) and Two-Dimensional Fractional Principal Component Analysis (2D-FPCA), respectively. The experiments are executed on two face image databases (ORL and Yale) and show superior performance when choosing a different order between 0 and 1.
+
+The idea of FPCA and 2D-FPCA is to find a better projection, using the equation
+
+\begin{equation}
+    Var(X) = E[(X^r - E^r(X))^2] = E[(X^r - \mu^r)^2],
+    \label{eq:frac-variance}
+\end{equation}
+
+\noindent where $E$ is the expected value (the mean, for a Gaussian distribution) and $r$ is a real number. A value of 1 for $r$ reduces \equationref{frac-variance} to the usual variance.
+
+The proposed technique, named Fractional Gaussian Mixture Model (FGMM), uses the theory of FCM to calculate the matrix of covariances. As the matrix is diagonal, \equationref{frac-variance} is sufficient, changing \equationref{m-step-variances} to
+
+\begin{equation}
+    \overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} (\dvec{x}_t^r - \overline{\dvec{\mu}}_i^r)^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}}.
+    \label{eq:m-step-frac-variances}
+\end{equation}
