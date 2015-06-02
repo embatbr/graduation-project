@@ -170,30 +170,30 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
 \section{Fractional Gaussian Mixture Model}
 \label{sec:frac-gmm}
 
-\refbib{Gao et. al.}{gao.zhou.pu.2013} uses the definition and applications of fractional moments to propose a new technique applying Fractional Covariance Matrix (FCM) in Principal Component Analysis (PCA) and Two-Dimensional Principal Component Analysis (2D-PCA), called Fractional Principal Component Analysis (FPCA) and Two-Dimensional Fractional Principal Component Analysis (2D-FPCA), respectively. The experiments are executed on two face image databases (ORL and Yale), using
+\refbib{Gao et. al.}{gao.zhou.pu.2013} uses the definition and applications of fractional moments to propose a new technique applying Fractional Covariance Matrix (FCM) in Principal Component Analysis (PCA) and Two-Dimensional Principal Component Analysis (2D-PCA), named Fractional Principal Component Analysis (FPCA) and Two-Dimensional Fractional Principal Component Analysis (2D-FPCA), respectively. The experiments are executed on two face image databases (ORL and Yale), using
 
 \begin{equation}
     \sigma^2 = E[(X^r - \mu^r)^2],
     \label{eq:frac-variance}
 \end{equation}
 
-\noindent where $E$ is the expected value and $r$ is a real number, and show superior performance when choosing different values for $r$ between 0 and 1. A value of 1 for $r$ reduces \equationref{frac-variance} to the usual variance. FPCA and 2D-FPCA are aimed to find a better projection than the usual PCA and 2D-PCA by the application of FCM.
+\noindent where $E$ is the expected value and $r$ is a real number, and show superior performance when choosing different values for $r$ between 0 and 1. A value of 1 for $r$ reduces \equationref{frac-variance} to the usual variance. As demonstrated in \refbib{Gao et. al.}{gao.zhou.pu.2013}, FPCA and 2D-FPCA deliver better projections than the usual PCA and 2D-PCA, respectively, making natural to extrapolate this idea for other types of signals.
 
-The technique proposed in this section, named Fractional Gaussian Mixture Model (FGMM), also uses the theory of FCM to calculate the matrix of covariances. As the matrix is diagonal, \equationref{frac-variance} is sufficient, changing \equationref{m-step-variances} to
+The technique described in this section, named Fractional Gaussian Mixture Model (FGMM), also uses the theory of FCM to calculate matrices of covariances. As the matrices are diagonal, \equationref{frac-variance} is sufficient, changing \equationref{m-step-variances} to
 
 \begin{equation}
     \overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} (\dvec{x}_t^r - \overline{\dvec{\mu}}_i^r)^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}}.
     \label{eq:m-step-frac-variances}
 \end{equation}
 
-\noindent A particular problem the FCM may generate when applied to MFCCs is the emergence of complex numbers. A good approach is to make positive all values, shifting the MFCCs up (see \figureref{mfcc-shifted}) and leading their minimums equal to 1:
+\noindent A particular problem the FCM may generate when applied to MFCCs is the emergence of complex numbers. A solution to this problem is to shift up the MFCCs (see \figureref{mfcc-shifted}), making all its values positive and their minimums equal to 1, as follows:
 
 \begin{equation}
     c_n = c_n + (1 - \min_t c_{n,t}).
     \label{eq:mfccs-shift-up}
 \end{equation}
 
-\noindent The distances between points remain the same, maintaining the regular variances. This allows the use of \equationref{frac-variance} to calculate the initial variances and \equationref{m-step-frac-variances} in the training.
+\noindent The distances between points remain the same, maintaining the usual variances unchanged. This allows the uses of \equationref{frac-variance} to calculate the initial fractional variances and of \equationref{m-step-frac-variances} to train the models.
 
 \begin{figure}[ht]
     \centering
@@ -209,11 +209,11 @@ The technique proposed in this section, named Fractional Gaussian Mixture Model 
     \label{eq:means-shift-down}
 \end{equation}
 
-\noindent returning to their supposed ``original" values. This moviment avoids having to shift up every vector of features, be it in the training or in the test sections.
+\noindent returning to their supposed ``original" values. This procedure avoids having to shift up every vector of features, be it in the training or in the test sections.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{em_algorithm_r0,95}
-    \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM. The green points are the features shifted. Only the first deviation is shown.}
+    \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM. The blue points are the original features, while the greens are the shifted. Only the first deviation is shown.}
     \label{fig:frac-em_algorithm}
 \end{figure}
