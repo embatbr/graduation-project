@@ -140,11 +140,11 @@ if __name__ == '__main__':
             # plotting signals
             duration = np.linspace(0, len(signal) / samplerate, len(signal))
             ax = pl.subplot(3, 2, 1)
-            ax.set_title('signal', fontsize=10)
+            ax.set_title('signal', size=10)
             set_plot_params(ax, grid=True)
             pl.plot(duration, signal, 'b')
             ax = pl.subplot(3, 2, 2)
-            ax.set_title('pre-emphasized signal', fontsize=10)
+            ax.set_title('pre-emphasized signal', size=10)
             set_plot_params(ax, grid=True)
             emph_signal = features.preemphasis(signal, preemph)
             pl.plot(duration, emph_signal, 'b')
@@ -154,13 +154,13 @@ if __name__ == '__main__':
             xticks = np.arange(0, samplerate//2 + 1, 2000)
             ax = pl.subplot(3, 2, 3)
             pl.subplots_adjust(hspace=0.4)
-            ax.set_title('signal\'s spectrum', fontsize=10)
+            ax.set_title('signal\'s spectrum', size=10)
             set_plot_params(ax, grid=True, xticks=xticks)
             signal_magspec = features.magspec(signal)
             pl.fill_between(frequencies, signal_magspec, edgecolor='red', facecolor='red')
             ax = pl.subplot(3, 2, 4)
             pl.subplots_adjust(hspace=0.4)
-            ax.set_title('pre-emphasized signal\'s spectrum', fontsize=10)
+            ax.set_title('pre-emphasized signal\'s spectrum', size=10)
             set_plot_params(ax, grid=True, xticks=xticks)
             emph_magspec = features.magspec(emph_signal)
             pl.fill_between(frequencies, emph_magspec, edgecolor='red', facecolor='red')
@@ -256,11 +256,12 @@ if __name__ == '__main__':
             featsvec = features.lifter(featsvec, ceplifter)
 
             xticks = np.arange(0, len(featsvec) + 1, 20)
-            configs = [(False, False, 0, 'mfcc'),
-                       (True, False, 0, 'mfcc_energy_appended'),
-                       (True, True, 0, 'mfcc_energy_appended_cms'),
-                       (True, True, 2, 'mfcc_energy_appended_cms_delta_order_2')]
-            for (append_energy, applyCMS, delta_order, filename) in configs:
+            configs = [(False, False, 0, False, 'mfcc'),
+                       (True, False, 0, False, 'mfcc_energy_appended'),
+                       (True, True, 0, False, 'mfcc_energy_appended_cms'),
+                       (True, True, 2, False, 'mfcc_energy_appended_cms_delta_order_2'),
+                       (True, True, 2, True, 'mfcc_energy_appended_cms_delta_order_2_shifted')]
+            for (append_energy, applyCMS, delta_order, frac, filename) in configs:
                 ax = pl.subplot(3, 1, 1)
                 set_plot_params(ax, grid=True, xticks=xticks)
 
@@ -276,6 +277,10 @@ if __name__ == '__main__':
                     N = 2
                     featsvec = features.append_deltas(featsvec, numceps, N)
                     delta_order = delta_order - 1
+
+                if frac:
+                    min_featsvec = np.amin(featsvec, axis=0)
+                    featsvec = featsvec + (1 - min_featsvec)
 
                 pl.plot(featsvec)
 
@@ -318,25 +323,27 @@ if __name__ == '__main__':
         rs = [0.95, 0.99, 1, 1.01, 1.05]
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
                                       downlim='01', uplim='19')
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec_shifted = featsvec + (1 - min_featsvec)
 
-        print('Training without FCM')
-        untrained_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
-        trained_gmm = untrained_gmm.clone(featsvec)
-        trained_gmm.train(featsvec)
+        #print('Training without FCM')
+        #untrained_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        #trained_gmm = untrained_gmm.clone(featsvec)
+        #trained_gmm.train(featsvec)
 
         for r in rs:
             print('\nr = %.02f' % r)
-            pl.subplot(2, 2, 1)
-            plot_gmm(untrained_gmm, featsvec, x_axis, y_axis)
-            pl.subplot(2, 2, 2)
-            plot_gmm(trained_gmm, featsvec, x_axis, y_axis)
+            #ax = pl.subplot(2, 2, 1)
+            #plot_gmm(untrained_gmm, featsvec, x_axis, y_axis)
+            #ax = pl.subplot(2, 2, 2)
+            #plot_gmm(trained_gmm, featsvec, x_axis, y_axis)
 
             print('Fractional')
             frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
-            pl.subplot(2, 2, 3)
-            plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
+            ax = pl.subplot(2, 2, 1)
+            plot_gmm(frac_gmm, [featsvec, featsvec_shifted], x_axis, y_axis, ['b.', 'g.'])
             frac_gmm.train(featsvec)
-            pl.subplot(2, 2, 4)
+            ax = pl.subplot(2, 2, 2)
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
             print('Testing fractional likelihoods')
@@ -347,7 +354,8 @@ if __name__ == '__main__':
                 log_likes.append(frac_gmm.log_likelihood(feats))
             print('max = %f, min = %f' % (max(log_likes), min(log_likes)))
 
-            FILE_PATH = '../docs/paper/images/em_algorithm_r%.2f.png' % r
+            r_apx = str(r)[ : 4].replace('.', ',')
+            FILE_PATH = '../docs/paper/images/em_algorithm_r%s.png' % r_apx
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -372,10 +380,10 @@ if __name__ == '__main__':
         ubm_m.train(featsvec_m)
 
         ax = pl.subplot(2, 2, 1)
-        ax.set_title('female', fontsize=10)
+        ax.set_title('female', size=10)
         plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
         ax = pl.subplot(2, 2, 2)
-        ax.set_title('male', fontsize=10)
+        ax.set_title('male', size=10)
         plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='y.')
 
         # combination
@@ -385,10 +393,10 @@ if __name__ == '__main__':
 
         featsvec = np.vstack((featsvec_f, featsvec_m))
         ax = pl.subplot(2, 2, 3)
-        ax.set_title('female and male', fontsize=10)
+        ax.set_title('female and male', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'y.'])
         ax = pl.subplot(2, 2, 4)
-        ax.set_title('combined UBM', fontsize=10)
+        ax.set_title('combined UBM', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
 
         FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d.png' % M
