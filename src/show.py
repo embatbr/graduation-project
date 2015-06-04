@@ -83,12 +83,9 @@ if __name__ == '__main__':
     args = sys.argv[2:] if len(sys.argv) > 2 else list()
 
     numceps = 19
-    show = True
     t = time.time()
 
     if command == 'utterance':
-        show = False
-
         SIGNAL_PATH = '../bases/corpora/mit/enroll_1/f00/phrase02_16k.wav'
         (samplerate, signal) = wavf.read(SIGNAL_PATH)
 
@@ -106,7 +103,6 @@ if __name__ == '__main__':
         if len(args) > 0:
             mask = args[0]
 
-        show = False
         nfilt = 26
         preemph = 0.97
         NFFT = 512
@@ -294,8 +290,6 @@ if __name__ == '__main__':
         delta_order = int(args[2])
         x_axis = int(args[3])
         y_axis = int(args[4])
-        if len(args) > 5:
-            show = False if args[5].lower() == 'false' else show
 
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
                                       downlim='01', uplim='59')
@@ -319,26 +313,14 @@ if __name__ == '__main__':
         x_axis = int(args[3])
         y_axis = int(args[4])
 
-        show = False
         rs = [0.95, 0.99, 1, 1.01, 1.05]
         featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
                                       downlim='01', uplim='19')
         min_featsvec = np.amin(featsvec, axis=0)
         featsvec_shifted = featsvec + (1 - min_featsvec)
 
-        #print('Training without FCM')
-        #untrained_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
-        #trained_gmm = untrained_gmm.clone(featsvec)
-        #trained_gmm.train(featsvec)
-
         for r in rs:
-            print('\nr = %.02f' % r)
-            #ax = pl.subplot(2, 2, 1)
-            #plot_gmm(untrained_gmm, featsvec, x_axis, y_axis)
-            #ax = pl.subplot(2, 2, 2)
-            #plot_gmm(trained_gmm, featsvec, x_axis, y_axis)
-
-            print('Fractional')
+            print('r = %.02f' % r)
             frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
             ax = pl.subplot(2, 2, 1)
             plot_gmm(frac_gmm, [featsvec, featsvec_shifted], x_axis, y_axis, ['b.', 'g.'])
@@ -364,8 +346,6 @@ if __name__ == '__main__':
         delta_order = int(args[1])
         x_axis = int(args[2])
         y_axis = int(args[3])
-        if len(args) > 4:
-            show = False if args[4].lower() == 'false' else show
 
         featsvec_f = bases.read_background(numceps, delta_order, 'f', downlim='01',
                                            uplim='19')
@@ -409,8 +389,6 @@ if __name__ == '__main__':
         x_axis = int(args[3])
         y_axis = int(args[4])
         adaptations = args[5]
-        if len(args) > 6:
-            show = False if args[6].lower() == 'false' else show
 
         featsvec_f = bases.read_background(numceps, delta_order, 'f', downlim='01',
                                            uplim='59')
@@ -443,6 +421,3 @@ if __name__ == '__main__':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
-
-    if show:
-        pl.show()

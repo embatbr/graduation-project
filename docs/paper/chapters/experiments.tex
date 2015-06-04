@@ -45,3 +45,32 @@ Despite being a base for speaker verification systems, in this paper MIT-MDSCV i
 
 \section{Coding and Data Preparation}
 \label{sec:coding-and-data-preparation}
+
+The systems described throughout the paper were implemented in the Python programming language, version 3.4.3, and the frameworks NumPy 1.8.1 and SciPy 0.14.0 were used to perform most of the calculations as matrices. Also, Matplotlib 1.4 was used to plot the results as figures. All codes can be found in \url{github.com/embatbr/tg} and are free to be used.
+
+The implementation is divided in 6 modules. Module \textbf{features} contains codes to execute the feature extraction through the MFCC algorithm (see \chapterref{feature-extraction}). Each stage is executed by a different function. The main function joins all stages, receiving a speech signal in waveform and delivering a matrix of features over frames. The GMM is described in module \textbf{mixtures} as a class containing methods for training usign EM algorithm and for bayesian adaptation (see \chapterref{gmm}). The module also contains functions to execute the \emph{k-means} clustering, used during the GMM creation. Functions to extract the features from MIT-MDSCV and to read groups of feature data (from a single speaker, from a background and etc.) are present in module \textbf{bases}. The module \textbf{main}, as the name denounces, is filled with functions to execute every functionality needed. Through command lines it is possible to extract MFCCs from the base train and adapt models, identify or verify speakers and calculate rates and draw curves. Module \textbf{show} is aimed to generate figures to fill the previous chapters (mostly chapters \chapterrefcomp{feature-extraction} and \chapterrefcomp{gmm}). At last, module \textbf{common} contains useful constants and functions shared by many modules.
+
+\subsection{Parameters}
+
+The MFCCs extracted used a filterbank of size 26, maintaining only the first 19 features, and deltas of order 0, 1 and 2, leading to MFCCs with final feature number of 19, 38 and 57. Before any delta calculation take place, the energy appending and CMS steps are performed.
+
+All speakers are modeled using GMSMs with sizes ($M$s) 8, 16, 32, 64 and 128, each divided in 4 types of environment configuration: quiet office, hallway with moderate noise, extreme loud intersection and all three combined. This leads to 48 speakers $\times$ 5 $M$s $\times$ 4 environments $\times$ 3 delta orders $=$ 2880 trained GMSMs. The UBM is a combination of a trained male UBM and a trained female UBM (see \figureref{ubm-diagram} (b)), for all sizes of mixtures, types of environments and orders of delta, totaling 60 models. Each one of the 7 combinations of AGMSM also contains 2880 models. Adding the Fractional Gaussian Mixture Speaker Models (FGMSMs) for all 5 values of $r$ (1, 0.99, 1.01, 0.95 and 1.05), the total number of trained models is 37500.
+
+\subsection{Algorithmic Issues}
+
+According to \refbib{Reynolds}{reynolds.1995c}, different methods of initialization lead to different local maxima reached by the EM algorithm. Following the approach used in the referenced paper, in this work the models are generated randomly selecting the means and executing a single iteration \emph{k-means} to initialize the means, nodal variances and weights.
+
+During the M-step of the EM algorithms, some variances may have their values decreased significantly. This represents a degeneration of the model, occuring when the size of mixture increases more than needed to represent the data or when the data is insufficient to train the model, \refbib{Reynolds}{reynolds.1995c}. This issue occurred in GMMs for single speakers with 64 or 128 gaussians and UBMs with 128 gaussians. To prevent the degeneration, the EM algorithm receives a constraint. When the variance $\sigma^2$ is lower than a minimum variance $\sigma_{min}^2 = 0.01$, $\sigma_{min}^2$ is assigned to $\sigma^2$. This decision provides more robustness to the ASR system.
+
+\section{Experiments and Results}
+\label{sec:experiments-and-results}
+
+\subsection{Speaker Identification using GMSM}
+
+\subsection{Speaker Verification using GMSM and UBM}
+
+\subsection{Speaker Verification using AGMSM and UBM}
+
+\subsection{Speaker Identification using FGMSM}
+
+\section{Comparison between GMSM and FGMSM}

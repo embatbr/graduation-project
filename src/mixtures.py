@@ -6,10 +6,7 @@ import numpy as np
 import os, os.path
 import random
 from math import pi as PI
-from common import FLOAT_MAX, ZERO, MIN_VARIANCE, CHECK_DIR
-
-
-EM_THRESHOLD = 1E-3
+from common import FLOAT_MAX, INT_MAX, ZERO, MIN_VARIANCE, EM_THRESHOLD, CHECK_DIR
 
 
 class EmptyClusterError(Exception):
@@ -36,7 +33,7 @@ def partitionate(featsvec, M):
 
     return meansvec
 
-def kmeans(featsvec, M, r=None):
+def kmeans(featsvec, M, r=None, num_iterations=INT_MAX):
     """Clusters a vector of features until total separation.
 
     @param featsvec: the vector of features.
@@ -52,7 +49,7 @@ def kmeans(featsvec, M, r=None):
     max_diff = FLOAT_MAX
 
     iteration = 0
-    while max_diff != 0.0:
+    while (max_diff != 0.0) and (iteration < num_iterations):
         clusters = [list() for _ in range(M)]
         for feats in featsvec:
             distance = np.linalg.norm(feats - old_means, axis=1)**2
@@ -114,7 +111,7 @@ class GMM(object):
         while(use_kmeans):
             try:
                 print('Using k-means in %s' % self.name)
-                (w, m, v) = kmeans(featsvec, self.M, self.r)
+                (w, m, v) = kmeans(featsvec, self.M, self.r, True)
                 (self.weights, self.meansvec, self.variancesvec) = (w, m, v)
                 break
             except mixtures.EmptyClusterError as e:

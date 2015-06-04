@@ -22,7 +22,7 @@ A weighted sum of $\pdf{\dvec{x}}$'s is used to model the ASR system, estimating
     \label{eq:gaussian_mixture}
 \end{equation}
 
-\noindent where $M$ is the size of the distribution used, $\sum_{i=1}^M w_i = 1$, and $\lambda = \{w_i, \dvec{\mu}_i, \dvec{\Sigma}_i\}$ is the model representation, for $i = 1, ..., M$. Applying \equationref{gaussian} to \equationref{gaussian_mixture}, the likelihood for the GMM is
+\noindent where $M$ is the size of the distribution used, $\sum_{i=1}^M w_i = 1$, and $\lambda = \{w_i, \dvec{\mu}_i, \dvec{\Sigma}_i\}$ is the model representation, for $i = 1, ..., M$. Each Gaussian in each model has its own covariance matrix (nodal covariance). Applying \equationref{gaussian} to \equationref{gaussian_mixture}, the likelihood for the GMM is
 
 \begin{equation}
     \postpdf{\dvec{x}}{\lambda} = \dgaussianmixture.
@@ -113,7 +113,7 @@ As shown in \sectionref{speaker-verification}, the likelihood ratio test is perf
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of Speaker Gaussian Mixture Models (SGMMs) for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the GMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a GMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the GMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Adapted Speaker Gaussian Mixture Model (ASGMM).
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of Gaussian Mixture Speaker Models (GMSMs) for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the GMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a GMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the GMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Adapted Gaussian Mixture Speaker Model (AGMSM).
 
 The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian does not well represent a portion of the data, the change is relevant, as seen in \figureref{adapted_wmv}.
 
@@ -209,7 +209,7 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{eq:means-shift-down}
 \end{equation}
 
-\noindent returning to their supposed ``original" values. This procedure avoids having to shift up every vector of features, be it in the training or in the test sections.
+\noindent returning to their supposed ``original" values. This procedure avoids having to shift up every vector of features, be it in the training or in the test sections, and is a practical solution to circumvent the problem.
 
 \begin{figure}[ht]
     \centering
