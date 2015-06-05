@@ -193,7 +193,7 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{eq:mfccs-shift-up}
 \end{equation}
 
-\noindent The distances between points remain the same, maintaining the usual variances unchanged. This allows the uses of \equationref{frac-variance} to calculate the initial fractional variances and of \equationref{m-step-frac-variances} to train the models.
+\noindent The distances between points in each dimension remain the same, maintaining the usual variances unchanged. \equationref{mfccs-shift-up} works fine for GMMs with diagonal covariance matrices, due to the independence of each variable to the others. This allows the uses of \equationref{frac-variance} to calculate the initial fractional variances and of \equationref{m-step-frac-variances} to train the models.
 
 \begin{figure}[ht]
     \centering
