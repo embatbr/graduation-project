@@ -15,7 +15,6 @@
 \usepackage{emptypage}
 \usepackage{times}
 \usepackage{csquotes}
-%\usepackage{hyperref}
 \usepackage{multirow}
 \usepackage{array}
 
@@ -88,7 +87,7 @@
 \gdef\authorname{Eduardo Martins Barros de Albuquerque Tenório}
 \gdef\advisername{Tsang Ing Ren}
 \gdef\adviserfullname{Prof. Dr. \advisername}
-\gdef\defensedate{March 3, 2015}
+\gdef\defensedate{\today}%{June 10, 2015}
 
 
 \title{
@@ -160,7 +159,7 @@ To Sérgio Vieira, Hector Pinheiro and James Lyons, for clarify many of my quest
 TODO escrever o abstract após terminar tudo (após a conclusão).\\
 
 \tableofcontents
-\pagenumbering{roman}
+%\pagenumbering{roman}
 
 
 %MIDDLEMATTER
@@ -181,6 +180,8 @@ TODO escrever o abstract após terminar tudo (após a conclusão).\\
 %BACKMATTER
 
 \appendix
+\input{chapters/fgmsm-identify-results}
+
 \input{chapters/gmsm-verify-results}
 
 \input{chapters/agmsm-verify-results}

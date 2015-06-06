@@ -323,9 +323,11 @@ if __name__ == '__main__':
             print('r = %.02f' % r)
             frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
             ax = pl.subplot(2, 2, 1)
+            set_plot_params(ax)
             plot_gmm(frac_gmm, [featsvec, featsvec_shifted], x_axis, y_axis, ['b.', 'g.'])
             frac_gmm.train(featsvec)
             ax = pl.subplot(2, 2, 2)
+            set_plot_params(ax)
             plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
             print('Testing fractional likelihoods')
@@ -360,9 +362,11 @@ if __name__ == '__main__':
         ubm_m.train(featsvec_m)
 
         ax = pl.subplot(2, 2, 1)
+        set_plot_params(ax)
         ax.set_title('female', size=10)
         plot_gmm(ubm_f, featsvec_f, x_axis, y_axis)
         ax = pl.subplot(2, 2, 2)
+        set_plot_params(ax)
         ax.set_title('male', size=10)
         plot_gmm(ubm_m, featsvec_m, x_axis, y_axis, param_mix='y.')
 
@@ -373,9 +377,11 @@ if __name__ == '__main__':
 
         featsvec = np.vstack((featsvec_f, featsvec_m))
         ax = pl.subplot(2, 2, 3)
+        set_plot_params(ax)
         ax.set_title('female and male', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis, param_mix=['r.', 'y.'])
         ax = pl.subplot(2, 2, 4)
+        set_plot_params(ax)
         ax.set_title('combined UBM', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
 

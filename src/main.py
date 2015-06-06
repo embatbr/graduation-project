@@ -15,7 +15,7 @@ import pylab as pl
 from common import FEATURES_DIR, UBMS_DIR, GMMS_DIR, VERIFY_DIR, MIN_VARIANCE
 from common import EPS, calculate_eer, SPEAKERS_DIR, isequal, CHECK_DIR
 from common import FRAC_GMMS_DIR, FRAC_SPEAKERS_DIR, FRAC_UBMS_DIR, IDENTIFY_DIR
-from common import NUM_ENROLLED_UTTERANCES, frange
+from common import NUM_ENROLLED_UTTERANCES, frange, TABLES_DIR
 import bases, mixtures
 
 
@@ -725,6 +725,52 @@ elif command == 'draw-ident-curves-all':
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
+
+elif command == 'ident-tables':
+    if not os.path.exists(TABLES_DIR):
+        os.mkdir(TABLES_DIR)
+
+    directories = os.listdir(IDENTIFY_DIR)
+    directories.sort()
+
+    top = '\\begin{table}[h]\n\t\small\n\t\\centering\n\t\\begin{tabular}{|c|c|c|c|l|}\
+    \n\t\hline\n\t{\\bf M} & {\\bf Office} & {\\bf Hallway} & {\\bf Intersection} & \
+    \multicolumn{1}{c|}{{\\bf All}} \\\\ \hline'
+    bottom = '\n\t\end{tabular}\n\t\caption{Identification rates for %s.}\
+    \n\t\label{tab:%s}\n\end{table}'
+
+    for directory in directories:
+        identify_dir = '%s%s/' % (IDENTIFY_DIR, directory)
+
+        for delta_order in delta_orders:
+            PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
+            CURVE_FILE_PATH = '%scurves.json' % PATH
+            curvesfile = open(CURVE_FILE_PATH)
+            curvesdict = json.load(curvesfile)
+
+            tablename = 'identify_%s_mit_%d_%d' % (directory, numceps, delta_order)
+            table = '%s' % top
+
+            for M in Ms:
+                table = '%s\n\t{\\bf %d}' % (table, M)
+
+                for environment in environments:
+                    gmms_key = 'GMMs %s' % environment
+                    value = curvesdict[gmms_key]['%d' % M]
+                    table = '%s & %.2f' % (table, round(value, 2))
+
+                table = '%s \\\\ \hline' % table
+
+            caption = 'delta order %d' % delta_order
+            if directory > 'speakers':
+                caption = '%s and r = %s' % (caption, directory[-4 : ])
+            table = '%s%s' % (table, bottom % (caption, tablename))
+            table = table.replace('\t', '%4s' % '')
+
+            TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
+            print(TABLE_FILE_PATH)
+            with open(TABLE_FILE_PATH, 'w') as tablesfile:
+                print(table, file=tablesfile)
 
 elif command == 'check':
     directory = parameters[0]
