@@ -229,7 +229,7 @@ def mfcc(signal, winlen, winstep, samplerate, nfilt=26, NFFT=512, preemph=0.97,
 
     featsvec = np.dot(powframes, fbank.T)
     featsvec = 20*np.log10(featsvec) #dB
-    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps] # TODO colocar n=26?
+    featsvec = dct(featsvec, type=2, axis=1, norm='ortho')[ : , : numceps] # equiv to n=numceps
     featsvec = lifter(featsvec, ceplifter)
 
     if append_energy:

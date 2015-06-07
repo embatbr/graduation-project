@@ -55,9 +55,9 @@ def train_ubms(gmms_dir, ubms_dir, r=None):
                 # training
                 D = numceps * (1 + delta_order)
                 ubm_f = mixtures.GMM('f', M // 2, D, featsvec_f, r=r)
-                ubm_f.train(featsvec)
+                ubm_f.train(featsvec_f)
                 ubm_m = mixtures.GMM('m', M // 2, D, featsvec_m, r=r)
-                ubm_m.train(featsvec)
+                ubm_m.train(featsvec_m)
 
                 # combination
                 ubm = ubm_f
