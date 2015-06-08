@@ -57,7 +57,7 @@ The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a
 The \textbf{expectation step} consists of estimating the \emph{a posteriori} probabilities $\postprob{i}{\dvec{x}_t, \lambda}$ for each distribution $i$ and each feature vector $\dvec{x}_t$, defined as
 
 \begin{equation}
-    \postprob{i}{\dvec{x}_t, \lambda} = \postprob{i}{\dvec{x}_t} = \frac{w_i p_i(\dvec{x}_t)}{\sum_{k=1}^M w_k p_k(\dvec{x}_t)}.\dvec{\sigma}_i^2
+    \postprob{i}{\dvec{x}_t, \lambda} = \postprob{i}{\dvec{x}_t} = \frac{w_i p_i(\dvec{x}_t)}{\sum_{k=1}^M w_k p_k(\dvec{x}_t)}.
     \label{eq:e-step-posterior}
 \end{equation}
 
@@ -87,7 +87,7 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \end{equation}
 \\
 
-This algorithm trains the GMMs used in the ASR system shown in \sectionrefTWO{speaker-identification}{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
+This algorithm trains the GMMs used in the ASR system shown in sections \sectionrefcomp{speaker-identification} and \sectionrefcomp{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
 
 \section{Universal Background Model}
 \label{sec:ubm}
@@ -115,12 +115,12 @@ As shown in \sectionref{speaker-verification}, the likelihood ratio test is perf
 
 As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of SSGMMs for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM).
 
-The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian does not well represent a portion of the data, the change is relevant, as seen in \figureref{adapted_wmv}.
+The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian represents the new data better than the old data, the change is relevant, as seen in \figureref{adapted_wmv}.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{adapted_wmv}
-    \caption{UBM trained (left) and weights, means and variances adapted for a male speaker (right). The blue dots are the background features and the green the speaker's.}
+    \caption{UBM trained (left) and weights, means and variances adapted for a female speaker (right). The blue dots are the background features and the green the speaker's.}
     \label{fig:adapted_wmv}
 \end{figure}
 

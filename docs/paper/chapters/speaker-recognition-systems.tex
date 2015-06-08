@@ -37,7 +37,7 @@ The raw speech signal is unfit for use by an ASR system. For a correct processin
 \section{Speaker Identification}
 \label{sec:speaker-identification}
 
-Given the features $\dvec{X}$ extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+Given a sequence $\dvec{X}$ of features extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\mathcal{S}_j},
@@ -114,9 +114,9 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
 
 \subsection{Training}
 
-Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-recognition-training}:
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-recognition-training}.
 
-Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_i$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_i$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the weight of each $\mathcal{S}_i$ is minimized.
+Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_i$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_i$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the weights of all $\mathcal{S}_i$ are approximately equal.
 
 \subsection{Test}
 
@@ -141,7 +141,7 @@ As seen in \equationref{log-likelihood-ratio-test}, the decision process is base
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value\footnote{$\theta$ is loosely used here. The proper equation would be $\Lambda(\dvec{X}) \geq \log\theta$, but $\theta$ can be used as the system designer prefers, leading to $\Lambda(\dvec{X}) \geq \theta$.} of $\theta$ (see \figureref{speaker-verification}).
+\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \Theta$, for an arbitrary value of $\theta$, with $\Theta = \log\theta$ (see \figureref{speaker-verification}).
 
 \begin{figure}[ht]
     \centering

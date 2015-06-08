@@ -54,7 +54,7 @@ The implementation is divided in 6 modules. Module \textbf{features} contains co
 
 \subsection{Parameters}
 
-The MFCCs extracted used a filterbank of size 26, maintaining only the first 19 features, and deltas of order 0, 1 and 2, leading to MFCCs with final feature number of 19, 38 and 57, respectively. Before any delta calculation take place, the energy appending and CMS steps are performed.
+The MFCCs extracted used a filterbank of size 26, maintaining only the first 19 features, and deltas of order 0, 1 and 2, leading to MFCCs with final feature number of 19, 38 and 57, respectively. Before any delta calculation take place, the energy appending and CMS steps are performed. The relevance factor $r$ has a default value of 16 for all combinations of adaptations.
 
 All speakers are modeled using SSGMMs with sizes ($M$s) 8, 16, 32, 64 and 128, each divided in 4 types of environment configuration: quiet office, mildly noisy hallway, busy street intersection and all three together. This leads to 48 speakers $\times$ 5 $M$s $\times$ 4 environments $\times$ 3 delta orders $=$ 2880 trained SSGMMs. The UBM is a combination of a trained male UBM and a trained female UBM (see \figureref{ubm-diagram}b), for all sizes of mixtures, types of environments and orders of delta, totaling 60 models. Each one of the 7 combinations of SSAGMM also contains 2880 models. Adding the Single Speaker Fractional Gaussian Mixture Models (SSFGMMs) and Fractional Universal Background Models (FUBMs) for all 5 values of $r$ (1, 0.99, 1.01, 0.95 and 1.05), the total number of trained models is 37800.
 
