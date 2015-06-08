@@ -382,24 +382,16 @@ elif command == 'train-speakers-frac':
 
 elif command == 'adapt-gmms':
     adaptations = parameters[0]
-    top_C = None
-    if len(parameters) > 1:
-        top_C = int(parameters[1])
 
     if not os.path.exists(GMMS_DIR):
         os.mkdir(GMMS_DIR)
 
-    if top_C is None:
-        adapted_gmm_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
-    else:
-        adapted_gmm_dir = '%sadapted_%s_C%d/' % (GMMS_DIR, adaptations, top_C)
+    adapted_gmm_dir = '%sadapted_%s/' % (GMMS_DIR, adaptations)
     if not os.path.exists(adapted_gmm_dir):
         os.mkdir(adapted_gmm_dir)
 
     print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
     print('adaptations: %s' % adaptations)
-    if not top_C is None:
-        print('top C: %d' % top_C)
     t = time.time()
 
     for M in Ms:
@@ -430,7 +422,7 @@ elif command == 'adapt-gmms':
 
                     clone_name = '%s_%s_%d_%s' % (speaker, environment, M, adaptations)
                     gmm = ubm.clone(featsvec, clone_name)
-                    gmm.adapt_gmm(featsvec, adaptations, top_C)
+                    gmm.adapt_gmm(featsvec, adaptations)
 
                     GMM_PATH = '%s%s.gmm' % (GMMS_PATH, gmm.name)
                     gmmfile = open(GMM_PATH, 'wb')
@@ -446,9 +438,6 @@ elif command == 'verify':
     if len(parameters) > 0:
         adaptations = parameters[0]
         verify = 'adapted_%s' % adaptations
-    if len(parameters) > 1:
-        C = parameters[1]
-        verify = '%s_C%s' % (verify, C)
     verify_dir = '%s%s/' % (VERIFY_DIR, verify)
     gmm_dir = '%s%s/' % (GMMS_DIR, verify)
 

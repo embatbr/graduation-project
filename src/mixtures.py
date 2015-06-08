@@ -267,16 +267,16 @@ class GMM(object):
 
         print('After %d iterations\nlog_like = %f' % (iteration, new_log_like))
 
-    def adapt_gmm(self, featsvec, adaptations='wmv', top_C=None, relevance_factor=16):
+    def adapt_gmm(self, featsvec, adaptations='wmv', relevance_factor=16):
         """
         Adapts an UBM to a GMM for a specific speaker, given the speaker's features
         vector.
 
         @param featsvec: a NUMFRAMES x D matrix of features.
-        @param relevance_factor: the relevance factor for adaptations of weights,
-        means and variances. Default, 16.
         @param adaptations: determines which parameters will be adapted. To adapt
         weights, use 'w', means, 'm', and variances, 'v'. Default 'wmv'.
+        @param relevance_factor: the relevance factor for adaptations of weights,
+        means and variances. Default, 16.
         """
         T = len(featsvec)
         posteriors = np.zeros((T, self.M))
@@ -313,14 +313,3 @@ class GMM(object):
 
         if 'w' in adaptations:
             self.weights = self.weights / np.sum(self.weights, axis=0)
-
-        if not top_C is None:
-            probs = np.array([self.posterior(feats)[1] for feats in featsvec])
-            logprobs = np.log10(probs)
-            logprobs_mean = np.mean(logprobs, axis=0)
-            sorted_indices = np.argsort(logprobs_mean)[-top_C : ]
-
-            self.weights = self.weights[sorted_indices]
-            self.weights = self.weights / np.sum(self.weights, axis=0)
-            self.meansvec = self.meansvec[sorted_indices]
-            self.variancesvec = self.variancesvec[sorted_indices]
