@@ -722,14 +722,17 @@ elif command == 'ident-tables':
     directories = os.listdir(IDENTIFY_DIR)
     directories.sort()
 
-    top = '\\begin{table}[h]\n\t\\footnotesize\n\t\\centering\n\t\\begin{tabular}{|c|c|c|c|l|}\
-    \n\t\hline\n\t{\\bf M} & {\\bf Office} & {\\bf Hallway} & {\\bf Intersection} & \
-    \multicolumn{1}{c|}{{\\bf All}} \\\\ \hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{Identification rates for %s.}\
-    \n\t\label{tab:%s}\n\end{table}'
+    top = '\\begin{table}[h]\n\t\small\n\t\\centering\n\t\\begin{tabular}{|c|c|\
+M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
+\\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \hline \hline'
+    bottom = '\n\t\end{tabular}\n\t\caption{Speaker identification success rates%s.}\
+\n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:
         identify_dir = '%s%s/' % (IDENTIFY_DIR, directory)
+
+        tablename = 'identify_%s' % directory
+        table = '%s' % top
 
         for delta_order in delta_orders:
             PATH = '%smit_%d_%d/' % (identify_dir, numceps, delta_order)
@@ -737,29 +740,33 @@ elif command == 'ident-tables':
             curvesfile = open(CURVE_FILE_PATH)
             curvesdict = json.load(curvesfile)
 
-            tablename = 'identify_%s_mit_%d_%d' % (directory, numceps, delta_order)
-            table = '%s' % top
-
             for M in Ms:
-                table = '%s\n\t{\\bf %d}' % (table, M)
+                if M == 32:
+                    table = '%s\n\t\multirow{5}*\\bf{\\textbf %d} & ' % (table, delta_order)
+                else:
+                    table = '%s & ' % table
+                table = '%s\\bf{%d}' % (table, M)
 
                 for environment in environments:
                     gmms_key = 'GMMs %s' % environment
                     value = curvesdict[gmms_key]['%d' % M]
                     table = '%s & %.2f' % (table, round(value, 2))
 
-                table = '%s \\\\ \hline' % table
+                if M == 128 and delta_order < 2:
+                    table = '%s \\\\ \hline \hline' % table
+                elif M == 128:
+                    table = '%s \\\\ \hline' % table
+                else:
+                    table = '%s \\\\ \cline{2-6}' % table
 
-            caption = '$\Delta = %d$' % delta_order
-            if directory > 'speakers':
-                caption = '%s and $r = %s$' % (caption, directory[-4 : ])
-            table = '%s%s' % (table, bottom % (caption, tablename))
-            table = table.replace('\t', '%4s' % '')
+        r_apx = ' and $r = %s$' % directory[-4 : ] if directory > 'speakers' else ''
+        table = '%s%s' % (table, bottom % (r_apx, tablename))
+        table = table.replace('\t', '%4s' % '')
 
-            TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
-            print(TABLE_FILE_PATH)
-            with open(TABLE_FILE_PATH, 'w') as tablesfile:
-                print(table, file=tablesfile)
+        TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
+        print(TABLE_FILE_PATH)
+        with open(TABLE_FILE_PATH, 'w') as tablesfile:
+            print(table, file=tablesfile)
 
 elif command == 'check':
     directory = parameters[0]

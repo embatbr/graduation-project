@@ -77,11 +77,9 @@ In the experiments performed, all 54 utterances from each speaker were tested ag
 
 As shown in \sectionref{speaker-identification}, \equationref{speaker_identification}, given a set $\dvec{\lambda} = \{\lambda_1, ..., \lambda_S\}$ of SSGMMs, a sequence of features $\boldsymbol{X}$ is assigned to a speaker $\mathcal{S}_i$, represented by a model $\lambda_i$ of $\dvec{\lambda}$, if $\postpdf{\boldsymbol{X}}{\lambda_i}$ is greater than all $\postpdf{\boldsymbol{X}}{\lambda_j}$, for $\lambda_j \in \dvec{\lambda}$ and $j \ne i$.
 
-In this study, \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker. The signals used are in session ``Enroll 2", as described in \sectionref{corpus}. The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. Tables \tablerefcomp{identify_speakers_mit_19_0}, \tablerefcomp{identify_speakers_mit_19_1} and \tablerefcomp{identify_speakers_mit_19_2} show the speaker identification success rates (in percent) for delta orders equal to 0, 1 and 2, respectively.
+In this study, \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker. The signals used are in session ``Enroll 2", as described in \sectionref{corpus}. The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. \tableref{identify_speakers} shows the speaker identification success rates (in percent).
 
-\input{chapters/tables/identify_speakers_mit_19_0}
-\input{chapters/tables/identify_speakers_mit_19_1}
-\input{chapters/tables/identify_speakers_mit_19_2}
+\input{chapters/tables/identify_speakers}
 
 As seen in the tables above and in \figureref{identification-curves-speakers}, for the fourth environment configuration (all) the success rates increase with $M$, while for the other three (office, hallway and intersection) they reach a maximum value at $M = 32$. As explained in the previous section, SSGMMs suffered degeneration due to a decrease in the values of variances for 64 and 128 gaussians. A higher value of $M$ led to higher misrepresentation of the samples by the SSGMM, seen in the lower values $M = 64$ presents compared to the values of $M = 128$. The exception to this ``rule" is seen when all environments are used in the training. This may be explained due to the higher number of samples (each speaker has 18 utterances recorded in each environment, leading to all 54 speech signals being used to train the model). Also as expected, when all environments are present, the SSGMM represents different levels of background noise, what produces a more robust modeling.
 
