@@ -47,7 +47,7 @@ The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{em_algorithm}
+    \includegraphics[width=\textwidth]{chapters/gmm/em_algorithm}
     \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. Only the first deviation is shown.}
     \label{fig:em_algorithm}
 \end{figure}
@@ -98,7 +98,7 @@ There are many configurations for an UBM, but, as it is possible to see in \refb
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.55\textwidth]{ubm-diagram}
+    \includegraphics[width=0.55\textwidth]{chapters/gmm/ubm-diagram}
     \caption{UBM with gender trained (a) together and (b) separately and combined, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}.}
     \label{fig:ubm-diagram}
 \end{figure}
@@ -119,7 +119,7 @@ The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{adapted_wmv}
+    \includegraphics[width=\textwidth]{chapters/gmm/adapted_wmv}
     \caption{UBM trained (left) and weights, means and variances adapted for a female speaker (right). The blue dots are the background features and the green the speaker's.}
     \label{fig:adapted_wmv}
 \end{figure}
@@ -197,7 +197,7 @@ The technique described in this section, named Fractional Gaussian Mixture Model
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc_energy_appended_cms_delta_order_2_shifted}
+    \includegraphics[width=\textwidth]{chapters/gmm/mfcc_energy_appended_cms_delta_order_2_shifted}
     \caption{MFCCs from \figureref{mfcc_energy_appended_cms_delta_order_2} shifted up. The minimum value for each feature is 1.}
     \label{fig:mfcc-shifted}
 \end{figure}
@@ -213,7 +213,7 @@ The technique described in this section, named Fractional Gaussian Mixture Model
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{em_algorithm_r0,95}
+    \includegraphics[width=\textwidth]{chapters/gmm/em_algorithm_r095}
     \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM with $r = 0.95$. The blue points are the original features, while the greens are they shifted. Only the first deviation is shown.}
     \label{fig:frac-em_algorithm}
 \end{figure}

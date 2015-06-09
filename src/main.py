@@ -722,7 +722,7 @@ elif command == 'ident-tables':
     directories = os.listdir(IDENTIFY_DIR)
     directories.sort()
 
-    top = '\\begin{table}[h]\n\t\small\n\t\\centering\n\t\\begin{tabular}{|c|c|c|c|l|}\
+    top = '\\begin{table}[h]\n\t\\footnotesize\n\t\\centering\n\t\\begin{tabular}{|c|c|c|c|l|}\
     \n\t\hline\n\t{\\bf M} & {\\bf Office} & {\\bf Hallway} & {\\bf Intersection} & \
     \multicolumn{1}{c|}{{\\bf All}} \\\\ \hline'
     bottom = '\n\t\end{tabular}\n\t\caption{Identification rates for %s.}\
@@ -750,9 +750,9 @@ elif command == 'ident-tables':
 
                 table = '%s \\\\ \hline' % table
 
-            caption = 'delta order %d' % delta_order
+            caption = '$\Delta = %d$' % delta_order
             if directory > 'speakers':
-                caption = '%s and r = %s' % (caption, directory[-4 : ])
+                caption = '%s and $r = %s$' % (caption, directory[-4 : ])
             table = '%s%s' % (table, bottom % (caption, tablename))
             table = table.replace('\t', '%4s' % '')
 

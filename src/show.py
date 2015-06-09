@@ -95,7 +95,7 @@ if __name__ == '__main__':
         set_plot_params(ax, grid=True)
         pl.plot(duration, signal, 'b')
 
-        FILE_PATH = '../docs/paper/images/speech_signal.png'
+        FILE_PATH = '../docs/paper/images/chapters/speaker-recognition-systems/speech_signal.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'mfcc-images':
@@ -126,7 +126,7 @@ if __name__ == '__main__':
             set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(hzpoints, melpoints, 'r')
 
-            FILE_PATH = '../docs/paper/images/mel_scale.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/mel_scale.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
             emph_magspec = features.magspec(emph_signal)
             pl.fill_between(frequencies, emph_magspec, edgecolor='red', facecolor='red')
 
-            FILE_PATH = '../docs/paper/images/preemphasis.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/preemphasis.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -179,7 +179,7 @@ if __name__ == '__main__':
             set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(duration, frame, 'g')
 
-            FILE_PATH = '../docs/paper/images/framing.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/framing.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -199,7 +199,7 @@ if __name__ == '__main__':
                 for magframe in func_frames:
                     pl.plot(frequencies, magframe)
 
-            FILE_PATH = '../docs/paper/images/fft.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/fft.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -214,7 +214,7 @@ if __name__ == '__main__':
             for f in fbank:
                 pl.plot(frequencies, f, 'y')
 
-            FILE_PATH = '../docs/paper/images/filterbank.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/filterbank.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -235,7 +235,7 @@ if __name__ == '__main__':
                 for feats in featsvec.T:
                     pl.plot(feats)
 
-            FILE_PATH = '../docs/paper/images/features_and_featuresdB.png'
+            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/features_and_featuresdB.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -280,7 +280,8 @@ if __name__ == '__main__':
 
                 pl.plot(featsvec)
 
-                FILE_PATH = '../docs/paper/images/%s.png' % filename
+                directory = '/chapters/%s' % ('gmm' if frac else 'feature-extraction')
+                FILE_PATH = '../docs/paper/images%s/%s.png' % (directory, filename)
                 pl.savefig(FILE_PATH, bbox_inches='tight')
                 pl.clf()
 
@@ -303,7 +304,7 @@ if __name__ == '__main__':
         set_plot_params(ax)
         plot_gmm(gmm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/em_algorithm.png'
+        FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'frac-em':
@@ -338,8 +339,8 @@ if __name__ == '__main__':
                 log_likes.append(frac_gmm.log_likelihood(feats))
             print('max = %f, min = %f' % (max(log_likes), min(log_likes)))
 
-            r_apx = str(r)[ : 4].replace('.', ',')
-            FILE_PATH = '../docs/paper/images/em_algorithm_r%s.png' % r_apx
+            r_apx = str(r)[ : 4].replace('.', '')
+            FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm_r%s.png' % r_apx
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -385,7 +386,7 @@ if __name__ == '__main__':
         ax.set_title('combined UBM', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/em_algorithm_ubm_%d.png' % M
+        FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm_ubm_%d.png' % M
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'adapt':
@@ -422,7 +423,7 @@ if __name__ == '__main__':
         plot_gmm(gmm, [featsvec, featsvec_speaker], x_axis, y_axis,
                  param_feats=['b.', 'g.'])
 
-        FILE_PATH = '../docs/paper/images/adapted_%s.png' % adaptations
+        FILE_PATH = '../docs/paper/images/chapters/gmm/adapted_%s.png' % adaptations
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     t = time.time() - t

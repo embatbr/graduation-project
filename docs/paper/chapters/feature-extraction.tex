@@ -24,7 +24,7 @@ MFCC is a highly used parametric representation in the area of voice processing,
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth]{cochlea}
+    \includegraphics[width=0.5\textwidth]{chapters/feature-extraction/cochlea}
     \caption{Cochlea divided by frequency regions, \refbib{ScienceBlogs}{scienceblogs.2010.05.10}.}
     \label{fig:cochlea}
 \end{figure}
@@ -33,7 +33,7 @@ A key factor in the perception of speech and other sounds is \textbf{loudness}, 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.6\textwidth]{loudness}
+    \includegraphics[width=0.6\textwidth]{chapters/feature-extraction/loudness}
     \caption{Loudness level for human hearing, \refbib{Fletcher \& Munson}{fletcher.munson.1933}.}
     \label{fig:loudness}
 \end{figure}
@@ -53,7 +53,7 @@ Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} pr
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mel_scale}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mel_scale}
     \caption{The logarithmic curve of the mel scale.}
     \label{fig:mel_scale}
 \end{figure}
@@ -64,7 +64,7 @@ In an ASR system the feature extraction module receives a raw speech signal and 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc-flow}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc-flow}
     \caption{Modular representation of the MFCC extraction.}
     \label{fig:mfcc-flow}
 \end{figure}
@@ -82,7 +82,7 @@ As the human voice is concentrated in the lower frequencies (see \figureref{pree
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{preemphasis}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/preemphasis}
     \caption{Raw and pre-emphasized ($\alpha = 0.97$) speech signals, with respective spectral magnitudes.}
     \label{fig:preemphasis}
 \end{figure}
@@ -93,7 +93,7 @@ The first mandatory stage of the feature process is the division of the input si
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{framing}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/framing}
     \caption{51st frame. The samples at the ends are thinner than the ones at the middle.}
     \label{fig:framing}
 \end{figure}
@@ -104,7 +104,7 @@ For each frame the Fast Fourier Transform (FFT) is calculated, with number of po
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{fft}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/fft}
     \caption{$|FFT|$ (top) and $|FFT|^2$ (bottom)}
     \label{fig:fft}
 \end{figure}
@@ -115,7 +115,7 @@ To get the envelope (and to reduce the size of spectral coefficients), the spect
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{filterbank}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/filterbank}
     \caption{Filter bank with 26 filters.}
     \label{fig:filterbank}
 \end{figure}
@@ -126,7 +126,7 @@ The spectral coefficients are then converted to dB by the application of the fun
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{features_and_featuresdB}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/features_and_featuresdB}
     \caption{Spectral coefficients after the filterbank (left) and after the log conversion (right).}
     \label{fig:features_and_featuresdB}
 \end{figure}
@@ -144,7 +144,7 @@ Until now the features are in the mel scale, but are not yet ``cepstral". The la
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc}
     \caption{6 MFCCs for each frame over time.}
     \label{fig:mfcc}
 \end{figure}
@@ -155,7 +155,7 @@ In \figureref{mfcc}, the blue line represents the first feature, and as is clear
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc_energy_appended}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc_energy_appended}
     \caption{First feature changed by the summed energy of each frame.}
     \label{fig:mfcc_energy_appended}
 \end{figure}
@@ -173,7 +173,7 @@ Even an utterance recorded in a quiet environment still suffers with the side ef
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc_energy_appended_cms}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc_energy_appended_cms}
     \caption{CMS applied to the MFCCs from \figureref{mfcc_energy_appended}.}
     \label{fig:mfcc_energy_appended_cms}
 \end{figure}
@@ -191,7 +191,7 @@ In order to improve the speech parameters, the differences in time around each c
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{mfcc_energy_appended_cms_delta_order_2}
+    \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc_energy_appended_cms_delta_order_2}
     \caption{MFCCs from \figureref{mfcc_energy_appended_cms} with deltas of order 1 and 2 added.}
     \label{fig:mfcc_energy_appended_cms_delta_order_2}
 \end{figure}
