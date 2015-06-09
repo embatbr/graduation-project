@@ -12,7 +12,7 @@ Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the 
     \label{eq:bayes_equation}
 \end{equation}
 
-\noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ and the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization) can be removed with no loss to the analysis. \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$.
+\noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ can be removed with no loss to the analysis, along with the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization). \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$.
 
 \section{Basic Concepts}
 \label{sec:basic-concepts}

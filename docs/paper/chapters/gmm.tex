@@ -92,7 +92,7 @@ This algorithm trains the GMMs used in the ASR system shown in sections \section
 \section{Universal Background Model}
 \label{sec:ubm}
 
-An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. The idea is to generate a model where common characteristics present in the corpus are well represented. This done, a speech mostly composed of common characteristics from enrolled speakers is more difficult to pass the likelihood ratio test (see \equationref{likelihood-ratio-test}).
+An Universal Background Model-Gaussian Mixture Model (UBM-GMM), shortened to UBM, is a GMM composed of features from all enrolled speakers. The idea is to generate a model $\lambda_{bkg}$ where common characteristics present in the corpus are well represented. Then, a speech mostly composed of common characteristics from enrolled speakers is more difficult to pass the likelihood ratio test (see \equationref{likelihood-ratio-test}).
 
 There are many configurations for an UBM, but, as it is possible to see in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately. Also, female voices have more intrasimilarities than males, leading to more distinct male configurations. The $M$-th order UBM in this study is created merging trained male and female models, both of order $M/2$ (see \figureref{ubm-diagram}).
 
@@ -103,17 +103,22 @@ There are many configurations for an UBM, but, as it is possible to see in \refb
     \label{fig:ubm-diagram}
 \end{figure}
 
-As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{hyp}$ and $\lambda_{bkg}$. The default ASR system is a GMM-UBM system, turning \equationref{score_of_X} in
+As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{hyp}$ and $\lambda_{bkg}$. The default ASR system is a SSGMM-UBM system, turning \equationref{score_of_X} in
 
 \begin{equation}
-    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{GMM}) - \log p(\dvec{X}|\lambda_{UBM}).
-    \label{eq:score_of_X_gmm_ubm}
+    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
+    \label{eq:score_of_X_ssgmm_ubm}
 \end{equation}
 
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of SSGMMs for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_gmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM).
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of SSGMMs for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a training faster than the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
+
+\begin{equation}
+    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSAGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
+    \label{eq:score_of_X_ssagmm_ubm}
+\end{equation}
 
 The idea behind the Bayesian Adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian represents the new data better than the old data, the change is relevant, as seen in \figureref{adapted_wmv}.
 
@@ -217,3 +222,5 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM with $r = 0.95$. The blue points are the original features, while the greens are they shifted. Only the first deviation is shown.}
     \label{fig:frac-em_algorithm}
 \end{figure}
+
+The choice of shift up all features to 1 is mostly based in common sense. To avoid non-negative values, just shift to 0 would be sufficient. However, when $r \to 0$, the results for $X^r$ amd $\mu^r$ could fall in the indefinition $0^0$, due to approximations in floating points. Also, for values greater than or equal to 1, the exponentiation remains monotonic.
