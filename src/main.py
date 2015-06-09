@@ -722,7 +722,7 @@ elif command == 'ident-tables':
     directories = os.listdir(IDENTIFY_DIR)
     directories.sort()
 
-    top = '\\begin{table}[h]\n\t\small\n\t\\centering\n\t\\begin{tabular}{|c|c|\
+    top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \hline \hline'
     bottom = '\n\t\end{tabular}\n\t\caption{Speaker identification success rates%s.}\

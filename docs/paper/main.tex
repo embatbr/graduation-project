@@ -17,6 +17,7 @@
 \usepackage{csquotes}
 \usepackage{multirow}
 \usepackage{array}
+\usepackage{etoolbox}
 
 
 % PRE CONFIGURATIONS
@@ -35,6 +36,8 @@
 \DefineBibliographyStrings{english}{%
   bibliography = {References},
 }
+
+\AtBeginEnvironment{tabular}{\small}
 
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
@@ -93,6 +96,8 @@
 \gdef\authorname{Eduardo Martins Barros de Albuquerque Tenório}
 \gdef\advisername{Tsang Ing Ren}
 \gdef\adviserfullname{Prof. Dr. \advisername}
+\gdef\revisername{George Darmiton da Cunha Cavalcanti}
+\gdef\reviserfullname{Prof. Dr. \revisername}
 \gdef\defensedate{\today}%{June 10, 2015}
 
 
@@ -122,9 +127,9 @@
 \chapter*{Declaration}
 This paper is a presentation of my research work, as partial fulfillment of the requirement for the degree in Computer Engineering. Wherever contributions of others are involved, every effort is made to indicate this clearly, with due reference to the literature, and acknowledgement of collaborative research and discussions.
 \vskip\baselineskip
-\noindent The work was done under the guidance of \adviserfullname, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
+\noindent The work was done under the guidance of \adviserfullname and was revised by \reviserfullname, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
 
-\vskip5\baselineskip
+\vskip3.5\baselineskip
 \begin{flushright}
 \rule{0.75\textwidth}{1pt}
 \vskip0.5\baselineskip
@@ -134,11 +139,21 @@ Eduardo Martins Barros de Albuquerque Tenório
 \vskip2\baselineskip
 \noindent In my capacity as supervisor of the candidate’s paper, I certify that the above statements are true to the best of my knowledge.
 
-\vskip5\baselineskip
+\vskip3.5\baselineskip
 \begin{flushright}
 \rule{0.75\textwidth}{1pt}
 \vskip0.5\baselineskip
 \adviserfullname
+\end{flushright}
+
+\vskip2\baselineskip
+\noindent In my capacity as revisor of the candidate’s paper, I certify that the above statements are true to the best of my knowledge.
+
+\vskip3.5\baselineskip
+\begin{flushright}
+\rule{0.75\textwidth}{1pt}
+\vskip0.5\baselineskip
+\reviserfullname
 \end{flushright}
 
 \vfill

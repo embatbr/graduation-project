@@ -124,7 +124,7 @@ class GMM(object):
         @param gmm: the GMM object to be absorbed.
         @param name: the new name of the absorbed object. Default, None.
         """
-        self.name = name if name is None else name
+        self.name = self.name if name is None else name
         self.M = self.M + gmm.M
         self.weights = np.hstack((self.weights, gmm.weights))
         self.weights = self.weights / np.sum(self.weights, axis=0)

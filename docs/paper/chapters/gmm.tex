@@ -43,7 +43,7 @@ In this paper, the GMM that models a single speaker will be reffered to as Singl
 \section{Expectation-Maximization}
 \label{sec:em}
 
-The idea of the EM algorithm is to estimate a new model $\lambda^{(j+1)}$ from a previous model $\lambda^{(j)}$, that obeys $\postpdf{\dvec{x}}{\lambda^{(j+1)}} \geq \postpdf{\dvec{x}}{\lambda^{(j)}}$, approximating the GMM to the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i^2$ of variances).
+The idea of the EM algorithm is to estimate a new model $\lambda^{(k+1)}$ from a previous model $\lambda^{(k)}$, that obeys $\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \postpdf{\dvec{X}}{\lambda^{(k)}}$, approximating the GMM to the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i^2$ of variances).
 
 \begin{figure}[ht]
     \centering
@@ -63,7 +63,7 @@ The \textbf{expectation step} consists of estimating the \emph{a posteriori} pro
 
 \subsubsection*{M-Step}
 
-In the \textbf{maximization step} the model is updated by recalculation of the parameters $w_i, \dvec{\mu}_i$ and $\dvec{\Sigma}_i$, and the algorithm guarantees that each new $\lambda^{(j+1)}$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\sigma}_i^2$ are given by the equations below.
+In the \textbf{maximization step} the model is updated by recalculation of the parameters $w_i, \dvec{\mu}_i$ and $\dvec{\Sigma}_i$, and the algorithm guarantees that each new $\lambda^{(k+1)}$ represents the training data better than the previous ones. From \refbib{Reynolds}{reynolds.1995c}, the updates of $w_i$, $\dvec{\mu}_i$ and $\dvec{\sigma}_i^2$ are given by the equations below.
 
 \noindent\\\textbf{Weights:}
 
