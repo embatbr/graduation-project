@@ -56,7 +56,7 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'
         ax.add_artist(ellipse)
 
 
-def set_plot_params(ax, fontsize=10, grid=False, xticks=None, yticks=None):
+def set_plot_params(ax, fontsize=8, grid=False, xticks=None, yticks=None):
     """Changes the size of ticks on axes x and y.
 
     @param ax: the object containing the axes x and y.

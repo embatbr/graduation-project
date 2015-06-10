@@ -37,7 +37,7 @@
   bibliography = {References},
 }
 
-\AtBeginEnvironment{tabular}{\small}
+\AtBeginEnvironment{tabular}{\footnotesize}
 
 \renewcommand{\figurename}{\small Figure}
 \newcommand{\figureref}[1]{Fig. \ref{fig:#1}}
@@ -127,19 +127,19 @@
 \chapter*{Declaration}
 This paper is a presentation of my research work, as partial fulfillment of the requirement for the degree in Computer Engineering. Wherever contributions of others are involved, every effort is made to indicate this clearly, with due reference to the literature, and acknowledgement of collaborative research and discussions.
 \vskip\baselineskip
-\noindent The work was done under the guidance of \adviserfullname and was revised by \reviserfullname, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
+\noindent The work was done under the guidance of \adviserfullname\space and was revised by \reviserfullname, at Centro de Informática, Universidade Federal de Pernambuco, Brazil.
 
-\vskip3.5\baselineskip
+\vskip3\baselineskip
 \begin{flushright}
 \rule{0.75\textwidth}{1pt}
 \vskip0.5\baselineskip
-Eduardo Martins Barros de Albuquerque Tenório
+\authorname
 \end{flushright}
 
 \vskip2\baselineskip
 \noindent In my capacity as supervisor of the candidate’s paper, I certify that the above statements are true to the best of my knowledge.
 
-\vskip3.5\baselineskip
+\vskip3\baselineskip
 \begin{flushright}
 \rule{0.75\textwidth}{1pt}
 \vskip0.5\baselineskip
@@ -149,7 +149,7 @@ Eduardo Martins Barros de Albuquerque Tenório
 \vskip2\baselineskip
 \noindent In my capacity as revisor of the candidate’s paper, I certify that the above statements are true to the best of my knowledge.
 
-\vskip3.5\baselineskip
+\vskip3\baselineskip
 \begin{flushright}
 \rule{0.75\textwidth}{1pt}
 \vskip0.5\baselineskip
@@ -201,7 +201,11 @@ TODO escrever o abstract após terminar tudo (após a conclusão).\\
 %BACKMATTER
 
 \appendix
-\input{chapters/results}
+\input{chapters/results-identify-ssfgmm}
+
+\input{chapters/results-verify-ssgmm}
+
+\input{chapters/results-verify-ssagmm}
 
 \printbibliography
 

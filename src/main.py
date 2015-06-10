@@ -174,8 +174,9 @@ def draw_det_curves(verify_dir):
                 pl.xticks(ticks)
                 pl.yticks(ticks)
 
-                [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+                fontsize = 8
+                [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
+                [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
 
                 if position == 3 or position == 4:
                     pl.subplots_adjust(hspace=0.3)
@@ -210,14 +211,17 @@ def draw_ident_curves(identify_dir):
     for environment in environments:
         print(environment.upper())
         gmms_key = 'GMMs %s' % environment
-        ax = pl.subplot(2, 2, position)
+        ax = pl.subplot(3, 3, position)
+        #ax = pl.subplot(2, 2, position)
         ax.set_title(environment, fontsize=10)
         pl.grid(True)
 
-        if position == 3 or position == 4:
+        #if position == 3 or position == 4:
+        if position > 3:
             pl.subplots_adjust(hspace=0.3)
 
-        position = position + 1
+        position = position + 2 if position == 2 else position + 1
+        #position = position + 1
         color_index = 0
 
         for delta_order in delta_orders:
@@ -236,13 +240,15 @@ def draw_ident_curves(identify_dir):
         pl.xticks(xticks)
         pl.yticks(yticks)
 
-        [tick.label.set_fontsize(7) for tick in ax.xaxis.get_major_ticks()]
-        [tick.label.set_fontsize(7) for tick in ax.yaxis.get_major_ticks()]
+        fontsize = 8
+        [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
         ax.set_xscale('log', basex=2)
         ax.xaxis.set_major_formatter(pl.ScalarFormatter())
 
-    pl.subplot(2, 2, 1)
-    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':7})
+    #pl.subplot(2, 2, 1)
+    pl.subplot(3, 3, 1)
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':6})
 
     CURVES_IMG_PATH = '%scurves.png' % identify_dir
     pl.savefig(CURVES_IMG_PATH, bbox_inches='tight')
@@ -308,7 +314,7 @@ if command == 'extract-features':
     if not os.path.exists(FEATURES_DIR):
         os.mkdir(FEATURES_DIR)
 
-    print('FEATURE EXTRACTION\nnumceps = %d' % numceps)
+    print('FEATURE EXTRACTION')
 
     winlen = 0.02
     winstep = 0.01
@@ -326,7 +332,7 @@ elif command == 'train-ubms':
     if not os.path.exists(UBMS_DIR):
         os.mkdir(UBMS_DIR)
 
-    print('UBM TRAINING\nnumceps = %d' % numceps)
+    print('UBM TRAINING')
     t = time.time()
 
     train_ubms(GMMS_DIR, UBMS_DIR)
@@ -340,7 +346,7 @@ elif command == 'train-ubms-frac':
     if not os.path.exists(FRAC_UBMS_DIR):
         os.mkdir(FRAC_UBMS_DIR)
 
-    print('UBM TRAINING\nnumceps = %d' % numceps)
+    print('FUBM TRAINING')
     t = time.time()
 
     for r in rs:
@@ -356,7 +362,7 @@ elif command == 'train-speakers':
     if not os.path.exists(SPEAKERS_DIR):
         os.mkdir(SPEAKERS_DIR)
 
-    print('SPEAKERS TRAINING\nnumceps = %d' % numceps)
+    print('SPEAKERS TRAINING')
     t = time.time()
 
     train_speakers(GMMS_DIR, SPEAKERS_DIR)
@@ -370,7 +376,7 @@ elif command == 'train-speakers-frac':
     if not os.path.exists(FRAC_SPEAKERS_DIR):
         os.mkdir(FRAC_SPEAKERS_DIR)
 
-    print('SPEAKERS TRAINING (fractional)\nnumceps = %d' % numceps)
+    print('FRACTIONAL SPEAKERS TRAINING')
     t = time.time()
 
     for r in rs:
@@ -390,7 +396,7 @@ elif command == 'adapt-gmms':
     if not os.path.exists(adapted_gmm_dir):
         os.mkdir(adapted_gmm_dir)
 
-    print('Adapting GMMs from UBM\nnumceps = %d' % numceps)
+    print('Adapting GMMs from UBM')
     print('adaptations: %s' % adaptations)
     t = time.time()
 
@@ -446,7 +452,7 @@ elif command == 'verify':
     if not os.path.exists(verify_dir):
         os.mkdir(verify_dir)
 
-    print('Verification\nnumceps = %d' % numceps)
+    print('Verification')
     print('verify: %s' % verify)
     t = time.time()
 
@@ -534,7 +540,7 @@ elif command == 'identify':
     if not os.path.exists(identify_dir):
         os.mkdir(identify_dir)
 
-    print('Identification\nnumceps = %d' % numceps)
+    print('Identification')
     t = time.time()
 
     identify(gmm_dir, identify_dir)
@@ -547,7 +553,7 @@ elif command == 'identify-frac':
         os.mkdir(IDENTIFY_DIR)
 
     gmm_dir = '%sspeakers/' % FRAC_GMMS_DIR
-    print('Identification\nnumceps = %d' % numceps)
+    print('Identification')
     t = time.time()
 
     for r in rs:
@@ -565,7 +571,7 @@ elif command == 'calc-det-curves':
     verify = parameters[0]
     verify_dir = '%s%s/' % (VERIFY_DIR, verify)
 
-    print('Calculating DET Curve\nnumceps = %d' % numceps)
+    print('Calculating DET Curve')
     print('verify: %s' % verify)
     t = time.time()
 
@@ -619,7 +625,7 @@ elif command == 'calc-det-curves':
 
 elif command == 'draw-det-curves':
     verify_dir = parameters[0]
-    print('Drawing DET Curve\nnumceps = %d' % numceps)
+    print('Drawing DET Curve')
     t = time.time()
 
     draw_det_curves(verify_dir)
@@ -631,7 +637,7 @@ elif command == 'draw-det-curves-all':
     verify_dirs = os.listdir(VERIFY_DIR)
     verify_dirs.sort()
 
-    print('Drawing DET Curve\nnumceps = %d' % numceps)
+    print('Drawing DET Curve')
     t = time.time()
 
     for verify_dir in verify_dirs:
@@ -645,7 +651,7 @@ elif command == 'calc-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
 
-    print('Calculating Identification Curves\nnumceps = %d' % numceps)
+    print('Calculating Identification Curves')
     print('identify: %s' % identify)
     t = time.time()
 
@@ -692,7 +698,7 @@ elif command == 'draw-ident-curves':
     identify = parameters[0]
     identify_dir = '%s%s/' % (IDENTIFY_DIR, identify)
 
-    print('Drawing identification curves\nnumceps = %d' % numceps)
+    print('Drawing identification curves')
     t = time.time()
 
     draw_ident_curves(identify_dir)
@@ -704,7 +710,7 @@ elif command == 'draw-ident-curves-all':
     identify_dirs = os.listdir(IDENTIFY_DIR)
     identify_dirs.sort()
 
-    print('Drawing all identification curves\nnumceps = %d' % numceps)
+    print('Drawing all identification curves')
     t = time.time()
 
     for identify_dir in identify_dirs:
@@ -722,10 +728,14 @@ elif command == 'ident-tables':
     directories = os.listdir(IDENTIFY_DIR)
     directories.sort()
 
+    print('Generating LaTeX tables for identification curves')
+    t = time.time()
+
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \hline \hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{Speaker identification success rates%s.}\
+    bottom = '\n\t\end{tabular}\n\t\label{tab:%s}\n\end{table}'
+    bottom_cap = '\n\t\end{tabular}\n\t\caption{Identification rates for enrolled speakers.}\
 \n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:
@@ -759,14 +769,20 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
                 else:
                     table = '%s \\\\ \cline{2-6}' % table
 
-        r_apx = ' and $r = %s$' % directory[-4 : ] if directory > 'speakers' else ''
-        table = '%s%s' % (table, bottom % (r_apx, tablename))
+        #r_apx = ' for $r = %s$' % directory[-4 : ] if directory > 'speakers' else ''
+        if directory > 'speakers':
+            table = '%s%s' % (table, bottom % tablename)
+        else:
+            table = '%s%s' % (table, bottom_cap % tablename)
         table = table.replace('\t', '%4s' % '')
 
         TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
         print(TABLE_FILE_PATH)
         with open(TABLE_FILE_PATH, 'w') as tablesfile:
             print(table, file=tablesfile)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
 
 elif command == 'check':
     directory = parameters[0]

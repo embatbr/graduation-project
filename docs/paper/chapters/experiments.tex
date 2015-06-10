@@ -85,16 +85,17 @@ In this study, \equationref{speaker_identification} is used for all 54 speech si
 
 As seen in the tables above and in \figureref{identification-curves-speakers}, for the fourth environment configuration, all, the success rates increase with $M$, while for office they reach a maximum value at $M = 64$, and for hallway and intersection, at $M = 32$. As explained in the previous section, SSGMMs suffered degeneration due to a decrease in the values of variances for 64 and 128 gaussians. A higher value of $M$ led to higher misrepresentation of the samples by the SSGMM. The exception to this ``rule" occurs when all environments are used in the training, that may be explained due to the higher number of samples (each speaker has 18 utterances recorded in each environment, leading to all 54 speech signals being used to train the model). Also as expected, when all environments are present, the SSGMM represents different levels of background noise, what produces a more robust modeling.
 
+\newpage
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{chapters/experiments/identification-curves-speakers}
-    \caption{Identification rates for enrolled speakers using different $\Delta$s.}
+    \includegraphics{chapters/experiments/identification-curves-speakers}
+    \caption{Curves of identification rates for enrolled speakers.}
     \label{fig:identification-curves-speakers}
 \end{figure}
 
 \subsection{Speaker Identification using SSFGMM}
 
-The only difference between this experiment and the previous is the type of GMM used. In traditional speaker identification, each speaker $\mathcal{S}_j$ is represented by a $\lambda_j$, using the GMM defined in \sectionref{gmm-definition} and the EM algorithm described in \sectionref{em}. Using FCM to model the covariance matrix, the SSGMM is replaced by SSFGMM with values 0.95, 0.99, 1.00, 1.01 and 1.05 for $r$, maintaining the rest of the experiment unchanged.
+The only difference between this experiment and the previous is the type of GMM used. In traditional speaker identification, each speaker $\mathcal{S}_j$ is represented by a $\lambda_j$, using the GMM defined in \sectionref{gmm-definition} and the EM algorithm described in \sectionref{em}. When FCM is used to model the covariance matrix, the SSGMM is replaced by SSFGMM with values 0.95, 0.99, 1.00, 1.01 and 1.05 for $r$, maintaining the rest of the experiment unchanged.
 
 The choice of values for $r$ was made using
 
@@ -103,16 +104,10 @@ The choice of values for $r$ was made using
     \label{eq:choice-of-r}
 \end{equation}
 
-\noindent where $r_0 = 1$, $u \in \{0, 1\}$ and $\delta \in \{0.01, 0.05\}$, providing $r$s higher and lower than $r_0$ to conduct a primary study of which values increase the success rates. \sectionref{results-identify-ssfgmm} contains tables and figures showing the results for this experiment.
+\noindent where $r_0 = 1$, $u \in \{0, 1\}$ and $\delta \in \{0.01, 0.05\}$, providing $r$s higher and lower than $r_0$ to conduct a primary study of which values increase the success rates. \appendixref{results-identify-ssfgmm} contains tables and figures showing the results for this experiment.
 
-A comparison of \tableref{identify_speakers} and \figureref{identification-curves-speakers} with the tables and figure from \sectionref{results-identify-ssfgmm} indicates that SSFGMMs trained using utterances from all environments and values 0.99, 1 and 1.01 for $r$ present similar speaker identification success rates to the experiment using SSGMM. The differences are around 1 percentage point, what may not be characterized as an improvement before further investigations (a slightly better success rate may be attributed to the random initialization of the model).
+A comparison of \tableref{identify_speakers} and \figureref{identification-curves-speakers} with the tables and figures from \appendixref{results-identify-ssfgmm} indicates that SSFGMMs trained using utterances from all environments and values 0.99, 1 and 1.01 for $r$ present similar speaker identification success rates to the experiment using SSGMM. The differences are around 1 percentage point, what may not be characterized as an improvement before further investigations (a slightly better success rate may be attributed to the random initialization of the model).
 
-%\subsection{Speaker Verification using SSGMM}
+\subsection{Speaker Verification using SSGMM}
 
 %\subsection{Speaker Verification using SSAGMM}
-
-%\subsection{Speaker Verification using SSFGMM}
-
-%\subsection{Comparison between SSGMM and SSAGMM}
-
-%\subsection{Comparison between SSGMM and SSFGMM}
