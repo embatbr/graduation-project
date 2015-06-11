@@ -752,10 +752,10 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
                         table = '%s\n\t\hline' % table
 
         tablename = 'identify_%s' % directory
-        if directory > 'speakers':
-            table = '%s%s' % (table, bottom % tablename)
-        else:
+        if directory == 'speakers':
             table = '%s%s' % (table, bottom_cap % tablename)
+        else:
+            table = '%s%s' % (table, bottom % tablename)
         table = table.replace('\t', '%4s' % '')
 
         TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
@@ -777,61 +777,57 @@ elif command == 'verify-tables':
     t = time.time()
 
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
-M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t\\bf{GMM environment} & \\bf{M} & \
+M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \n\t\hline \n\t\hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{DET curves for $\Delta = %d$%s.}\
+    bottom = '\n\t\end{tabular}\n\t\caption{EERs for enrolled speakers%s.}\
 \n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:
         verify_dir = '%s%s/' % (VERIFY_DIR, directory)
 
+        table = '%s' % top
+
         for delta_order in delta_orders:
             PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
 
-            table = '%s' % top
-
-            # reading DET dictionaries just once
             detdicts = list()
             for M in Ms:
                 DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
                 detfile = open(DET_FILE_PATH)
                 detdicts.append(json.load(detfile))
 
-            for ubm_environment in environments:
-                ubm_key = 'UBM %s' % ubm_environment
+            for (M, detdict) in zip(Ms, detdicts):
+                if M == 32:
+                    table = '%s\n\t\multirow{5}{*}\\bf{\\textbf %d} & ' % (table, delta_order)
+                else:
+                    table = '%s\n\t & ' % table
+                table = '%s\\bf{%d}' % (table, M)
 
-                for (M, detdict) in zip(Ms, detdicts):
-                    if M == 32:
-                        table = '%s\n\t\multirow{5}*\\bf{\\textbf{%s}} & ' % (table,
-                                                                             ubm_environment)
-                    else:
-                        table = '%s\n\t & ' % table
-                    table = '%s\\bf{%d}' % (table, M)
+                for environment in environments:
+                    gmms_key = 'GMMs %s' % environment
+                    eer_value = detdict[gmms_key]['EER']
+                    table = '%s & %.2f' % (table, round(eer_value, 2))
 
-                    for scores_environment in environments:
-                        scores_key = 'SCORES %s' % scores_environment
-                        eer_value = detdict[ubm_key][scores_key]['EER']
-                        table = '%s & %.2f' % (table, round(eer_value, 2))
+                if M < 128:
+                    table = '%s \\\\\n\t\cline{2-6}' % table
+                else:
+                    table = '%s \\\\\n\t\hline' % table
+                    if delta_order < 2:
+                        table = '%s\n\t\hline' % table
 
-                    if M < 128:
-                        table = '%s \\\\ \n\t\cline{2-6}' % table
-                    else:
-                        table = '%s \\\\ \n\t\hline' % table
-                        if ubm_environment != 'all':
-                            table = '%s\n\t\hline' % table
+        tablename = 'verify_%s' % directory
+        if directory == 'speakers':
+            caption_final = ''
+        else:
+            adaptations = directory.split('_')[1]
+            caption_final = ' for adaptations = %s' % adaptations
+        table = '%s%s' % (table, bottom % (caption_final, tablename))
+        table = table.replace('\t', '%4s' % '')
 
-            tablename = 'verify_%s_delta_%d' % (directory, delta_order)
-            label_final = ''
-            if directory != 'speakers':
-                adaptations = directory.split('_')[1]
-                label_final = ' and adaptations = %s' % adaptations
-            table = '%s%s' % (table, bottom % (delta_order, label_final, tablename))
-            table = table.replace('\t', '%4s' % '')
-
-            TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
-            print(TABLE_FILE_PATH)
-            with open(TABLE_FILE_PATH, 'w') as tablesfile:
-                print(table, file=tablesfile)
+        TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
+        print(TABLE_FILE_PATH)
+        with open(TABLE_FILE_PATH, 'w') as tablesfile:
+            print(table, file=tablesfile)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
