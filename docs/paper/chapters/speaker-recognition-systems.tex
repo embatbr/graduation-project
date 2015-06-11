@@ -48,7 +48,7 @@ Given a sequence $\dvec{X}$ of features extracted from a speech signal $\dvec{Y}
 
 \subsection{Training}
 
-The features extracted from speech signals are used to train models for the speakers. Each speaker $\mathcal{S}_j$ is represented by a model $\lambda_j$, generated using only features from the speaker.
+The features extracted from speech signals are used to train models for the speakers. Each speaker $\mathcal{S}_j$ is represented by a model $\lambda_j$, generated using only features from this particular speaker.
 
 \begin{figure}[ht]
     \centering
@@ -57,7 +57,7 @@ The features extracted from speech signals are used to train models for the spea
     \label{fig:speaker-recognition-training}
 \end{figure}
 
-The idea behind the training stage is to make $\lambda_j$ ``memorize" the distinct characteristics present in the speaker's vocal tract that perform the identification. The SSGMM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_j$'s.
+The idea behind the training stage is to make $\lambda_j$ ``memorize" the distinct characteristics present in the speaker's vocal tract that best represents him or her. The SSGMM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_j$'s.
 
 \subsection{Test}
 
@@ -68,7 +68,7 @@ The system test is performed replacing $\mathcal{S}_j$ in \equationref{classific
     \label{eq:speaker_identification}
 \end{equation}
 
-\noindent where the $\lambda_j$ with higher probability has its identity assigned to $\mathcal{S}$. The main difficult this system presents is the fact that every $\dvec{X}$ must be tested with every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
+\noindent where the $\lambda_j$ with the highest likelihood has its identity assigned to $\mathcal{S}$. The main disadvantage this system presents is that every $\dvec{X}$ must be tested with every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, as seen in \figureref{speaker_identification}, what demands a high amount of time.
 
 \begin{figure}[ht]
     \centering
@@ -87,15 +87,15 @@ If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough (considering all speakers equally probable). However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
 Given the vector of features $\dvec{X}$, and assuming it was produced by only one speaker, the detection\footnote{the terms verification and detection are used interchangeably} task can be restated as a basic test between two hypoteses, \refbib{Reynolds}{reynolds.1995b}:
 
 \begin{description}\itemsep0pt
-    \item $H_0$: $\dvec{X}$ is from the claimed speaker $\mathcal{S}_i$;
-    \item $H_1$: $\dvec{X}$ is \underline{not} from the claimed speaker $\mathcal{S}_i$.
+    \item $H_0$: $\dvec{X}$ is from the claimed speaker $\mathcal{S}_{hyp}$;
+    \item $H_1$: $\dvec{X}$ is \underline{not} from the claimed speaker $\mathcal{S}_{hyp}$.
 \end{description}
 
 \noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both likelihoods $\postpdf{\dvec{X}}{H_0}$ and $\postpdf{\dvec{X}}{H_1}$, \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000},
@@ -114,27 +114,27 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
 
 \subsection{Training}
 
-Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_i$) is shown in \figureref{speaker-recognition-training}.
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_{hyp}$) is shown in \figureref{speaker-recognition-training}.
 
-Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_i$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_i$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_i$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the weights of all $\mathcal{S}_i$ are approximately equal.
+Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_{hyp}$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_{hyp}$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_{hyp}$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the presence of each $\mathcal{S}_{hyp}$ weights approximately the same.
 
 \subsection{Test}
 
-As seen in \equationref{log-likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_j$ for its corresponding model, the likelihood of a $\lambda_j$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
+As seen in \equationref{log-likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_i$ for its corresponding model, the likelihood of a $\lambda_i$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
 
 \begin{equation}
-    p(\dvec{X}|\lambda_j) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_j).
+    p(\dvec{X}|\lambda_i) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_i).
     \label{eq:likelihood-prod}
 \end{equation}
 
 \noindent Using the logarithm function, \equationref{likelihood-prod} becomes
 
 \begin{equation}
-    \log p(\dvec{X}|\lambda_j) = \frac{1}{T} \sum_{t=1}^T \log p(\dvec{x}_t|\lambda_j),
+    \log p(\dvec{X}|\lambda_i) = \frac{1}{T} \sum_{t=1}^T \log p(\dvec{x}_t|\lambda_i),
     \label{eq:log-likelihood-sum}
 \end{equation}
 
-\noindent where the term $\frac{1}{T}$ is added to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{log-likelihood-ratio-test} becomes
+\noindent where the term $\frac{1}{T}$ is inserted to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{log-likelihood-ratio-test} becomes
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{hyp}) - \log p(\dvec{X}|\lambda_{bkg}),

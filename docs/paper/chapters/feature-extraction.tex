@@ -89,7 +89,7 @@ As the human voice is concentrated in the lower frequencies (see \figureref{pree
 
 %Framing
 
-The first mandatory stage of the feature process is the division of the input signal in \textbf{overlapping frames}, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width usually between 20 and 40 milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width (commonly 10 milliseconds), or the frames will not overlap.
+The first mandatory stage of the feature extraction process is the division of the input signal in \textbf{overlapping frames}, by the application of a sliding window (commonly Hamming, to taper the signal on the ends and reduce the side effects, \refbib{Bimbot et. al.}{bimbot.et.al.2004}). The window has a width usually between 20 and 40 milliseconds (to perform a short-time analysis) and a shift that must be shorter than the width (commonly 10 milliseconds), or the frames will not overlap.
 
 \begin{figure}[ht]
     \centering
@@ -180,20 +180,20 @@ Even an utterance recorded in a quiet environment still suffers with the side ef
 
 %Delta Coefficients
 
-In order to improve the speech parameters, the differences in time around each coefficient may be added as new features. In a vector with 6 features per frame, the velocity and acceleration of each coefficient may be added, providing 12 more features to the parametrization, all of them related to the ones previously extracted. These new features are the \textbf{deltas} of the MFCCs, given by
+In order to improve the speech parameters, the differences in time for each coefficient may be added as new features. In a vector with 6 features per frame, the velocity and acceleration of each coefficient may be added, providing 12 more features to the parametrization (totaling 18 features), all of them related to the ones previously extracted. These new features are the $\dvec{\Delta}$s (deltas) of the MFCCs, given by
 
 \begin{equation}
-    d_t = \frac{\sum_{n=1}^N n(c_{t+n} - c_{t-n})}{2\sum_{n=1}^N n^2}.
+    \Delta_t = \frac{\sum_{n=1}^N n(c_{t+n} - c_{t-n})}{2\sum_{n=1}^N n^2}.
     \label{eq:deltas}
 \end{equation}
 
-\noindent where $N$ determines how far from the frame $t$ the calculation is taken. \figureref{mfcc_energy_appended_cms_delta_order_2} shows the MFCCs from \figureref{mfcc_energy_appended_cms} improved by the addition of deltas of first and second orders.
+\noindent where $N$ determines how far from the frame $t$ the calculation is taken. \figureref{mfcc_energy_appended_cms_delta_order_2} shows the MFCCs from \figureref{mfcc_energy_appended_cms} improved by the addition of $\dvec{\Delta}$s of first and second orders.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc_energy_appended_cms_delta_order_2}
-    \caption{MFCCs from \figureref{mfcc_energy_appended_cms} with deltas of order 1 and 2 added.}
+    \caption{MFCCs from \figureref{mfcc_energy_appended_cms} with $\dvec{\Delta}$s of 1st and 2nd orders added.}
     \label{fig:mfcc_energy_appended_cms_delta_order_2}
 \end{figure}
 
-\equationref{deltas} may be used to calculate deltas of any order, just as the acceleration (second order) is derived from the velocity (first order). However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each order of delta delivers lower coefficients, providing a more marginal gain for higher orders.
+\equationref{deltas} may be used to calculate $\dvec{\Delta}$s of any order, just as the acceleration (second order) is derived from the velocity (first order). However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each order of $\dvec{\Delta}$ delivers lower coefficients, providing a more marginal gain for higher orders.
