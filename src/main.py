@@ -152,56 +152,115 @@ def identify(gmm_dir, identify_dir, r=None):
 
 
 def draw_det_curves(verify_dir):
+    colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
+    xticks = np.arange(0, 50, 5)
+    yticks = np.arange(0, 50, 5)
+
+    for M in Ms:
+        print('M = %d' % M)
+        position = 1
+
+        for environment in environments:
+            print(environment.upper())
+            gmms_key = 'GMMs %s' % environment
+            ax = pl.subplot(3, 3, position)
+            ax.set_title(environment, fontsize=10)
+            pl.grid(True)
+            ax.set_xlim([xticks[0], xticks[-1]])
+            ax.set_ylim([yticks[0], yticks[-1]])
+
+            if position > 3:
+                pl.subplots_adjust(hspace=0.45)
+            if position == 2 or position == 5:
+                pl.subplots_adjust(wspace=0.3)
+
+            position = position + 2 if position == 2 else position + 1
+            color_index = 0
+
+            for delta_order in delta_orders:
+                print('delta_order = %d' % delta_order)
+                PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
+                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+                detfile = open(DET_FILE_PATH)
+                detdict = json.load(detfile)
+
+                false_detection = detdict[gmms_key]['false_detection']
+                false_rejection = detdict[gmms_key]['false_rejection']
+                pl.plot(false_detection, false_rejection, colors[color_index])
+                color_index = color_index + 1
+
+            pl.xlabel('false detection', fontsize=8)
+            pl.ylabel('false rejection', fontsize=8)
+            pl.xticks(xticks)
+            pl.yticks(yticks)
+
+            fontsize = 8
+            [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
+            [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
+
+        pl.subplot(3, 3, 1)
+        pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':6})
+
+        DET_IMG_PATH = '%sdet_M_%d.png' % (verify_dir, M)
+        pl.savefig(DET_IMG_PATH, bbox_inches='tight')
+        pl.clf()
+
+
+def draw_eer_curves(verify_dir):
+    colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
+    position = 1
+    xticks = np.array(Ms)
+    yticks = np.arange(0, 27.5, 2.5)
+
+    detdicts = dict()
     for delta_order in delta_orders:
-        print('delta_order = %d' % delta_order)
         for M in Ms:
-            print('M = %d' % M)
-            PATH = '%s%s/mit_%d_%d/' % (VERIFY_DIR, verify_dir, numceps, delta_order)
+            PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
             DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
             detfile = open(DET_FILE_PATH)
-            detdict = json.load(detfile)
+            det_key = '%d %d' % (delta_order, M)
+            detdicts[det_key] = json.load(detfile)
 
-            colors = ['b', 'g', 'r', 'k'] # colors: office, hallway, intersection and all
-            position = 1
-            ticks = np.arange(10, 100, 10)
+    for environment in environments:
+        print(environment.upper())
+        gmms_key = 'GMMs %s' % environment
+        ax = pl.subplot(3, 3, position)
+        ax.set_title(environment, fontsize=10)
+        pl.grid(True)
+        ax.set_ylim([yticks[0], yticks[-1]])
 
-            pl.clf()
-            for environment in environments:
-                ubm_key = 'UBM %s' % environment
-                ax = pl.subplot(3, 3, position)
-                ax.set_title(environment, fontsize=10)
-                pl.grid(True)
-                pl.xticks(ticks)
-                pl.yticks(ticks)
+        if position > 3:
+            pl.subplots_adjust(hspace=0.3)
 
-                fontsize = 8
-                [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
-                [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
+        position = position + 2 if position == 2 else position + 1
+        color_index = 0
 
-                if position > 3:
-                    pl.subplots_adjust(hspace=0.45)
-                if position == 2 or position == 5:
-                    pl.subplots_adjust(wspace=0.3)
+        for delta_order in delta_orders:
+            eer_values = list()
 
-                position = position + 2 if position == 2 else position + 1
-                color_index = 0
+            for M in Ms:
+                det_key = '%d %d' % (delta_order, M)
+                detdict = detdicts[det_key]
+                eer_values.append(detdict[gmms_key]["EER"])
 
-                for environment in environments:
-                    scores_key = 'SCORES %s' % environment
-                    false_detection = detdict[ubm_key][scores_key]['false_detection']
-                    false_rejection = detdict[ubm_key][scores_key]['false_rejection']
-                    pl.plot(false_detection, false_rejection, colors[color_index])
-                    color_index = color_index + 1
+            pl.plot(Ms, eer_values, '.-%s' % colors[color_index])
+            color_index = color_index + 1
 
-                pl.xlabel('false detection', fontsize=7)
-                pl.ylabel('false rejection', fontsize=7)
+        pl.xticks(xticks)
+        pl.yticks(yticks)
 
-            pl.subplot(3, 3, 1)
-            pl.legend(('office','hallway', 'intersection', 'all'),
-                       loc='upper right', prop={'size':7})
+        fontsize = 8
+        [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
+        [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
+        ax.set_xscale('log', basex=2)
+        ax.xaxis.set_major_formatter(pl.ScalarFormatter())
 
-            DET_IMG_PATH = '%sdet_M_%d.png' % (PATH, M)
-            pl.savefig(DET_IMG_PATH, bbox_inches='tight')
+    pl.subplot(3, 3, 1)
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='lower left', prop={'size':6})
+
+    EER_IMG_PATH = '%seer.png' % verify_dir
+    pl.savefig(EER_IMG_PATH, bbox_inches='tight')
+    pl.clf()
 
 
 def draw_ident_curves(identify_dir):
@@ -246,7 +305,7 @@ def draw_ident_curves(identify_dir):
         ax.xaxis.set_major_formatter(pl.ScalarFormatter())
 
     pl.subplot(3, 3, 1)
-    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':6})
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper left', prop={'size':6})
 
     CURVES_IMG_PATH = '%scurves.png' % identify_dir
     pl.savefig(CURVES_IMG_PATH, bbox_inches='tight')
@@ -607,8 +666,11 @@ elif command == 'calc-det-curves':
     print('Total time: %f seconds' % t)
 
 elif command == 'draw-det-curves':
-    verify_dir = parameters[0]
+    verify = parameters[0]
+    verify_dir = '%s%s/' % (VERIFY_DIR, verify)
+
     print('Drawing DET Curve')
+    print('verify: %s' % verify)
     t = time.time()
 
     draw_det_curves(verify_dir)
@@ -626,6 +688,33 @@ elif command == 'draw-det-curves-all':
     for verify_dir in verify_dirs:
         print('verify_dir: %s' % verify_dir)
         draw_det_curves(verify_dir)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+elif command == 'draw-eer-curves':
+    verify = parameters[0]
+    verify_dir = '%s%s/' % (VERIFY_DIR, verify)
+
+    print('Drawing EER curves')
+    t = time.time()
+
+    draw_eer_curves(verify_dir)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+elif command == 'draw-eer-curves-all':
+    verify_dirs = os.listdir(VERIFY_DIR)
+    verify_dirs.sort()
+
+    print('Drawing all EER curves')
+    t = time.time()
+
+    for verify_dir in verify_dirs:
+        print(verify_dir)
+        verify_dir = '%s%s/' % (verify_DIR, verify_dir)
+        draw_eer_curves(verify_dir)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
@@ -717,8 +806,7 @@ elif command == 'identify-tables':
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\\n\t\hline\n\t\hline'
-    bottom = '\n\t\end{tabular}\n\t\label{tab:%s}\n\end{table}'
-    bottom_cap = '\n\t\end{tabular}\n\t\caption{Identification rates for enrolled speakers.}\
+    bottom = '\n\t\end{tabular}\n\t\caption{Identification rates for enrolled speakers%s.}\
 \n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:
@@ -753,9 +841,11 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 
         tablename = 'identify_%s' % directory
         if directory == 'speakers':
-            table = '%s%s' % (table, bottom_cap % tablename)
+            caption_final = ''
         else:
-            table = '%s%s' % (table, bottom % tablename)
+            r_apx = directory[-4 : ]
+            caption_final = ' with $r = %s$' % r_apx
+        table = '%s%s' % (table, bottom % (caption_final, tablename))
         table = table.replace('\t', '%4s' % '')
 
         TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
@@ -772,6 +862,7 @@ elif command == 'verify-tables':
 
     directories = os.listdir(VERIFY_DIR)
     directories.sort()
+    directories = ['speakers']
 
     print('Generating LaTeX tables for verification curves')
     t = time.time()
@@ -779,7 +870,7 @@ elif command == 'verify-tables':
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \n\t\hline \n\t\hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{EERs for enrolled speakers%s.}\
+    bottom = '\n\t\end{tabular}\n\t\caption{Verification EERs for enrolled speakers%s.}\
 \n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:

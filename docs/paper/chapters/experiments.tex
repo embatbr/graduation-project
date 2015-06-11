@@ -88,7 +88,7 @@ As seen in the tables above and in \figureref{identification-curves-speakers}, f
 \begin{figure}[ht]
     \centering
     \includegraphics{chapters/experiments/identification-curves-speakers}
-    \caption{Curves of identification rates for enrolled speakers.}
+    \caption{Identification rates for enrolled speakers.}
     \label{fig:identification-curves-speakers}
 \end{figure}
 
@@ -108,5 +108,14 @@ The choice of values for $r$ was made using
 A comparison of \tableref{identify_speakers} and \figureref{identification-curves-speakers} with the tables and figures from \appendixref{results-identify-ssfgmm} indicates that SSFGMMs trained using utterances from all environments and values 0.99, 1 and 1.01 for $r$ present similar speaker identification success rates to the experiment using SSGMM. The differences are around 1 percentage point, what may not be characterized as an improvement before further investigations (a slightly better success rate may be attributed to the random initialization of the model).
 
 \subsection{Speaker Verification using SSGMM}
+
+\input{chapters/tables/verify_speakers}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{chapters/experiments/verification-eer-speakers}
+    \caption{Verification EERs over $M$ for enrolled speakers.}
+    \label{fig:verification-eer-speakers}
+\end{figure}
 
 %\subsection{Speaker Verification using SSAGMM}
