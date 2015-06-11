@@ -168,7 +168,7 @@ def draw_det_curves(verify_dir):
             pl.clf()
             for environment in environments:
                 ubm_key = 'UBM %s' % environment
-                ax = pl.subplot(2, 2, position)
+                ax = pl.subplot(3, 3, position)
                 ax.set_title(environment, fontsize=10)
                 pl.grid(True)
                 pl.xticks(ticks)
@@ -178,10 +178,12 @@ def draw_det_curves(verify_dir):
                 [tick.label.set_fontsize(fontsize) for tick in ax.xaxis.get_major_ticks()]
                 [tick.label.set_fontsize(fontsize) for tick in ax.yaxis.get_major_ticks()]
 
-                if position == 3 or position == 4:
-                    pl.subplots_adjust(hspace=0.3)
+                if position > 3:
+                    pl.subplots_adjust(hspace=0.45)
+                if position == 2 or position == 5:
+                    pl.subplots_adjust(wspace=0.3)
 
-                position = position + 1
+                position = position + 2 if position == 2 else position + 1
                 color_index = 0
 
                 for environment in environments:
@@ -194,7 +196,7 @@ def draw_det_curves(verify_dir):
                 pl.xlabel('false detection', fontsize=7)
                 pl.ylabel('false rejection', fontsize=7)
 
-            pl.subplot(221)
+            pl.subplot(3, 3, 1)
             pl.legend(('office','hallway', 'intersection', 'all'),
                        loc='upper right', prop={'size':7})
 
@@ -212,16 +214,13 @@ def draw_ident_curves(identify_dir):
         print(environment.upper())
         gmms_key = 'GMMs %s' % environment
         ax = pl.subplot(3, 3, position)
-        #ax = pl.subplot(2, 2, position)
         ax.set_title(environment, fontsize=10)
         pl.grid(True)
 
-        #if position == 3 or position == 4:
         if position > 3:
             pl.subplots_adjust(hspace=0.3)
 
         position = position + 2 if position == 2 else position + 1
-        #position = position + 1
         color_index = 0
 
         for delta_order in delta_orders:
@@ -246,7 +245,6 @@ def draw_ident_curves(identify_dir):
         ax.set_xscale('log', basex=2)
         ax.xaxis.set_major_formatter(pl.ScalarFormatter())
 
-    #pl.subplot(2, 2, 1)
     pl.subplot(3, 3, 1)
     pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':6})
 
@@ -456,33 +454,32 @@ elif command == 'verify':
     print('verify: %s' % verify)
     t = time.time()
 
-    for M in Ms:
-        print('M = %d' % M)
-        for delta_order in delta_orders:
-            print('delta_order = %d' % delta_order)
-            UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
-            GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
-            EXP_PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
-            if not os.path.exists(EXP_PATH):
-                os.mkdir(EXP_PATH)
+    for delta_order in delta_orders:
+        print('delta_order = %d' % delta_order)
+        UBMS_PATH = '%smit_%d_%d/' % (UBMS_DIR, numceps, delta_order)
+        GMMS_PATH = '%smit_%d_%d/' % (gmm_dir, numceps, delta_order)
+        EXP_PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
+        if not os.path.exists(EXP_PATH):
+            os.mkdir(EXP_PATH)
 
-            all_gmm_filenames = os.listdir(GMMS_PATH)
-            all_gmm_filenames.sort()
+        all_gmm_filenames = os.listdir(GMMS_PATH)
+        all_gmm_filenames.sort()
+
+        for M in Ms:
+            print('M = %d' % M)
 
             expdict = dict()
             for environment in environments:
                 print(environment.upper())
+                gmms_key = 'GMMs %s' % environment
+                expdict[gmms_key] = dict()
+                expdict[gmms_key]['SCORES enrolled'] = list()
+                expdict[gmms_key]['SCORES imposter'] = list()
+
+                # loading UBM for environment and M
                 ubmfile = open('%s%s_%d.gmm' % (UBMS_PATH, environment, M), 'rb')
                 ubm = pickle.load(ubmfile)
                 ubmfile.close()
-
-                ubm_key = 'UBM %s' % environment
-                expdict[ubm_key] = dict()
-                for env in environments:
-                    env_key = 'SCORES %s' % env
-                    expdict[ubm_key][env_key] = dict()
-                    expdict[ubm_key][env_key]['enrolled'] = list()
-                    expdict[ubm_key][env_key]['imposter'] = list()
 
                 if adaptations is None:
                     expr = '_%s_%d.gmm' % (environment, M)
@@ -501,7 +498,6 @@ elif command == 'verify':
                     gender = enrolled[0]
                     num_imposters = 17 if gender == 'f' else 23
                     speakers = [enrolled] + ['%s%02d_i' % (gender, i) for i in range(num_imposters)]
-
                     for i in range(len(speakers)):
                         speaker = speakers[i]
                         dataset = 'imposter' if i > 0 else 'enroll_2'
@@ -509,20 +505,11 @@ elif command == 'verify':
                         featslist = bases.read_features_list(numceps, delta_order,
                                                              dataset, speaker)
 
-                        for i in range(len(featslist)):
-                            feats = featslist[i]
+                        for feats in featslist:
                             log_likeli_gmm = gmm.log_likelihood(feats)
                             log_likeli_ubm = ubm.log_likelihood(feats)
                             score = log_likeli_gmm - log_likeli_ubm
-
-                            # each environment has 18 utterances
-                            expdict[ubm_key]['SCORES all'][dataset_key].append(score)
-                            if i < 18:
-                                expdict[ubm_key]['SCORES office'][dataset_key].append(score)
-                            if 18 <= i < 36:
-                                expdict[ubm_key]['SCORES hallway'][dataset_key].append(score)
-                            if 36 <= i < 54:
-                                expdict[ubm_key]['SCORES intersection'][dataset_key].append(score)
+                            expdict[gmms_key]['SCORES %s' % dataset_key].append(score)
 
             EXP_FILE_PATH = '%sscores_M_%d.json' % (EXP_PATH, M)
             with open(EXP_FILE_PATH, 'w') as expfile:
@@ -586,35 +573,31 @@ elif command == 'calc-det-curves':
 
             detdict = dict()
             for environment in environments:
-                ubm_key = 'UBM %s' % environment
-                detdict[ubm_key] = dict()
+                gmms_key = 'GMMs %s' % environment
+                detdict[gmms_key] = dict()
 
-                for environment in environments:
-                    scores_key = 'SCORES %s' % environment
-                    detdict[ubm_key][scores_key] = dict()
+                enrolled = np.array(expdict[gmms_key]['SCORES enrolled'])
+                imposter = np.array(expdict[gmms_key]['SCORES imposter'])
+                scores = np.sort(np.hstack((enrolled, imposter)))
+                scores = np.hstack((scores, np.max(scores) + 10*EPS))
 
-                    enrolled = np.array(expdict[ubm_key][scores_key]['enrolled'])
-                    imposter = np.array(expdict[ubm_key][scores_key]['imposter'])
-                    scores = np.sort(np.hstack((enrolled, imposter)))
-                    scores = np.hstack((scores, np.max(scores) + 10*EPS))
+                detdict[gmms_key]['false_detection'] = list()
+                detdict[gmms_key]['false_rejection'] = list()
 
-                    detdict[ubm_key][scores_key]['false_detection'] = list()
-                    detdict[ubm_key][scores_key]['false_rejection'] = list()
+                for score in scores:
+                    false_detection = imposter[imposter >= score]
+                    false_detection = (len(false_detection) / len(imposter)) * 100
+                    detdict[gmms_key]['false_detection'].append(false_detection)
 
-                    for score in scores:
-                        false_detection = imposter[imposter >= score]
-                        false_detection = (len(false_detection) / len(imposter)) * 100
-                        detdict[ubm_key][scores_key]['false_detection'].append(false_detection)
+                    false_rejection = enrolled[enrolled < score]
+                    false_rejection = (len(false_rejection) / len(enrolled)) * 100
+                    detdict[gmms_key]['false_rejection'].append(false_rejection)
 
-                        false_rejection = enrolled[enrolled < score]
-                        false_rejection = (len(false_rejection) / len(enrolled)) * 100
-                        detdict[ubm_key][scores_key]['false_rejection'].append(false_rejection)
-
-                    fd = detdict[ubm_key][scores_key]['false_detection']
-                    fr = detdict[ubm_key][scores_key]['false_rejection']
+                    fd = detdict[gmms_key]['false_detection']
+                    fr = detdict[gmms_key]['false_rejection']
                     (EER, EER_index) = calculate_eer(fd, fr)
-                    detdict[ubm_key][scores_key]['EER'] = EER
-                    detdict[ubm_key][scores_key]['EER_score'] = scores[EER_index]
+                    detdict[gmms_key]['EER'] = EER
+                    detdict[gmms_key]['EER_score'] = scores[EER_index]
 
             DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
             with open(DET_FILE_PATH, 'w') as detfile:
@@ -721,7 +704,7 @@ elif command == 'draw-ident-curves-all':
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-elif command == 'ident-tables':
+elif command == 'identify-tables':
     if not os.path.exists(TABLES_DIR):
         os.mkdir(TABLES_DIR)
 
@@ -733,7 +716,7 @@ elif command == 'ident-tables':
 
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
-\\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \hline \hline'
+\\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\\n\t\hline\n\t\hline'
     bottom = '\n\t\end{tabular}\n\t\label{tab:%s}\n\end{table}'
     bottom_cap = '\n\t\end{tabular}\n\t\caption{Identification rates for enrolled speakers.}\
 \n\t\label{tab:%s}\n\end{table}'
@@ -741,7 +724,6 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
     for directory in directories:
         identify_dir = '%s%s/' % (IDENTIFY_DIR, directory)
 
-        tablename = 'identify_%s' % directory
         table = '%s' % top
 
         for delta_order in delta_orders:
@@ -752,9 +734,9 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 
             for M in Ms:
                 if M == 32:
-                    table = '%s\n\t\multirow{5}*\\bf{\\textbf %d} & ' % (table, delta_order)
+                    table = '%s\n\t\multirow{5}{*}\\bf{\\textbf %d} & ' % (table, delta_order)
                 else:
-                    table = '%s & ' % table
+                    table = '%s\n\t & ' % table
                 table = '%s\\bf{%d}' % (table, M)
 
                 for environment in environments:
@@ -762,14 +744,14 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
                     value = curvesdict[gmms_key]['%d' % M]
                     table = '%s & %.2f' % (table, round(value, 2))
 
-                if M == 128 and delta_order < 2:
-                    table = '%s \\\\ \hline \hline' % table
-                elif M == 128:
-                    table = '%s \\\\ \hline' % table
+                if M < 128:
+                    table = '%s \\\\\n\t\cline{2-6}' % table
                 else:
-                    table = '%s \\\\ \cline{2-6}' % table
+                    table = '%s \\\\\n\t\hline' % table
+                    if delta_order < 2:
+                        table = '%s\n\t\hline' % table
 
-        #r_apx = ' for $r = %s$' % directory[-4 : ] if directory > 'speakers' else ''
+        tablename = 'identify_%s' % directory
         if directory > 'speakers':
             table = '%s%s' % (table, bottom % tablename)
         else:
@@ -780,6 +762,76 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
         print(TABLE_FILE_PATH)
         with open(TABLE_FILE_PATH, 'w') as tablesfile:
             print(table, file=tablesfile)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
+elif command == 'verify-tables':
+    if not os.path.exists(TABLES_DIR):
+        os.mkdir(TABLES_DIR)
+
+    directories = os.listdir(VERIFY_DIR)
+    directories.sort()
+
+    print('Generating LaTeX tables for verification curves')
+    t = time.time()
+
+    top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
+M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t\\bf{GMM environment} & \\bf{M} & \
+\\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \n\t\hline \n\t\hline'
+    bottom = '\n\t\end{tabular}\n\t\caption{DET curves for $\Delta = %d$%s.}\
+\n\t\label{tab:%s}\n\end{table}'
+
+    for directory in directories:
+        verify_dir = '%s%s/' % (VERIFY_DIR, directory)
+
+        for delta_order in delta_orders:
+            PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
+
+            table = '%s' % top
+
+            # reading DET dictionaries just once
+            detdicts = list()
+            for M in Ms:
+                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+                detfile = open(DET_FILE_PATH)
+                detdicts.append(json.load(detfile))
+
+            for ubm_environment in environments:
+                ubm_key = 'UBM %s' % ubm_environment
+
+                for (M, detdict) in zip(Ms, detdicts):
+                    if M == 32:
+                        table = '%s\n\t\multirow{5}*\\bf{\\textbf{%s}} & ' % (table,
+                                                                             ubm_environment)
+                    else:
+                        table = '%s\n\t & ' % table
+                    table = '%s\\bf{%d}' % (table, M)
+
+                    for scores_environment in environments:
+                        scores_key = 'SCORES %s' % scores_environment
+                        eer_value = detdict[ubm_key][scores_key]['EER']
+                        table = '%s & %.2f' % (table, round(eer_value, 2))
+
+                    if M < 128:
+                        table = '%s \\\\ \n\t\cline{2-6}' % table
+                    else:
+                        table = '%s \\\\ \n\t\hline' % table
+                        if ubm_environment != 'all':
+                            table = '%s\n\t\hline' % table
+
+            tablename = 'verify_%s_delta_%d' % (directory, delta_order)
+            label_final = ''
+            if directory != 'speakers':
+                adaptations = directory.split('_')[1]
+                label_final = ' and adaptations = %s' % adaptations
+            table = '%s%s' % (table, bottom % (delta_order, label_final, tablename))
+            table = table.replace('\t', '%4s' % '')
+
+            TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
+            print(TABLE_FILE_PATH)
+            with open(TABLE_FILE_PATH, 'w') as tablesfile:
+                print(table, file=tablesfile)
 
     t = time.time() - t
     print('Total time: %f seconds' % t)
