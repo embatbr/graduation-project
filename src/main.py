@@ -210,7 +210,7 @@ def draw_eer_curves(verify_dir):
     colors = ['b', 'g', 'r'] # colors: delta 0, delta 1 and delta 2
     position = 1
     xticks = np.array(Ms)
-    yticks = np.arange(0, 27.5, 2.5)
+    yticks = np.arange(0, 50, 5)
 
     detdicts = dict()
     for delta_order in delta_orders:
@@ -256,7 +256,7 @@ def draw_eer_curves(verify_dir):
         ax.xaxis.set_major_formatter(pl.ScalarFormatter())
 
     pl.subplot(3, 3, 1)
-    pl.legend(('delta 0','delta 1', 'delta 2'), loc='lower left', prop={'size':6})
+    pl.legend(('delta 0','delta 1', 'delta 2'), loc='upper right', prop={'size':6})
 
     EER_IMG_PATH = '%seer.png' % verify_dir
     pl.savefig(EER_IMG_PATH, bbox_inches='tight')
