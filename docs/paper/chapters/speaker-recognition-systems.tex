@@ -1,9 +1,7 @@
 \chapter{Speaker Recognition Systems}
 \label{ch:speaker-recognition-systems}
 
-%TODO remodelar, retirando tudo sobre Speaker IDENTIFICATION
-
-The speaker recognition process lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a claimed speaker identity is \emph{enrolled} or \emph{imposter}).
+Speaker recognition lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to N (one speaker signal to be identified as belonging to one of the N enrolled speakers), while for a verification system the classification is 1 to 1 (a speaker with a claimed identity is either \textbf{enrolled} or \textbf{imposter}).
 
 Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
 
@@ -17,11 +15,11 @@ Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the 
 \section{Basic Concepts}
 \label{sec:basic-concepts}
 
-Before start the discussion about the types of ASR systems, some basic concepts must be elucidated. Those are \textbf{utterance} and \textbf{features}.
+Before start the discussion about the types of ASR systems, two basic concepts, \textbf{utterance} and \textbf{features}, must be elucidated.
 
 \subsection{Utterance}
 
-An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but from herenow speech signal will be defined as an utterance recorded, digitalized and ready to be processed. An example is shown in \figureref{speech_signal}.
+An utterance is a piece of speech produced by a speaker. It may be a word, a statement or any vocal sound. The terms \emph{utterance} and \emph{speech signal} sometimes are used interchangeably, but from herenow speech signal will be defined as an utterance recorded and digitalized.
 
 \begin{figure}[ht]
     \centering
@@ -37,7 +35,7 @@ The raw speech signal is unfit for use by an ASR system. For a correct processin
 \section{Speaker Identification}
 \label{sec:speaker-identification}
 
-Given a sequence $\dvec{X}$ of features extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+Given a sequence of features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\mathcal{S}_j},
@@ -57,11 +55,11 @@ The features extracted from speech signals are used to train models for the spea
     \label{fig:speaker-recognition-training}
 \end{figure}
 
-The idea behind the training stage is to make $\lambda_j$ ``memorize" the distinct characteristics present in the speaker's vocal tract that best represents him or her. The SSGMM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the $\lambda_j$'s.
+The idea behind the training stage is to make $\lambda_j$ ``memorize" the distinct characteristics present in $\mathcal{S}_i$'s vocal tract that provide the best representation. The SSGMM, initially referenced in \sectionref{gmm} and described in details in \chapterref{gmm}, is a perfect choice to model the speakers.
 
 \subsection{Test}
 
-The system test is performed replacing $\mathcal{S}_j$ in \equationref{classification_speaker_identification} by the model $\lambda_j$, leading to
+The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equationref{classification_speaker_identification} by their models $\lambda_j$, leading to
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j},
@@ -80,14 +78,14 @@ The system test is performed replacing $\mathcal{S}_j$ in \equationref{classific
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$ are to the features from $\mathcal{S}_i$ ``memorized" by the system. Then a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$ are to the features from $\mathcal{S}_i$ used to model the system. Then, a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_i} \verifytestB{\alpha}{\mathcal{S}}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must decide not only if a speech signal came from the claimed speaker, but also if it came from a set composed of all other enrolled speakers and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must determine not only if $\dvec{X}$ is similar to the claimed speaker's features, but also its similarities to a set composed of all other enrolled speakers' features and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
@@ -114,7 +112,7 @@ Given the vector of features $\dvec{X}$, and assuming it was produced by only on
 
 \subsection{Training}
 
-Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ (mathematical representation of $\mathcal{S}_{hyp}$) is shown in \figureref{speaker-recognition-training}.
+Once the features are extracted from the speech signal, they are used to train the models $\lambda_{hyp}$ and $\lambda_{\overline{hyp}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{hyp}$ is shown in \figureref{speaker-recognition-training}.
 
 Due to $\lambda_{hyp}$ be a model of $\mathcal{S}_{hyp}$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{hyp})$) are extracted from speech signals produced by $\mathcal{S}_{hyp}$. The model $\lambda_{\overline{hyp}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_{hyp}$, but creating a single $\lambda_{\overline{hyp}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the presence of each $\mathcal{S}_{hyp}$ weights approximately the same.
 
@@ -141,7 +139,7 @@ As seen in \equationref{log-likelihood-ratio-test}, the decision process is base
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \Theta$, for an arbitrary value of $\theta$, with $\Theta = \log\theta$ (see \figureref{speaker-verification}).
+\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \Theta$, for an arbitrary value of $\theta$, with $\Theta = \log\theta$.
 
 \begin{figure}[ht]
     \centering
