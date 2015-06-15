@@ -862,7 +862,6 @@ elif command == 'verify-tables':
 
     directories = os.listdir(VERIFY_DIR)
     directories.sort()
-    directories = ['speakers']
 
     print('Generating LaTeX tables for verification curves')
     t = time.time()
