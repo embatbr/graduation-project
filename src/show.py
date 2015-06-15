@@ -94,6 +94,7 @@ if __name__ == '__main__':
         ax = pl.subplot(3, 1, 1)
         set_plot_params(ax, grid=True)
         pl.plot(duration, signal, 'b')
+        ax.set_xlim([duration[0], duration[-1]])
 
         FILE_PATH = '../docs/paper/images/chapters/speaker-recognition-systems/speech_signal.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
