@@ -1,24 +1,24 @@
 \chapter{Gaussian Mixture Models}
 \label{ch:gmm}
 
-\chapterref{speaker-recognition-systems} briefly discussed the use of models $\lambda_i$ to perform an identification process and models $\lambda_{hyp}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to a verification process. As the features from the speech signal (see \chapterref{feature-extraction}) have unknown values until the moment of extraction, it is reasonable to model the ASR system to accept random values.
+\chapterref{speaker-recognition-systems} briefly discussed the use of models $\lambda_i$ to perform an identification process and models $\lambda_{C}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to a verification process. As the features from the speech signal have unknown values until the moment of extraction, it is reasonable to model the ASR system to work with random values.
 
-For all sorts of probability distributions, the gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, as demonstrated by the central limit theorem. Its equation for a D-dimensional space is
+For all sorts of probability distributions, the Gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, as demonstrated by the central limit theorem. Its equation for a D-dimensional space is
 
 \begin{equation}
     \pdf{\dvec{x}} = p(\dvec{x},\dvec{\mu},\dvec{\Sigma}) = \dgaussian{x}{\mu}{\Sigma},
     \label{eq:gaussian}
 \end{equation}
 
-\noindent where $\dvec{x}$ is a $D$-dimensional input vector, $\dvec{\mu}$ the $D$-dimensional vector of means, $\dvec{\Sigma}$ the $D \times D$ matrix of covariances, $\dvec{|\Sigma|}$ the determinant of $\dvec{\Sigma}$, and $(\dvec{x} - \dvec{\mu})'$ the transposed of the colum-matrix $(\dvec{x} - \dvec{\mu})$.
+\noindent where $\dvec{x}$ is a $D$-dimensional input vector, $\dvec{\mu}$ is a $D$-dimensional vector of means, $\dvec{\Sigma}$ is a $D \times D$ matrix of covariances, $\dvec{|\Sigma|}$ is the determinant of $\dvec{\Sigma}$, and $(\dvec{x} - \dvec{\mu})'$ is the transposed of the colum-matrix $(\dvec{x} - \dvec{\mu})$.
 
 \section{Definition}
 \label{sec:gmm-definition}
 
-A weighted sum of $\pdf{\dvec{x}}$'s is used to model the ASR system, estimating the composition that best represents the training data. This weighted sum is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and is given by
+For the general case, a single Gaussian distribution does not provide the most accurate representation. This issue is reduced using a linear combination of $\pdf{\dvec{x}}$'s to model the ASR system, estimating the one that best represents the training data. This combination is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and given by
 
 \begin{equation}
-    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdfi{\dvec{x}},
+    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\postpdfi{\dvec{x}}{\dvec{\mu}_i, \dvec{\Sigma}_i} = \sum_{i=1}^M w_i\pdfi{\dvec{x}},
     \label{eq:gaussian_mixture}
 \end{equation}
 
@@ -29,10 +29,10 @@ A weighted sum of $\pdf{\dvec{x}}$'s is used to model the ASR system, estimating
     \label{eq:likelihood_gmm}
 \end{equation}
 
-The idea behind the use of a GMM as a model for a speaker $\mathcal{S}$ is to achieve a $\lambda$ that maximizes the likelihood when applied to features $\dvec{X}$ extracted from a speech signal produced by $\mathcal{S}$. This value is found by a Maximum Likelihood Estimation (MLE) algorithm. For a sequence of T training vectors $\dvec{X} = \{\dvec{x}_t\}$, the GMM likelihood can be written as
+The reason to model a speaker $\mathcal{S}$ using a GMM is to achieve a $\lambda$ that maximizes the likelihood when applied to features $\dvec{x}$ extracted from a speech signal produced by $\mathcal{S}$. This value is found by a Maximum Likelihood Estimation (MLE) algorithm. For a sequence of T training vectors $\dvec{X} = \{\dvec{x}_t\}$, the GMM's likelihood can be written as
 
 \begin{equation}
-    \postpdf{\dvec{x}}{\lambda} = \prod_{t=1}^T \postprob{\dvec{x}_t}{\lambda}.
+    \postpdf{\dvec{X}}{\lambda} = \prod_{t=1}^T \postpdf{\dvec{x}_t}{\lambda}.
     \label{eq:likelihood_gmm_mle}
 \end{equation}
 
@@ -45,13 +45,6 @@ In this paper, the GMM that models a single speaker will be reffered to as Singl
 
 The idea of the EM algorithm is to estimate a new model $\lambda^{(k+1)}$ from a previous model $\lambda^{(k)}$, that obeys $\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \postpdf{\dvec{X}}{\lambda^{(k)}}$, better representing the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i^2$ of variances).
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{chapters/gmm/em_algorithm}
-    \caption{Features before (left), partitioned using a single iteration k-means, and after (right) the EM algorithm. Only the first deviation is shown.}
-    \label{fig:em_algorithm}
-\end{figure}
-
 \subsubsection*{E-Step}
 
 The \textbf{expectation step} consists of estimating the \emph{a posteriori} probabilities $\postprob{i}{\dvec{x}_t, \lambda}$ for each distribution $i$ and each feature vector $\dvec{x}_t$, defined as
@@ -60,6 +53,8 @@ The \textbf{expectation step} consists of estimating the \emph{a posteriori} pro
     \postprob{i}{\dvec{x}_t, \lambda} = \postprob{i}{\dvec{x}_t} = \frac{w_i p_i(\dvec{x}_t)}{\sum_{k=1}^M w_k p_k(\dvec{x}_t)}.
     \label{eq:e-step-posterior}
 \end{equation}
+
+\noindent The $\lambda$ present in \equationref{e-step-posterior} is the previously cited $\lambda^{(k)}$ for the current iteration.
 
 \subsubsection*{M-Step}
 
@@ -82,12 +77,33 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \noindent\textbf{Variances:}
 
 \begin{equation}
-    \overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2.
+    \overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2,
     \label{eq:m-step-variances}
 \end{equation}
-\\
 
-This algorithm trains the GMMs used in the ASR systems shown in sections \sectionrefcomp{speaker-identification} and \sectionrefcomp{speaker-verification} and previously described in \sectionref{gmm-definition}. \figureref{em_algorithm} shows the mixture before and after the training.
+\noindent\\ where $\lambda^{(k+1)} = \{(\overline{w}_i, \overline{\dvec{\mu}}_i, \overline{\dvec{\sigma}}_i^2)\}$, for $i = 1, \dots, M$, and $\lambda^{k} = \lambda^{(k+1)}$ in the next iteration. This algorithm trains the GMMs used in the ASR systems shown in sections \sectionrefcomp{speaker-identification} and \sectionrefcomp{speaker-verification} and previously described in \sectionref{gmm-definition}.
+
+\begin{algorithm}
+\label{em-algorithm}
+\begin{algorithmic}[1]
+\Procedure{Expectation\textendash Maximization}{$\lambda, \dvec{X}, threshold$}
+\State $\lambda^k = \lambda$
+\State $\lambda^{(k+1)} =$ M-Step($\lambda^k, \dvec{X})$
+\State \textbf{if} $\postpdf{\dvec{X}}{\lambda^{(k+1)}} - \postpdf{\dvec{X}}{\lambda^{(k)}} \leq threshold \implies$ \textbf{goto} line $7$
+\State$\lambda^k = \lambda^{(k+1)}$
+\State \textbf{goto} line $3$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\noindent The pseudo code above describes the EM algorithm. The \emph{E-Step} is not shown, but is used inside the \emph{M-Step}. Obviously, in a real implementation the \emph{E-Step} is calculated once for each iteration. \figureref{em_algorithm} shows $\lambda$'s gaussians before and after the EM algorithm.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{chapters/gmm/em_algorithm}
+    \caption{Gaussians before (left), partitioned using a single iteration k-means, and after (right) the EM algorithm. Only the first deviation is shown.}
+    \label{fig:em_algorithm}
+\end{figure}
 
 \section{Universal Background Model}
 \label{sec:ubm}
@@ -103,7 +119,7 @@ There are many configurations for an UBM, however, as seen in \refbib{Reynolds e
     \label{fig:ubm-diagram}
 \end{figure}
 
-As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{hyp}$ and $\lambda_{bkg}$. The default ASR system is a SSGMM-UBM system, turning \equationref{score_of_X} in
+As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{C}$ and $\lambda_{bkg}$. The default ASR system is a SSGMM-UBM system, turning \equationref{score_of_X} in
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
