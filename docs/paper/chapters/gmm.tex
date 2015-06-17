@@ -96,7 +96,7 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \end{algorithmic}
 \end{algorithm}
 
-\noindent The pseudo code above describes the EM algorithm. The \emph{E-Step} is not shown, but is used inside the \emph{M-Step}. Obviously, in a real implementation the \emph{E-Step} is calculated once for each iteration. \figureref{em_algorithm} shows $\lambda$'s gaussians before and after the EM algorithm.
+\noindent The pseudo code above describes the EM algorithm. The \emph{E-Step} is not shown, but is used inside the \emph{M-Step}. Obviously, in an implementation the \emph{E-Step} is calculated once for each iteration. \figureref{em_algorithm} shows $\lambda$'s gaussians before and after the EM algorithm.
 
 \begin{figure}[ht]
     \centering
@@ -108,9 +108,9 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \section{Universal Background Model}
 \label{sec:ubm}
 
-An Universal Background Model (UBM), is a GMM composed of features from all enrolled speakers. The idea is to generate a model $\lambda_{bkg}$ where common characteristics present in the corpus are well represented. Then, a speech mostly composed of common characteristics from enrolled speakers is more difficult to pass the likelihood ratio test, because \equationref{score_of_X} would produce a low score.
+An Universal Background Model (UBM) is a GMM composed of features from all enrolled speakers and used in speaker verification. The idea is to generate a model $\lambda_{bkg}$ where common characteristics present in this group are well represented. Then, a speech mostly composed of these characteristics is more difficult to succeed the likelihood ratio test, due to the low score produced by \equationref{score_of_X}.
 
-There are many configurations for an UBM, however, as seen in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately. Also, female voices have more intrasimilarities than males, leading to more distinct male configurations. The $M$-th order UBM in this study is created merging trained male and female models, both of order $M/2$ (see \figureref{ubm-diagram}).
+There are many configurations for an UBM, however, as seen in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, male and female speakers present distinct vocal traits and are better represented when trained separately. Also, female voices have more intrasimilarities than males, leading to more distinct male configurations. The $M$-th order UBM in this study is created merging trained male and female models of order $M/2$ (see \figureref{ubm-diagram}).
 
 \begin{figure}[ht]
     \centering
@@ -129,23 +129,16 @@ As shown in \sectionref{speaker-verification}, the likelihood ratio test is perf
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify all speakers demands the training of SSGMMs for all enrolled speakers, a highly costly action (in time). An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster training than in the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify the entire corpus demands the training of SSGMMs for all enrolled speakers, a highly costly action in time. An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster training than in the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSAGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
     \label{eq:score_of_X_ssagmm_ubm}
 \end{equation}
 
-The idea behind the Bayesian adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} is to recalculate the gaussians from the UBM using only the desired speaker's features. If a gaussian represents the new data better than the old data, the change is relevant.
+The Bayesian adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} recalculates the gaussians from the UBM using features from the desired speaker only. If a gaussian represents the new data better than the old data, the change is relevant.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=\textwidth]{chapters/gmm/adapted_wmv}
-    \caption{UBM trained (left) and weights, means and variances adapted for a female speaker (right). The blue dots are the background features and the green the speaker's.}
-    \label{fig:adapted_wmv}
-\end{figure}
-
-The adaptation process is composed of two steps. The first is an expectation step, similar to the EM algorithm. Using $\postprob{i}{\dvec{x}_t}$ (see \equationref{e-step-posterior}) is possible to compute the sufficient statistics for the weight, mean, and variance parameters:\footnote{$\dvec{x}^2$ is shorthand for diag($\dvec{x}\dvec{x}'$).}
+The adaptation process is composed of two steps. The first is an expectation step, similar to the EM algorithm. Using $\postprob{i}{\dvec{x}_t}$ from \equationref{e-step-posterior}, it is possible to compute the sufficient statistics for the weight, mean, and variance parameters:\footnote{$\dvec{x}^2$ is shorthand for diag($\dvec{x}\dvec{x}'$).}
 
 \begin{equation}
     n_i = \sum_{t=1}^{T} \postprob{i}{\dvec{x}_t}
@@ -162,7 +155,7 @@ The adaptation process is composed of two steps. The first is an expectation ste
     \label{eq:E_x2}
 \end{equation}
 
-Finally, these new sufficient statistics from the training data are used to update the old UBM sufficient statistics and adapt the parameters for mixture $i$ (see \figureref{adapted_wmv}) with the equations taken from \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}:
+Finally, these new sufficient statistics from the training data are used to update the old UBM sufficient statistics and adapt the parameters for mixture $i$ with the equations taken from \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}:
 
 \begin{equation}
     \hat{w_i} = [\alpha_i n_i / T + (1 - \alpha_i)w_i]\gamma
@@ -179,14 +172,21 @@ Finally, these new sufficient statistics from the training data are used to upda
     \label{eq:adapted_variances}
 \end{equation}
 
-The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coefficient controlling the balance between old and new estimates is $\alpha_i$, given by
+\noindent The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coefficient controlling the balance between old and new estimates is $\alpha_i$, given by\footnote{The equation for $\alpha_i$ is a simplification used in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000} with negligible loss. For the original equations for $\alpha_i^\rho$, $\rho = \{w, \dvec{\mu}, \dvec{\sigma}^2\}$, visit the referenced paper.}
 
 \begin{equation}
     \alpha_i = \frac{n_i}{n_i + r},
     \label{eq:alpha_i}
 \end{equation}
 
-\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demand that more data be observed in a mixture before new parameters begin replacing old ones (i.e., more relevant).
+\noindent where $r$ is a fixed relevance factor. If a mixture component has a low probabilistic count $n_i$, then $\alpha_i \to 0$ causing the deemphasis of the new (potentially undertrained) parameters and the emphasis of the old (better trained) parameters. For mixture components with high probabilistic counts, $\alpha_i \to 1$, causing the use of the new speaker-dependent parameters. The relevance factor $r$ controls the strength of the new data in the adaptation process. Higher values of $r$ demand that more data be observed in a mixture before new parameters begin replacing olds.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{chapters/gmm/adapted_wmv}
+    \caption{UBM trained (left) and weights, means and variances adapted for a female speaker (right) with $r = 16$. The blue dots are the background features and the green the speaker's. Only the first deviation is shown.}
+    \label{fig:adapted_wmv}
+\end{figure}
 
 \section{Fractional Gaussian Mixture Model}
 \label{sec:frac-gmm}
@@ -198,7 +198,7 @@ The scale factor $\gamma$ normalizes the weights. \noindent The adaptation coeff
     \label{eq:frac-variance}
 \end{equation}
 
-\noindent where $E$ is the expected value and $r$ is a real number, and show superior performance when choosing different values for $r$ between 0 and 1. A value of 1 for $r$ reduces \equationref{frac-variance} to the usual variance. As demonstrated in \refbib{Gao et. al.}{gao.zhou.pu.2013}, FPCA and 2D-FPCA deliver better projections than the usual PCA and 2D-PCA, respectively, making natural to extrapolate this idea for other types of signals.
+\noindent where $E$ is the expected value and $r$ is a real number, and show superior performance when choosing different values for $r$ between 0 and 1. A value of 1 for $r$ reduces \equationref{frac-variance} to the usual variance. As demonstrated in \refbib{Gao et. al.}{gao.zhou.pu.2013}, FPCA and 2D-FPCA deliver better projections than the usual PCA and 2D-PCA, respectively, making natural to extrapolate this idea for other types of signals and parametrizations.
 
 The technique described in this section, named Fractional Gaussian Mixture Model (FGMM), also uses the theory of FCM to calculate matrices of covariances. As the matrices are diagonal, \equationref{frac-variance} is sufficient, changing \equationref{m-step-variances} to
 
@@ -207,14 +207,14 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{eq:m-step-frac-variances}
 \end{equation}
 
-\noindent A particular problem the FCM may generate when applied to MFCCs is the emergence of complex numbers. A solution to this problem is to shift up the MFCCs (see \figureref{mfcc-shifted}), making all values positive and the minimums equal to 1, as follows:
+\noindent One problem the FCM generates when applied to MFCCs is the emergence of complex numbers. A practical solution is to shift the MFCCs (see \figureref{mfcc-shifted}), turning all values in positive numbers and their minimums equal to 1:
 
 \begin{equation}
     c_n = c_n + (1 - \min_t c_{n,t}).
     \label{eq:mfccs-shift-up}
 \end{equation}
 
-\noindent The distances between points in each dimension remain the same, maintaining the usual variances unchanged. \equationref{mfccs-shift-up} works fine for GMMs with diagonal covariance matrices, due to the independence of each variable to the others. This allows the uses of \equationref{frac-variance} to calculate the initial fractional variances and of \equationref{m-step-frac-variances} to train the models.
+\noindent The distances in each dimension between points remain the same, maintaining the usual variances unchanged. \equationref{mfccs-shift-up} works correctly for GMMs with diagonal covariance matrices, due to the independence of each variable to the others. This ensures the correct uses of \equationref{frac-variance} to calculate the initial fractional variances and of \equationref{m-step-frac-variances} to train the models.
 
 \begin{figure}[ht]
     \centering
@@ -223,20 +223,20 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{fig:mfcc-shifted}
 \end{figure}
 
-\noindent After the variances are calculated, the means are shifted down,
+\noindent After the variances are calculated, the means are shifted again,
 
 \begin{equation}
     \mu_n = \mu_n - (1 - \min_t c_{n,t}),
     \label{eq:means-shift-down}
 \end{equation}
 
-\noindent returning to their supposed ``original" values. This procedure avoids having to shift up every vector of features, be it in the training or in the test sections, and is a practical solution to circumvent the problem.
+\noindent returning to their supposed ``original" values. This procedure avoids having to shift every vector of features, be it in the training or in the test sections, and is a practical solution to circumvent the problem.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/gmm/em_algorithm_r095}
-    \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM with $r = 0.95$. The blue points are the original features, while the greens are they shifted. Only the first deviation is shown.}
+    \caption{Features before (left), partitioned using k-means, and after (right) the EM algorithm. All variances (before and after EM) were calculated using FCM with $r = 0.95$. The blue points are the original features, while the greens are the shifted. Only the first deviation is shown.}
     \label{fig:frac-em_algorithm}
 \end{figure}
 
-The choice of shift up all features to 1 is mostly based in common sense. To avoid non-negative values, just shift to 0 would be sufficient. However, when $r \to 0$, the results for $X^r$ amd $\mu^r$ could fall in the indefinition $0^0$, due to approximations in floating points. Also, for values greater than or equal to 1, the exponentiation remains monotonic.
+The choice of shift all features to 1 is mostly based in common sense. To avoid non-negative values, just shift to 0 would be sufficient. However, when $r \to 0$, the results for $X^r$ amd $\mu^r$ could fall in the indefinition $0^0$, due to approximations of floating points in numeric computation. Also, for values greater than or equal to 1, the exponentiation remains monotonic.
