@@ -928,11 +928,11 @@ elif command == 'appendix-A':
         newpage = '' if r == 0.95 else '\\newpage\n'
         labelname = '%03d' % int(r * 100)
 
-        appendix = '%s\n\n%s\section{$r = %.2f$}' % (appendix, newpage, r)
-
-        appendix = '%s\n\n\input{chapters/tables/identify_speakers_%.02f}' % (appendix, r)
+        appendix = '%s\n\n%s\input{chapters/tables/identify_speakers_%.02f}' % (appendix, newpage, r)
         appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
         appendix = '%s\n\t\includegraphics{chapters/%s/r-%s}' % (appendix, appendixname, labelname)
+        appendix = '%s\n\t\caption{Identification rates for enrolled speakers with \
+$r = %.02f$.}' % (appendix, r)
         appendix = '%s\n\t\label{fig:r-%s}' % (appendix, labelname)
         appendix = '%s\n\end{figure}' % appendix
 
