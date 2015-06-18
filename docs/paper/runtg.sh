@@ -1,4 +1,4 @@
-FILENAME="monograph"
+FILENAME="paper"
 REMOVE="rm $FILENAME.aux $FILENAME.lof $FILENAME.log $FILENAME.lot $FILENAME.toc \
 $FILENAME.run.xml $FILENAME-blx.bib $FILENAME.bbl $FILENAME.blg $FILENAME.bcf \
 $FILENAME.out"
