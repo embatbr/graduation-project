@@ -15,6 +15,9 @@ from common import UBMS_DIR, GMMS_DIR, frange
 import features
 
 
+FONTSIZE = 8
+
+
 def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'):
     """Plots a GMM and the vector of features used to train it. The plotting is
     in a 2D space.
@@ -56,7 +59,7 @@ def plot_gmm(gmm, featsvec, x_axis=0, y_axis=1, param_feats='b.', param_mix='r.'
         ax.add_artist(ellipse)
 
 
-def set_plot_params(ax, fontsize=8, grid=False, xticks=None, yticks=None):
+def set_plot_params(ax, fontsize=FONTSIZE, grid=False, xticks=None, yticks=None):
     """Changes the size of ticks on axes x and y.
 
     @param ax: the object containing the axes x and y.
@@ -344,6 +347,36 @@ if __name__ == '__main__':
             FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm_r%s.png' % r_apx
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
+
+    elif command == 'frac-em-extremes':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
+
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
+                                      downlim='01', uplim='19')
+
+        (r_left, r_right) = (0.8, 1.2)
+
+        frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r_left)
+        frac_gmm.train(featsvec)
+        ax = pl.subplot(2, 2, 1)
+        ax.set_title('r = %.1f' % r_left, fontsize=FONTSIZE)
+        set_plot_params(ax)
+        plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
+
+        frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r_right)
+        frac_gmm.train(featsvec)
+        ax = pl.subplot(2, 2, 2)
+        ax.set_title('r = %.1f' % r_right, fontsize=FONTSIZE)
+        set_plot_params(ax)
+        plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
+
+        FILE_PATH = '../docs/paper/images/chapters/experiments/frac-em-extremes.png'
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+        pl.clf()
 
     elif command == 'ubm':
         M = int(args[0])

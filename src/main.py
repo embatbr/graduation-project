@@ -869,8 +869,7 @@ elif command == 'verify-tables':
     top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
 M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 \\bf{Office} & \\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \n\t\hline \n\t\hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{Verification EERs for enrolled speakers%s.}\
-\n\t\label{tab:%s}\n\end{table}'
+    bottom = '\n\t\end{tabular}%s\n\t\label{tab:%s}\n\end{table}'
 
     for directory in directories:
         verify_dir = '%s%s/' % (VERIFY_DIR, directory)
@@ -907,11 +906,10 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 
         tablename = 'verify_%s' % directory
         if directory == 'speakers':
-            caption_final = ''
+            caption = '\n\t\caption{Verification EERs for enrolled speakers.}'
         else:
-            adaptations = directory.split('_')[1]
-            caption_final = ' for adaptations = %s' % adaptations
-        table = '%s%s' % (table, bottom % (caption_final, tablename))
+            caption = ''
+        table = '%s%s' % (table, bottom % (caption, tablename))
         table = table.replace('\t', '%4s' % '')
 
         TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
@@ -922,72 +920,19 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
-elif command == 'verify-tables-by-M':
-    if not os.path.exists(TABLES_DIR):
-        os.mkdir(TABLES_DIR)
-
-    directories = os.listdir(VERIFY_DIR)
-    directories.sort()
-
-    print('Generating LaTeX tables for verification curves')
-    t = time.time()
-
-    top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|\
-M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{Office} & \
-\\bf{Hallway} & \\bf{Intersection} & \\bf{All} \\\\ \n\t\hline \n\t\hline'
-    bottom = '\n\t\end{tabular}\n\t\caption{Verification EERs for $\Delta \in \{0, 1, 2\}$ \
-and $M = %d$%s.}\
-\n\t\label{tab:%s}\n\end{table}'
-
-    for directory in directories:
-        verify_dir = '%s%s/' % (VERIFY_DIR, directory)
-
-        for M in Ms:
-            table = '%s' % top
-            for delta_order in delta_orders:
-                PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
-                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
-                detfile = open(DET_FILE_PATH)
-                detdict = json.load(detfile)
-
-                table = '%s\n\t\\bf{%d}' % (table, delta_order)
-
-                for environment in environments:
-                    gmms_key = 'GMMs %s' % environment
-                    eer_value = detdict[gmms_key]['EER']
-                    table = '%s & %.2f' % (table, round(eer_value, 2))
-
-                table = '%s \\\\\n\t\hline' % table
-
-            tablename = 'verify_%s_M_%d' % (directory, M)
-            caption_final = ''
-            table = '%s%s' % (table, bottom % (M, caption_final, tablename))
-            table = table.replace('\t', '%4s' % '')
-
-            TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
-            print(TABLE_FILE_PATH)
-            with open(TABLE_FILE_PATH, 'w') as tablesfile:
-                print(table, file=tablesfile)
-
-    t = time.time() - t
-    print('Total time: %f seconds' % t)
-
 elif command == 'appendix-A':
     appendixname = 'results-identify-ssfgmm'
-    appendix = '\chapter{Results for Identification using SSFGMM}\n\label{apx:%s}' % appendixname
+    appendix = '\chapter{Identification (SSFGMM)}\n\label{apx:%s}' % appendixname
 
     for r in rs:
+        newpage = '' if r == 0.95 else '\\newpage\n'
         labelname = '%03d' % int(r * 100)
-        if r == 0.95:
-            newpage = ''
-        else:
-            newpage = '\\newpage\n'
 
-        appendix = '%s\n\n%s\input{chapters/tables/identify_speakers_%.02f}' % (appendix, newpage, r)
+        appendix = '%s\n\n%s\section{$r = %.2f$}' % (appendix, newpage, r)
+
+        appendix = '%s\n\n\input{chapters/tables/identify_speakers_%.02f}' % (appendix, r)
         appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
         appendix = '%s\n\t\includegraphics{chapters/%s/r-%s}' % (appendix, appendixname, labelname)
-        appendix = '%s\n\t\caption{Identification rates for enrolled speakers with \
-$r = %.02f$.}' % (appendix, r)
         appendix = '%s\n\t\label{fig:r-%s}' % (appendix, labelname)
         appendix = '%s\n\end{figure}' % appendix
 
@@ -997,59 +942,23 @@ $r = %.02f$.}' % (appendix, r)
         print(appendix, file=appendixsfile)
 
 elif command == 'appendix-B':
-    appendixname = 'results-verify-ssgmm'
-    appendix = '\chapter{Results for Verification using SSGMM}\n\label{apx:%s}' % appendixname
-
-    for M in Ms:
-        if M == 8:
-            newpage = ''
-        else:
-            newpage = '\\newpage\n'
-
-        appendix = '%s\n\n%s\input{chapters/tables/verify_speakers_M_%d}' %\
-                   (appendix, newpage, M)
-        appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
-        appendix = '%s\n\t\includegraphics{chapters/%s/det_M_%d}' % (appendix, appendixname, M)
-        appendix = '%s\n\t\caption{Verification EERs for $\Delta \in \{0, 1, 2\}$ \
-and $M = %d$.}' % (appendix, M)
-        appendix = '%s\n\t\label{fig:%s_M_%d}' % (appendix, appendixname, M)
-        appendix = '%s\n\end{figure}' % appendix
-
-    APPENDIX_FILE_PATH = '%s%s.tex' % (CHAPTERS_DIR, appendixname)
-    print(APPENDIX_FILE_PATH)
-    with open(APPENDIX_FILE_PATH, 'w') as appendixsfile:
-        print(appendix, file=appendixsfile)
-
-elif command == 'appendix-C':
-    appendixname = 'results-verify-ssagmm'
-    appendix = '\chapter{Results for Verification using SSAGMM}\n\label{apx:%s}' % appendixname
+    appendixname = 'results-verify'
+    appendix = '\chapter{Verification}\n\label{apx:%s}' % appendixname
 
     directories = os.listdir(VERIFY_DIR)
     directories.sort()
-    directories.remove('speakers')
+    directories = [directories[-1]] + directories[0 : -1]
 
     for directory in directories:
-        sectionname = 'Adaptation: %s' % directory.split('_')[1]
-        newpagesection = '' if directory == 'adapted_m' else '\\newpage\n'
-        appendix = '%s\n\n%s\section{%s}' % (appendix, newpagesection, sectionname)
+        newpage = '' if directory == 'speakers' else '\\newpage\n'
 
-        insert_newpage = False
-        for M in Ms:
-            if insert_newpage:
-                newpage = '\\newpage\n'
-            else:
-                newpage = ''
-                insert_newpage = True
+        sectionname = directory.split('_')[0]
+        sectionname = '%s%s' % (sectionname[0].upper(), sectionname[1 : ])
+        if directory != 'speakers':
+            adaptations = directory.split('_')[1]
+            sectionname = '%s: %s' % (sectionname, adaptations)
 
-            appendix = '%s\n\n%s\input{chapters/tables/verify_%s_M_%d}' %\
-                        (appendix, newpage, directory, M)
-            appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
-            appendix = '%s\n\t\includegraphics{chapters/%s/%s/det_M_%d}' % (appendix,
-                        appendixname, directory, M)
-            appendix = '%s\n\t\caption{Verification EERs for $\Delta \in \{0, 1, 2\}$ \
-and $M = %d$.}' % (appendix, M)
-            appendix = '%s\n\t\label{fig:%s_M_%d}' % (appendix, appendixname, M)
-            appendix = '%s\n\end{figure}' % appendix
+        appendix = '%s\n\n%s\section{%s}' % (appendix, newpage, sectionname)
 
     APPENDIX_FILE_PATH = '%s%s.tex' % (CHAPTERS_DIR, appendixname)
     print(APPENDIX_FILE_PATH)

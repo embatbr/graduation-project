@@ -68,26 +68,26 @@ During the M-step of the EM algorithm, some variances may have their values decr
 
 \subsubsection{Monotonicity:}
 
-TODO falar da quebra de motonicidade ao usar FCM
+The Expectation-Maximization is a monotonic algorithm. For every iteration $k$, the rule $\log\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \log\postpdf{\dvec{X}}{\lambda^{k}}$ is always true. The algorithm stops only when a local maximum is reached (the likelihood remains stable) or when the increase is smaller than a defined threshold and there is no practical gain in continue. This rule is not true for an EM performed by a FGMM. The 4 non-unitary values of $r$ presented this discrepancy, more frequent with the increase in distance to 1. When $\log\postpdf{\dvec{X}}{\lambda^{(k+1)}} < \log\postpdf{\dvec{X}}{\lambda^{k}}$ occurs, the stop condition is satisfied and the EM returns the last calculated likelihood.
 
 \section{Experiments and Results}
 \label{sec:experiments-and-results}
 
-Using the trained models (see previous section), two types of experiments were performed. The first, speaker identification in open set (see \sectionref{speaker-identification}), was executed using SSGMMs and SSFGMMs. Identification through SSGMM is an experiment known since \refbib{Reynolds}{reynolds.1992} was published in 1992, with countless revisions proving its correctness. Conversely, identification through SSFGMM (see \sectionref{frac-gmm}) is a technique never tried before and for that reason FGMM was used in speaker identification to validate the idea before further experiments. At the end SSGMM and SSFGMM were compared. The second type, speaker verification, was executed using SSGMMs and SSAGMMs, providing false detection and false rejection rates. The verification through SSAGMM was executed using all combinations of adaptations. Finally, a comparison between SSGMM and SSAGMM was performed.
+Using the trained models, two types of experiments were performed. The first, speaker identification, was executed using SSGMMs and SSFGMMs. Identification through SSGMM is an experiment known since \refbib{Reynolds}{reynolds.1992} was published in 1992, with countless revisions, improvements and derivations. Conversely, identification through SSFGMM is a technique never tried before and for that reason FGMM was used in speaker identification to validate the idea before further experiments. At the end SSGMM and SSFGMM were compared. The second type, speaker verification, was executed using SSGMMs and SSAGMMs, providing false detection and false rejection rates. The verification through SSAGMM was executed using only combinations of adaptations that produced curves with a behavior similar to the verification through SSGMM (see the previous section). Finally, a comparison between SSGMM and SSAGMM was performed.
 
-The metrics used for evaluation differ according to the type of ASR system studied. For identification in closed set the interest is in know how well the system correctly identify an enrolled user. The logical way is by analyzing the success rate (the closer to 100\% the better). For verification, the major concern for the system designer is to avoid misclassification. An imposter can be considered an enrolled speaker (false detection), and an enrolled speaker can be considered an imposter (false rejection). To evaluate the correctness of a system, a Detection Error Tradeoff (DET) curve is used. The perfect point of operation is when false detection and false rejection rates are equal, a measure named Equal Error Rate (EER). EER is used as a starting point to create more restrictive or permissive systems.
+The metrics used for evaluation differ according to the type of ASR system studied. For identification the interest is in know how well the system correctly identify an enrolled user. The logical way is by analyzing the success rate (the closer to 100\% the better). For verification, the major concern for the system designer is to avoid misclassification. An imposter can be considered an enrolled speaker (false detection), and an enrolled speaker can be considered an imposter (false rejection). To evaluate the correctness of a system, a Detection Error Tradeoff (DET) curve is used. The perfect point of operation is when false detection and false rejection rates are equal, a measure named Equal Error Rate (EER). EER is used as a starting point to create more restrictive or permissive systems.
 
-In the experiments performed, all 54 utterances from each speaker were tested against any one of the models created and trained for each environment configuration. The first, \textbf{office}, is a noise free environment. The second, \textbf{hallway}, presents a moderate level of noise. The third, \textbf{intersection} is a very lound environment. The last is a combination of all three previous environments, providing a model trained with different levels of noise. This approach allows a more refined analysis of the system's response to background noise.
+In the experiments performed, all 54 utterances from each speaker were tested against any one of the models created and trained for each environment configuration. The first, \textbf{office}, is practically a noise free space. The second, \textbf{hallway}, presents a moderate level of noise. The third, \textbf{intersection}, is a very lound environment. The last is a combination of all three previous environments, providing a model trained with different levels of noise, and thus, more robust. This approach allows a more refined analysis of the system's response to background noise.
 
 \subsection{Speaker Identification using SSGMM}
 
-As shown in \sectionref{speaker-identification}, \equationref{speaker_identification}, given a set $\dvec{\lambda} = \{\lambda_1, ..., \lambda_S\}$ of SSGMMs, a sequence of features $\boldsymbol{X}$ is assigned to a speaker $\mathcal{S}_i$, represented by a model $\lambda_i$ of $\dvec{\lambda}$, if $\postpdf{\boldsymbol{X}}{\lambda_i}$ is greater than all $\postpdf{\boldsymbol{X}}{\lambda_j}$, for $\lambda_j \in \dvec{\lambda}$ and $j \ne i$.
+As shown in \equationref{speaker_identification}, given a set $\dvec{\lambda} = \{\lambda_1, ..., \lambda_S\}$ of SSGMMs, a sequence of features $\boldsymbol{X}$ is assigned to a speaker $\mathcal{S}_i$, represented by a model $\lambda_i$ of $\dvec{\lambda}$, if $\postpdf{\boldsymbol{X}}{\lambda_i}$ is greater than all $\postpdf{\boldsymbol{X}}{\lambda_j}$, for $\lambda_j \in \dvec{\lambda}$ and $j \ne i$.
 
-In this study, \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker. The signals used are in session ``Enroll 2", as described in \sectionref{corpus}. The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. \tableref{identify_speakers} shows the speaker identification success rates (in percent).
+In this study \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker from session ``Enroll 2". The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. The following table shows the speaker identification success rates (in percent).
 
 \input{chapters/tables/identify_speakers}
 
-As seen in the tables above and in \figureref{identification-curves-speakers}, for the fourth environment configuration, all, the success rates increase with $M$, while for office they reach a maximum value at $M = 64$, and for hallway and intersection, at $M = 32$. As explained in the previous section, SSGMMs suffered degeneration due to a decrease in the values of variances for 64 and 128 gaussians. A higher value of $M$ led to higher misrepresentation of the samples by the SSGMM. The exception to this ``rule" occurs when all environments are used in the training, that may be explained due to the higher number of samples (each speaker has 18 utterances recorded in each environment, leading to all 54 speech signals being used to train the model). Also as expected, when all environments are present, the SSGMM represents different levels of background noise, what produces a more robust modeling.
+As seen in the table above and in \figureref{identification-curves-speakers}, for the fourth environment configuration, named \emph{all}, the success rates increase with $M$, while for \emph{office} they reach a maximum value at $M = 64$, and for \emph{hallway} and \emph{intersection}, at $M = 32$. As explained in the previous section, SSGMMs suffered degeneration due to a decrease in the values of variances for 64 and 128 gaussians. A higher value of $M$ led to higher misrepresentation of the samples by the SSGMM. The exception to this ``rule" occurs when all environments are used in the training, that may be explained due to the higher number of samples (each speaker has 18 utterances recorded in each environment, leading to all 54 speech signals being used to train the model). Also as expected, when all environments are present, the SSGMM represents different levels of background noise, what produces a more robust modeling.
 
 \begin{figure}[ht]
     \centering
@@ -107,19 +107,26 @@ The choice of values for $r$ was made using
     \label{eq:choice-of-r}
 \end{equation}
 
-\noindent where $r_0 = 1$, $u \in \{0, 1\}$ and $\delta \in \{0.01, 0.05\}$, providing $r$s higher and lower than $r_0$ to conduct a primary study of which values increase the success rates. \appendixref{results-identify-ssfgmm} contains tables and figures showing the results for this experiment.
+\noindent where $r_0 = 1$, $u \in \{0, 1\}$ and $\delta \in \{0.01, 0.05\}$, providing $r$s higher and lower than $r_0$ to conduct a primary study of which values increase the success rates. \appendixref{results-identify-ssfgmm} contains all tables and figures showing the results for this experiment.
 
-A comparison of \tableref{identify_speakers} and \figureref{identification-curves-speakers} with the tables and figures from \appendixref{results-identify-ssfgmm} indicates that SSFGMMs trained using utterances from all environments and values 0.99, 1 and 1.01 for $r$ present similar speaker identification success rates to the experiment using SSGMM. The differences are around 1 percentage point, what may not be characterized as an improvement before further investigations (a slightly better success rate may be attributed to the random initialization of the model).
-
-\subsection{Speaker Verification using SSGMM}
-
-\input{chapters/tables/verify_speakers}
+A comparison of \tableref{identify_speakers} and \figureref{identification-curves-speakers} with the tables and figures from \appendixref{results-identify-ssfgmm} indicates that SSFGMMs trained using utterances from all environments and values 0.99, 1 and 1.01 for $r$ present similar speaker identification success rates to the experiment using SSGMM. The differences are around 1 percentage point, what may not be characterized as an improvement before further investigations (a slightly better success rate may be attributed to the random initialization of the model). For $r$ equals to 0.95 and 1.05, the success rates are near to 20 percentage points lower. A value lower than 1 decreases the variances, approaching zero when $r \to 0$, while a value higher than 1 increases the variance (with the deviation passing the data limits) and tends all means to the same point. Also, the EM algorithm violates the convergence rule faster (1 or 2 iterations).
 
 \begin{figure}[ht]
     \centering
-    \includegraphics{chapters/experiments/verification-eer-speakers}
-    \caption{Verification EERs over $M$ for enrolled speakers.}
-    \label{fig:verification-eer-speakers}
+    \includegraphics[width=\textwidth]{chapters/experiments/frac-em-extremes}
+    \caption{GMM ``trained" using FCM, with $r = 0.8$ (left) and $r = 1.2$ (right). Only the first deviation is shown.}
+    \label{fig:frac-em-extremes}
 \end{figure}
+
+%\subsection{Speaker Verification using SSGMM}
+%
+%\input{chapters/tables/verify_speakers}
+%
+%\begin{figure}[ht]
+%    \centering
+%    \includegraphics{chapters/experiments/verification-eer-speakers}
+%    \caption{Verification EERs over $M$ for enrolled speakers.}
+%    \label{fig:verification-eer-speakers}
+%\end{figure}
 
 %\subsection{Speaker Verification using SSAGMM}
