@@ -908,7 +908,9 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
         if directory == 'speakers':
             caption = '\n\t\caption{Verification EERs for enrolled speakers.}'
         else:
-            caption = ''
+            adaptations = directory.split('_')[1]
+            caption = '\n\t\caption{Verification EERs for enrolled speakers with \
+adaptations = %s.}' % adaptations
         table = '%s%s' % (table, bottom % (caption, tablename))
         table = table.replace('\t', '%4s' % '')
 
@@ -949,16 +951,42 @@ elif command == 'appendix-B':
     directories.sort()
     directories = [directories[-1]] + directories[0 : -1]
 
+    insert_newpage = False
     for directory in directories:
-        newpage = '' if directory == 'speakers' else '\\newpage\n'
+        newpage = '\\newpage\n' if insert_newpage else ''
+        insert_newpage = True
+        adaptations = '' if directory == 'speakers' else ' with adaptations = %s' %\
+                                                          directory.split('_')[1]
+        adapt = '' if directory == 'speakers' else '-%s' % directory
 
-        sectionname = directory.split('_')[0]
-        sectionname = '%s%s' % (sectionname[0].upper(), sectionname[1 : ])
-        if directory != 'speakers':
-            adaptations = directory.split('_')[1]
-            sectionname = '%s: %s' % (sectionname, adaptations)
+        appendix = '%s\n\n%s\input{chapters/tables/verify_%s}' % (appendix, newpage,
+                                                                  directory)
 
-        appendix = '%s\n\n%s\section{%s}' % (appendix, newpage, sectionname)
+        appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
+        appendix = '%s\n\t\includegraphics{chapters/%s/%s/eer}' % (appendix, appendixname,
+                                                                   directory)
+        appendix = '%s\n\t\caption{Verification EERs for enrolled speakers%s.}' % (appendix,
+                                                                                   adaptations)
+        appendix = '%s\n\t\label{fig:%s%s}' % (appendix, appendixname, adapt)
+        appendix = '%s\n\end{figure}' % appendix
+
+        # inserting DET curves
+        insert_newpage_det = True
+        for M in Ms:
+            newpage = '\\newpage\n' if insert_newpage_det else ''
+            insert_newpage_det = not insert_newpage_det
+            adapt = '' if directory == 'speakers' else '-%s' % directory
+
+
+            appendix = '%s\n\n%s\\begin{figure}[ht]\n\t\centering' % (appendix, newpage)
+            appendix = '%s\n\t\includegraphics{chapters/%s/%s/det_M_%d}' % (appendix, appendixname,
+                                                                            directory, M)
+            appendix = '%s\n\t\caption{DET Curves with $M = %d$, for enrolled speakers%s.}' % \
+                        (appendix, M, adaptations)
+            appendix = '%s\n\t\label{fig:%s%s-M_%d}' % (appendix, appendixname, adapt, M)
+            appendix = '%s\n\end{figure}' % appendix
+
+        appendix = '%s\n\n\clearpage' % appendix
 
     APPENDIX_FILE_PATH = '%s%s.tex' % (CHAPTERS_DIR, appendixname)
     print(APPENDIX_FILE_PATH)
