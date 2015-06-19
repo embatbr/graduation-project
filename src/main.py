@@ -922,6 +922,62 @@ adaptations = %s.}' % adaptations
     t = time.time() - t
     print('Total time: %f seconds' % t)
 
+elif command == 'rank-verify-tables':
+    if not os.path.exists(TABLES_DIR):
+        os.mkdir(TABLES_DIR)
+
+    directories = os.listdir(VERIFY_DIR)
+    directories.sort()
+    directories = directories[0 : -1]
+
+    print('Generating LaTeX tables to rank EERs for verification curves')
+    t = time.time()
+
+    top = '\\begin{table}[h]\n\t\\centering\n\t\\begin{tabular}{|c|c|\
+M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
+\\bf{m} & \\bf{mv} & \\bf{wm} & \\bf{wmv} \\\\ \n\t\hline \n\t\hline'
+    bottom = '\n\t\end{tabular}\n\t\caption{EERs for SSAGMMs trained in all environments.}\
+\n\t\label{tab:%s}\n\end{table}'
+
+    table = '%s' % top
+
+    for delta_order in delta_orders:
+        for M in Ms:
+            if M == 32:
+                table = '%s\n\t\multirow{5}{*}\\bf{\\textbf %d} & ' % (table, delta_order)
+            else:
+                table = '%s\n\t & ' % table
+            table = '%s\\bf{%d}' % (table, M)
+
+            for directory in directories:
+                verify_dir = '%s%s/' % (VERIFY_DIR, directory)
+                PATH = '%smit_%d_%d/' % (verify_dir, numceps, delta_order)
+
+                DET_FILE_PATH = '%sdet_M_%d.json' % (PATH, M)
+                detfile = open(DET_FILE_PATH)
+                detdict = json.load(detfile)
+                eer_value = detdict['GMMs all']['EER']
+                table = '%s & %.2f' % (table, round(eer_value, 2))
+
+            if M < 128:
+                table = '%s \\\\\n\t\cline{2-6}' % table
+            else:
+                table = '%s \\\\\n\t\hline' % table
+                if delta_order < 2:
+                    table = '%s\n\t\hline' % table
+
+    tablename = 'rank-verify-tables'
+    table = '%s%s' % (table, bottom % tablename)
+    table = table.replace('\t', '%4s' % '')
+
+    TABLE_FILE_PATH = '%s%s.tex' % (TABLES_DIR, tablename)
+    print(TABLE_FILE_PATH)
+    with open(TABLE_FILE_PATH, 'w') as tablesfile:
+        print(table, file=tablesfile)
+
+    t = time.time() - t
+    print('Total time: %f seconds' % t)
+
 elif command == 'appendix-A':
     appendixname = 'results-identify-ssfgmm'
     appendix = '\chapter{Identification (SSFGMM)}\n\label{apx:%s}' % appendixname
@@ -971,10 +1027,8 @@ elif command == 'appendix-B':
         appendix = '%s\n\end{figure}' % appendix
 
         # inserting DET curves
-        insert_newpage_det = True
         for M in Ms:
-            newpage = '\\newpage\n' if insert_newpage_det else ''
-            insert_newpage_det = not insert_newpage_det
+            newpage = '\\clearpage\n' if M == 128 else ''
             adapt = '' if directory == 'speakers' else '-%s' % directory
 
 
@@ -985,8 +1039,6 @@ elif command == 'appendix-B':
                         (appendix, M, adaptations)
             appendix = '%s\n\t\label{fig:%s%s-M_%d}' % (appendix, appendixname, adapt, M)
             appendix = '%s\n\end{figure}' % appendix
-
-        appendix = '%s\n\n\clearpage' % appendix
 
     APPENDIX_FILE_PATH = '%s%s.tex' % (CHAPTERS_DIR, appendixname)
     print(APPENDIX_FILE_PATH)

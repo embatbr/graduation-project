@@ -83,7 +83,7 @@ In the experiments performed, all 54 utterances from each speaker were tested ag
 
 As shown in \equationref{speaker_identification}, given a set $\dvec{\lambda} = \{\lambda_1, ..., \lambda_S\}$ of SSGMMs, a sequence of features $\boldsymbol{X}$ is assigned to a speaker $\mathcal{S}_i$, represented by a model $\lambda_i$ of $\dvec{\lambda}$, if $\postpdf{\boldsymbol{X}}{\lambda_i}$ is greater than all $\postpdf{\boldsymbol{X}}{\lambda_j}$, for $\lambda_j \in \dvec{\lambda}$ and $j \ne i$.
 
-In this study \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker from session ``Enroll 2". The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. The following table shows the speaker identification success rates (in percent).
+In this study \equationref{speaker_identification} is used for all 54 speech signals of each enrolled speaker from session ``Enroll 2". The number of tests is 54 utterances $\times$ 48 enrolled speakers $\times$ 4 environment configurations $\times$ 5 sizes of mixture, totaling 51840. Identities are attributed regardless of gender (a female speaker may be identified as male and vice-versa).
 
 \input{chapters/tables/identify_speakers}
 
@@ -118,15 +118,27 @@ A comparison of \tableref{identify_speakers} and \figureref{identification-curve
     \label{fig:frac-em-extremes}
 \end{figure}
 
-%\subsection{Speaker Verification using SSGMM}
-%
-%\input{chapters/tables/verify_speakers}
-%
-%\begin{figure}[ht]
-%    \centering
-%    \includegraphics{chapters/experiments/verification-eer-speakers}
-%    \caption{Verification EERs over $M$ for enrolled speakers.}
-%    \label{fig:verification-eer-speakers}
-%\end{figure}
+\subsection{Speaker Verification using SSGMM}
 
-%\subsection{Speaker Verification using SSAGMM}
+The speaker verification through SSGMM is performed by \equationref{score_of_X} for models $\lambda_C = \lambda_{SSGMM}$ and $\lambda_{bkg} = \lambda_{UBM}$, and a sequence of features $\dvec{X}$. Similarly to the speaker identification experiments, all 54 speech signals from each speaker are tested for systems trained in the four environment configurations. The difference is the test of imposters. Then, an enrolled speaker's model is tested for all his or her utterances and all utterances from the imposters (with the same gender).
+
+\input{chapters/tables/verify_speakers}
+
+Similarly to the identification experiments, systems trained with utterances from all environments present better performance (the ideal EER is zero), due to a superior robustness for background noise. \figureref{verification-eer-speakers} shows a performance drop when $M$ value is 64 and 128 for systems trained in separated environments. Such as the previous experiments, the degradation of the model in face of insufficient data is the most logical explanation.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics{chapters/experiments/verification-eer-speakers}
+    \caption{Verification EERs over $M$ for enrolled speakers.}
+    \label{fig:verification-eer-speakers}
+\end{figure}
+
+\noindent The DET curves for all 5 values of $M$ are shown in \appendixref{results-verify} (along with the table and figure showed above).
+
+\subsection{Speaker Verification using SSAGMM}
+
+The verification through SSAGMM is similar to the previous, differing on $\lambda_C$ not being trained, but adapted from a trained UBM. The adaptation process is constant in algorithmic time, different from the Expectation-Maximization, that remains in a loop until a convergence is reached. \appendixref{results-verify} provides tables and figures showing the results for all experiments that adapt the means, alone or combined with adaptations of weights and/or variances. \tableref{rank-verify-tables} shows the values of EER for each combination trained with utterances from all environments.
+
+\input{chapters/tables/rank-verify-tables}
+
+The EERs for models trained using features recorded in all environments (the design choice for a real world system) decrease for higher values of $M$. Although the EERs for speaker verification using SSGMM are better, the differences when using higher sizes of mixtures are small enough to consider the replacement of SSGMM by SSAGMM. The natural choice is to choose the systems with the means and variances adapted (referenced as \emph{mv-systems}), due to the higher performance in most of the cases (see \tableref{rank-verify-tables}), followed closely by the systems that adapt all parameters (referenced as \emph{wmv-systems}), that outperform the mv-systems in some cases. The differences of EERs from mv-systems and wmv-systems are marginal, and the system designer may consider the choice of any one of the two. This question may be decided conducting experiments with values of $M$ higher than 128, providing more tools to make a better decision. The other two combinations (i.e., \emph{m-systems} and \emph{wm-systems}) performance are always worse than the first two.
