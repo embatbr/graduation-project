@@ -1,7 +1,7 @@
 \chapter{Feature Extraction}
 \label{ch:feature-extraction}
 
-As an acoustic wave propagated through space over time, the speech signal is inappropriate to be evaluated by an ASR system. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the \textbf{feature extraction process}, which transforms a speech signal into a sequence of characterized measurements (i.e. features). The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
+As an acoustic wave propagated through space over time, the speech signal is inappropriate to be evaluated by an ASR system. In order to deliver decent outcomes, a good parametric representation must be provided. This task is performed by the \textbf{feature extraction process}, which transforms a speech signal into a sequence of characterized measurements (i.e., features). The selected representation compress the speech data by eliminating information not pertinent to the phonetic analysis and enhancing those aspects of the signal that contribute significantly to the detection of phonetic differences, \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}. According to \refbib{Wolf}{wolf.1972}, the ideal features should:
 
 \begin{itemize}\itemsep0pt
     \item occur naturally and frequently in normal speech;
@@ -14,13 +14,13 @@ As an acoustic wave propagated through space over time, the speech signal is ina
     \item not be easily modifiable by the speaker.
 \end{itemize}
 
-Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g. timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during conversation (e.g., accent).
+Features may be categorized based on vocal tract or behavioral aspects, divided in (1) short-time spectral, (2) spectro-temporal, (3) prosodic and (4) high level, \refbib{Pinheiro}{pinheiro.2013}. Short-time spectral features are usually calculated using millisecond length windows and describe the voice spectral envelope, composed of supralaryngeal properties of the vocal tract (e.g., timbre). Spectro-temporal and prosodic occur over time (e.g., rhythm and intonation), and high level features occur during conversation (e.g., accent).
 
 The parametric representations evaluated in \refbib{Davis \& Mermelstein}{davis.mermelstein.1980} are divided in those based on the Fourier spectrum, such as Mel-Frequency Cepstrum Coefficients (MFCC) and Linear Frequency Cepstrum Coefficients (LFCC), and in those based on the Linear Prediction Spectrum, such as Linear Prediction Coefficients (LPC), Reflection Coefficients (RC) and Linear Prediction Cepstrum Coefficients (LPCC). The better evaluated representation was the MFCC, with minimum and maximum accuracy of 90.2\% and 99.4\%, respectively, leading to its choice as the parametric representation in this work.
 
 \section{Mel-Frequency Cepstral Coefficient}
 
-MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact the ear is divided in three sections (i.e., outer, middle and inner ears), only the innermost is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the \textbf{cochlea} (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
+MFCC is a highly used parametric representation in the area of voice processing, due to its similarity with the way the human ear operates. Despite the fact that the ear is divided in three sections (i.e., outer, middle and inner ears), only the innermost is mimicked. The mechanical pressure waves produced by the triad hammer-anvil-stirrup are received by the \textbf{cochlea} (\figureref{cochlea}), a spiral-shaped cavity with a set of inner hair cells attached to a membrane (the basilar membrane) and filled with a liquid. This structure converts motion to neural activity through a non-uniform spectral analysis, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}, and passes it to the pattern recognizer in the brain.
 
 \begin{figure}[ht]
     \centering
@@ -29,7 +29,7 @@ MFCC is a highly used parametric representation in the area of voice processing,
     \label{fig:cochlea}
 \end{figure}
 
-A key factor in the perception of speech and other sounds is \textbf{loudness}, a quality related to the physical property of the sound pressure level. Loudness is quantified by relating the actual sound pressure level of a pure tone (in dB, relative to a standard reference level) to the perceived loudness of the same tone (in a unit called phons) over the range of human hearing (20 Hz–20 kHz), \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. As shown in \figureref{loudness}, a 100 Hz tone at 60 dB is equal in loudness to a 1000 Hz tone at 50 dB, both having the \textbf{loudness level} of 50 phons (by convention).
+A key factor in the perception of sound is \textbf{loudness}, a quality related to the physical property of the sound pressure level. Loudness is quantified by relating the actual sound pressure level of a pure tone (in dB, relative to a standard reference level) to the perceived loudness of the same tone (in a unit called phons) over the range of human hearing (20 Hz–20 kHz), \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. As shown in \figureref{loudness}, a 100 Hz tone at 60 dB is equal in loudness to a 1000 Hz tone at 50 dB, both having the \textbf{loudness level} of 50 phons (by convention).
 
 \begin{figure}[ht]
     \centering
@@ -42,7 +42,7 @@ A key factor in the perception of speech and other sounds is \textbf{loudness}, 
 
 The \textbf{mel scale} is the result of an experiment conducted by \refbib{Stevens, Volkmann and Newman}{stevens.volkmann.newman.1937} intended to measure the perception of a pitch and construct a scale based on it. Each observer was asked to listen to two tones, one in the fixed frequencies 125, 200, 300, 400, 700, 1000, 2000, 5000, 8000 and 12000 Hz, and the other free to have its frequency varied by the observer for each fixed frequency of the first tone. An interval of 2 seconds separated both tones. The observers were instructed to say in which frequency the second tone was ``half the loudness" of the first. A geometric mean was taken from the observers' answers and a measure of 1000 mels was assigned to the frequency of 1000 Hz, 500 mels to the frequency sounding half as high (as determined by Fig. 1 in \refbib{Stevens et. al.}{stevens.volkmann.newman.1937}) and so on.
 
-Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} presented an equation to convert frequencies in Hertz to frequencies in mels:
+Decades after the scale definition, \refbib{O'Shaughnessy}{oshaughnessy.1987} developed an equation to convert frequencies in Hertz to frequencies in mels:
 
 \begin{equation}
     f_{mel} = 2595 \log_{10}(1 + \frac{f}{700}).
@@ -71,7 +71,7 @@ The feature extraction module in the ASR system receives a raw speech signal and
 
 %Pre-emphasis
 
-As the human voice is concentrated in the lower frequencies (see \figureref{preemphasis}), the higher ones are enhanced to improve the classification. A first order Finite Impulse Response (FIR) filter is used, given by
+As the human voice is concentrated in the lower frequencies (see \figureref{preemphasis}), the higher ones are enhanced to improve the classification, maintaining the message understandable. A first order Finite Impulse Response (FIR) filter is used, given by
 
 \begin{equation}
     s_{emph}[n] = s[n] - \alpha \cdot s[n - 1],
@@ -140,7 +140,7 @@ Until now the features are in the mel scale, but are not yet ``cepstral". The la
     \label{eq:dct}
 \end{equation}
 
-\noindent where $K$ is the number of spectral coefficients, $S_k$ is a spectral coefficient, and $L$ is the number of cepstral coefficients to calculate ($L \leq K$). The application of a lifter (a cepstral filter) is usual after the computation of the DCT, to smooth the coefficients. After this stage, the MFCCs are extracted.
+\noindent where $K$ is the number of spectral coefficients, $S_k$ is a spectral coefficient, and $L$ is the number of cepstral coefficients to calculate ($L \leq K$). The application of a lifter (a cepstral filter) is common after the computation of the DCT, to smooth the coefficients. After this stage, the MFCCs are extracted.
 
 \begin{figure}[ht]
     \centering
@@ -174,7 +174,7 @@ Even an utterance recorded in a quiet environment still suffers with the side ef
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/feature-extraction/mfcc_energy_appended_cms}
-    \caption{CMS applied to the MFCCs in \figureref{mfcc_energy_appended}.}
+    \caption{CMS applied to the MFCCs shown in \figureref{mfcc_energy_appended}.}
     \label{fig:mfcc_energy_appended_cms}
 \end{figure}
 
@@ -196,4 +196,4 @@ In order to improve the speech parameters, the differences in time for each coef
     \label{fig:mfcc_energy_appended_cms_delta_order_2}
 \end{figure}
 
-\equationref{deltas} may be used to calculate $\dvec{\Delta}$s of any order, just as acceleration (second order) is derived from velocity (first order). However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each order of $\dvec{\Delta}$ delivers lower coefficients, providing a marginal gain for high orders.
+\equationref{deltas} may be used to calculate $\dvec{\Delta}$s of any order, just as acceleration (second order) is derived from velocity (first order). However, as seen in \figureref{mfcc_energy_appended_cms_delta_order_2}, each new calculation of $\dvec{\Delta}$ delivers lower coefficients, providing a marginal gain for high orders.
