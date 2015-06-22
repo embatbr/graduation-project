@@ -1,7 +1,7 @@
 \chapter{Speaker Recognition Systems}
 \label{ch:speaker-recognition-systems}
 
-Speaker recognition lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to $N$ (one speaker signal to be identified as belonging to one of the $N$ enrolled speakers), while for a verification system the classification is 1 to 1 (a speaker with a claimed identity is either \textbf{enrolled} or \textbf{imposter}).
+Speaker recognition lies on the field of pattern classification, with the speaker's speech signal $\boldsymbol{Y}$ as input for a classifier. For an identification system, the classification is 1 to $N$ (one speech signal to be identified as belonging to one of $N$ enrolled speakers), while for a verification system the classification is 1 to 1 (a speaker with a claimed identity is either \textbf{enrolled} or \textbf{imposter}).
 
 Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the following equation to calculate the probabilities of recognition:
 
@@ -13,7 +13,7 @@ Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the 
 \noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ can be removed with no loss to the analysis, along with the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization). \equationref{bayes_equation} is then replaced by
 
 \begin{equation}
-    \postprob{\mathcal{S}}{\boldsymbol{Y}} = \postpdf{\boldsymbol{Y}}{\mathcal{S}}.
+    \postprob{\mathcal{S}}{\boldsymbol{Y}} \sim \postpdf{\boldsymbol{Y}}{\mathcal{S}}.
     \label{eq:bayes_equation_simplified}
 \end{equation}
 
@@ -29,25 +29,25 @@ An utterance is a piece of speech produced by a speaker. It may be a word, a sta
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/speaker-recognition-systems/speech_signal}
-    \caption{Speech signal from utterance ``karen livescu", from the corpus defined in \refbib{Woo, Park \& Hazen}{woo.park.hazen.2006}.}
+    \caption{Speech signal for the utterance ``karen livescu", from the corpus defined in \refbib{Woo, Park \& Hazen}{woo.park.hazen.2006}.}
     \label{fig:speech_signal}
 \end{figure}
 
 \subsection{Features}
 
-The raw speech signal is unfit for use by the classifier in an ASR system. For a correct processing, the representative characteristics (i.e., features) from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significance", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
+The raw speech signal is unfit to be used by the classifier in an ASR system. For a correct processing, the representative characteristics (i.e., features) from the speaker's vocal tract are extracted, what reduces the number of variables the system needs to deal with (leading to a simpler implementation) and performs a better evaluation (prevents the curse of dimensionality). Due to the stationary properties of the speech signal when analyzed in a short period of time, it is divided in overlapping frames of small and predefined length, to avoid ``loss of significance", \refbib{Davis \& Mermelstein}{davis.mermelstein.1980}, \refbib{Rabiner \& Schafer}{rabiner.schafer.2007}. This extraction is executed by the MFCC algorithm, explained in details in \chapterref{feature-extraction}.
 
 \section{Speaker Identification}
 \label{sec:speaker-identification}
 
-Given a sequence of features $\dvec{X}$, extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+Given a sequence $\dvec{X}$ of features, extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\mathcal{S}_j},
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., S$ (where $S$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by $\boldsymbol{X}$ in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
+\noindent for $j = 1, ..., N$ (where $N$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by $\boldsymbol{X}$ in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
 
 \subsection{Training}
 
@@ -64,7 +64,7 @@ The idea behind the training stage is to make $\lambda_j$ ``memorize" the distin
 
 \subsection{Test}
 
-The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equationref{classification_speaker_identification} by their models $\lambda_j$, leading to
+The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equationref{classification_speaker_identification} by their models $\lambda_j$ (and $\boldsymbol{Y}$ by $\boldsymbol{X}$, as previously stated), leading to
 
 \begin{equation}
     \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j},
@@ -90,11 +90,11 @@ If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_{C}$ from
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must determine not only if $\dvec{X}$ is similar to the claimed speaker's features, but also its similarities to a set composed of all other enrolled speakers' features and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features in $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must determine not only if $\dvec{X}$ is similar to the claimed speaker's features, but also its similarities to a set composed of all other enrolled speakers' features and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
-Given the vector of features $\dvec{X}$, and assuming it was produced by only one speaker, the detection\footnote{the terms verification and detection are used interchangeably} task can be restated as a basic test between two hypoteses, \refbib{Reynolds}{reynolds.1995b}:
+Given the sequence $\dvec{X}$ of features, and assuming it was produced by only one speaker, the detection\footnote{the terms verification and detection are used interchangeably} task can be restated as a basic test between two hypoteses, \refbib{Reynolds}{reynolds.1995b}:
 
 \begin{description}\itemsep0pt
     \item $H_0$: $\dvec{X}$ is from the claimed speaker $\mathcal{S}_{C}$;
