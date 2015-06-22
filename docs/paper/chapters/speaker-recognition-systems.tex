@@ -40,14 +40,14 @@ The raw speech signal is unfit to be used by the classifier in an ASR system. Fo
 \section{Speaker Identification}
 \label{sec:speaker-identification}
 
-Given a sequence $\dvec{X}$ of features, extracted from a speech signal $\dvec{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+Given a speech signal $\boldsymbol{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
 
 \begin{equation}
-    \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\mathcal{S}_j},
+    i = \arg_j\max\postpdf{\boldsymbol{Y}}{\mathcal{S}_j} \implies \mathcal{S} \gets \mathcal{S}_i,
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., N$ (where $N$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by $\boldsymbol{X}$ in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
+\noindent for $j = 1, ..., N$ (where $N$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by the sequence $\boldsymbol{X}$ of features in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
 
 \subsection{Training}
 
@@ -56,7 +56,7 @@ The features are used to train statistical models for the speakers. Each speaker
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{chapters/speaker-recognition-systems/speaker-recognition-training}
-    \caption{The statistical model of $\mathcal{S}$ is created from the speech signal $\dvec{Y}$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
+    \caption{The statistical model of $\mathcal{S}$ is created from the speech signal $\boldsymbol{Y}$, \refbib{Bimbot et. al.}{bimbot.et.al.2004}.}
     \label{fig:speaker-recognition-training}
 \end{figure}
 
@@ -67,11 +67,11 @@ The idea behind the training stage is to make $\lambda_j$ ``memorize" the distin
 The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equationref{classification_speaker_identification} by their models $\lambda_j$ (and $\boldsymbol{Y}$ by $\boldsymbol{X}$, as previously stated), leading to
 
 \begin{equation}
-    \mathcal{S} \text{ is } \mathcal{S}_i \text{ if } i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j},
+    i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j} \implies \mathcal{S} \gets \mathcal{S}_i,
     \label{eq:speaker_identification}
 \end{equation}
 
-\noindent where the $\lambda_j$ with the highest likelihood has its identity assigned to $\mathcal{S}$. The main disadvantage this system presents is that every $\dvec{X}$ must be tested against every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, what demands a high amount of time.
+\noindent where the $\lambda_j$ with the highest likelihood has its identity assigned to $\mathcal{S}$. The main disadvantage this system presents is that every $\boldsymbol{X}$ must be tested against every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, what demands a high amount of time.
 
 \begin{figure}[ht]
     \centering
@@ -83,35 +83,35 @@ The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equati
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_{C}$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features $\dvec{X}$ are to the features from $\mathcal{S}_{C}$ used to model the system. Then, a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_{C}$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features in $\boldsymbol{X}$ are to the features from $\mathcal{S}_{C}$ used to model the system. Then, a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_{C}} \verifytestB{\alpha}{\mathcal{S}}
     \label{eq:decision_speaker_verification}
 \end{equation}
 
-\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features in $\dvec{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must determine not only if $\dvec{X}$ is similar to the claimed speaker's features, but also its similarities to a set composed of all other enrolled speakers' features and compare the likelihoods.
+\noindent where $\alpha$ is an arbitrary coefficient, should be enough. However, a subset of enrolled speakers may have vocal similarities or the features in $\boldsymbol{X}$ may be common to a large number of users, leading to a misclassification of an imposter as a registered speaker (a false detection). To reduce the error rate, the system must determine not only if $\boldsymbol{X}$ is similar to the claimed speaker's features, but also its similarities to a set composed of all other enrolled speakers' features and compare the likelihoods.
 
 \subsection{Likelihood Ratio Test}
 
-Given the sequence $\dvec{X}$ of features, and assuming it was produced by only one speaker, the detection\footnote{the terms verification and detection are used interchangeably} task can be restated as a basic test between two hypoteses, \refbib{Reynolds}{reynolds.1995b}:
+Given the sequence $\boldsymbol{X}$ of features, and assuming it was produced by only one speaker, the detection\footnote{the terms verification and detection are used interchangeably} task can be restated as a basic test between two hypoteses, \refbib{Reynolds}{reynolds.1995b}:
 
 \begin{description}\itemsep0pt
-    \item $H_0$: $\dvec{X}$ is from the claimed speaker $\mathcal{S}_{C}$;
-    \item $H_1$: $\dvec{X}$ is \underline{not} from the claimed speaker $\mathcal{S}_{C}$.
+    \item $H_0$: $\boldsymbol{X}$ is from the claimed speaker $\mathcal{S}_{C}$;
+    \item $H_1$: $\boldsymbol{X}$ is \underline{not} from the claimed speaker $\mathcal{S}_{C}$.
 \end{description}
 
-\noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both likelihoods $\postpdf{\dvec{X}}{H_0}$ and $\postpdf{\dvec{X}}{H_1}$, \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000},
+\noindent The optimum test to decide which hypotesis is valid is the \textbf{likelihood ratio test} between both likelihoods $\postpdf{\boldsymbol{X}}{H_0}$ and $\postpdf{\boldsymbol{X}}{H_1}$, \refbib{Reynolds, Quatieri \& Dunn}{reynolds.quatieri.dunn.2000},
 
 \begin{equation}
-    \frac{\postpdf{\dvec{X}}{H_0}}{\postpdf{\dvec{X}}{H_1}} \verifytestB{\Theta}{H_0}
+    \frac{\postpdf{\boldsymbol{X}}{H_0}}{\postpdf{\boldsymbol{X}}{H_1}} \verifytestB{\Theta}{H_0}
     \label{eq:likelihood-ratio-test}
 \end{equation}
 
 \noindent where the decision threshold for accepting or rejecting $H_0$ is $\Theta$ (a low $\Theta$ generates a more permissive system, while a high $\Theta$, a more restrictive). Applying the logarithm, the behavior of the likelihood ratio is maintained and \equationref{likelihood-ratio-test} is replaced by the \textbf{log-likelihood ratio}
 
 \begin{equation}
-    \Lambda(\dvec{X}) = \log \postpdf{\dvec{X}}{H_0} - \log \postpdf{\dvec{X}}{H_1}.
+    \Lambda(\boldsymbol{X}) = \log \postpdf{\boldsymbol{X}}{H_0} - \log \postpdf{\boldsymbol{X}}{H_1}.
     \label{eq:log-likelihood-ratio-test}
 \end{equation}
 
@@ -119,32 +119,32 @@ Given the sequence $\dvec{X}$ of features, and assuming it was produced by only 
 
 Once the features are extracted from the speech signal, they are used to train the models $\lambda_{C}$ and $\lambda_{\overline{C}}$ for $H_0$ and $H_1$, respectively. A high-level demonstration of the training of $\lambda_{C}$ is shown in \figureref{speaker-recognition-training}.
 
-Due to $\lambda_{C}$ be a model of $\mathcal{S}_{C}$, the features used for training (i.e., estimate $p(\dvec{X}|\lambda_{C})$) are extracted from speech signals produced by $\mathcal{S}_{C}$. The model $\lambda_{\overline{C}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_{C}$, but creating a single $\lambda_{\overline{C}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the presence of each $\mathcal{S}_{C}$ weights approximately the same.
+Due to $\lambda_{C}$ be a model of $\mathcal{S}_{C}$, the features used for training (i.e., estimate $p(\boldsymbol{X}|\lambda_{C})$) are extracted from speech signals produced by $\mathcal{S}_{C}$. The model $\lambda_{\overline{C}}$, however, is not well-defined. It should be composed of the features extracted from speech signals from all other speakers except $\mathcal{S}_{C}$, but creating a single $\lambda_{\overline{C}}$ for each speaker is complicated and with no expressive gain. Instead, what is normally done is use all speakers to generate a background model $\lambda_{bkg}$, \refbib{Reynolds}{reynolds.1997}, in which the presence of each $\mathcal{S}_{C}$ weights approximately the same.
 
 \subsection{Test}
 
-As seen in \equationref{log-likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_i$, for $i \in \{C, bkg\}$, by its corresponding model, the likelihood of a $\lambda_i$ given $\dvec{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
+As seen in \equationref{log-likelihood-ratio-test}, the decision process is based on a function \emph{Score}. Replacing each $H_i$, for $i \in \{C, bkg\}$, by its corresponding model, the likelihood of a $\lambda_i$ given $\boldsymbol{X} = \{\dvec{x}_1, \dots, \dvec{x}_T\}$ can be written as
 
 \begin{equation}
-    p(\dvec{X}|\lambda_i) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_i).
+    p(\boldsymbol{X}|\lambda_i) = \prod_{t=1}^T p(\dvec{x}_t|\lambda_i).
     \label{eq:likelihood-prod}
 \end{equation}
 
 \noindent Using the logarithm function, \equationref{likelihood-prod} is replaced by
 
 \begin{equation}
-    \log p(\dvec{X}|\lambda_i) = \frac{1}{T} \sum_{t=1}^T \log p(\dvec{x}_t|\lambda_i),
+    \log p(\boldsymbol{X}|\lambda_i) = \frac{1}{T} \sum_{t=1}^T \log p(\dvec{x}_t|\lambda_i),
     \label{eq:log-likelihood-sum}
 \end{equation}
 
 \noindent where the term $\frac{1}{T}$ is inserted\footnote{\equationref{log-likelihood-sum} is not an accurate application of the $\log$ function to \equationref{likelihood-prod}, but an engineering solution.} to normalize the log-likelihood to the duration of the speech signal. That said, the likelihood ratio given by \equationref{log-likelihood-ratio-test} becomes
 
 \begin{equation}
-    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{C}) - \log p(\dvec{X}|\lambda_{bkg}),
+    \Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{C}) - \log p(\boldsymbol{X}|\lambda_{bkg}),
     \label{eq:score_of_X}
 \end{equation}
 
-\noindent and the speaker is accepted if $\Lambda(\dvec{X}) \geq \theta$, for an arbitrary value of $\Theta$, with $\theta = \log\Theta$.
+\noindent and the speaker is accepted if $\Lambda(\boldsymbol{X}) \geq \theta$, for an arbitrary value of $\Theta$, with $\theta = \log\Theta$.
 
 \begin{figure}[ht]
     \centering

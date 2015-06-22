@@ -6,7 +6,7 @@
 For all sorts of probability distributions, the Gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, as demonstrated by the central limit theorem. Its equation for a D-dimensional space is
 
 \begin{equation}
-    \pdf{\dvec{x}} = p(\dvec{x},\dvec{\mu},\dvec{\Sigma}) = \dgaussian{x}{\mu}{\Sigma},
+    \pdf{\dvec{x}} = \postpdf{\dvec{x}}{\dvec{\mu},\dvec{\Sigma}} = \dgaussian{x}{\mu}{\Sigma},
     \label{eq:gaussian}
 \end{equation}
 
@@ -96,7 +96,7 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \end{algorithmic}
 \end{algorithm}
 
-\noindent The pseudo code above describes the EM algorithm. The \emph{E-Step} is not shown, but is used inside the \emph{M-Step}. Obviously, in an implementation the \emph{E-Step} is calculated once for each iteration. \figureref{em_algorithm} shows $\lambda$'s gaussians before and after the EM algorithm.
+\noindent The pseudo code above describes the EM algorithm. The \emph{E-Step} is not shown, but is used inside the \emph{M-Step}. Obviously, in an implementation the \emph{E-Step} is calculated once for each iteration. \figureref{em_algorithm} shows $\lambda$'s Gaussians before and after the EM algorithm.
 
 \begin{figure}[ht]
     \centering
@@ -129,16 +129,16 @@ As shown in \sectionref{speaker-verification}, the likelihood ratio test is perf
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify the entire corpus demands the training of SSGMMs for all enrolled speakers, a highly costly action in time. An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster training than in the SSGMM-UBM system (there is no loop such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify the entire corpus demands the training of SSGMMs for all enrolled speakers, a highly costly action in time. An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster training than in the SSGMM-UBM system (there is no loop of indefinite time such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
 
 \begin{equation}
     \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSAGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
     \label{eq:score_of_X_ssagmm_ubm}
 \end{equation}
 
-The Bayesian adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} recalculates the gaussians from the UBM using features from the desired speaker only. If a gaussian represents the new data better than the old data, the change is relevant.
+The Bayesian adaptation\footnote{Also known as \textbf{maximum a posteriori} (MAP) estimation.} reestimates the Gaussians from the UBM using features from the desired speaker only. If a Gaussian represents the new data better than the old data, the change is relevant.
 
-The adaptation process is composed of two steps. The first is an expectation step, similar to the EM algorithm. Using $\postprob{i}{\dvec{x}_t}$ from \equationref{e-step-posterior}, it is possible to compute the sufficient statistics for the weight, mean, and variance parameters:\footnote{$\dvec{x}^2$ is shorthand for diag($\dvec{x}\dvec{x}'$).}
+The adaptation process is composed of two steps. The first is an expectation step, similar to the one in the EM algorithm. Using $\postprob{i}{\dvec{x}_t}$ from \equationref{e-step-posterior}, it is possible to compute the sufficient statistics for the weight, mean, and variance parameters:\footnote{$\dvec{x}^2$ is shorthand for diag($\dvec{x}\dvec{x}'$).}
 
 \begin{equation}
     n_i = \sum_{t=1}^{T} \postprob{i}{\dvec{x}_t}
@@ -223,7 +223,7 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{fig:mfcc-shifted}
 \end{figure}
 
-\noindent After the variances are calculated, the means are shifted again,
+\noindent After the variances are calculated, the means are shifted,
 
 \begin{equation}
     \mu_n = \mu_n - (1 - \min_t c_{n,t}),
@@ -239,4 +239,4 @@ The technique described in this section, named Fractional Gaussian Mixture Model
     \label{fig:frac-em_algorithm}
 \end{figure}
 
-The choice of shift all features to 1 is mostly based in common sense. To avoid non-negative values, just shift to 0 would be sufficient. However, when $r \to 0$, the results for $X^r$ amd $\mu^r$ could fall in the indefinition $0^0$, due to approximations of floating points in numeric computation. Also, for values greater than or equal to 1, the exponentiation remains monotonic.
+The choice of shift all features to 1 is mostly based in common sense. To avoid non-negative values, just shift to 0 would be sufficient. However, when $r \to 0$, the results for $X^r$ and $\mu^r$ would fall in the indefinition $0^0$, due to approximations of floating points in numeric computation. Also, for values greater than or equal to 1, the exponentiation is a monotonic function.

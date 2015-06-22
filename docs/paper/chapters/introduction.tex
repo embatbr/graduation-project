@@ -25,7 +25,7 @@ The text inputted may be constrained, such as by type (e.g., digits and letters)
 \section{Gaussian Mixture Models}
 \label{sec:gmm}
 
-This project is focused on \textbf{text-independent speaker recognition}, and as independence of the spoken message is a key characteristic of the problem, the most appropriate approach is to consider the training data as a stochastic variable. The most suitable distribution to represent random data is the gaussian (or normal), leading to the choice of Gaussian Mixture Models (GMMs) to model the ASR systems.
+This project is focused on \textbf{text-independent speaker recognition}, and as independence of the spoken message is a key characteristic of the problem, the most appropriate approach is to consider the training data as a stochastic variable. The most suitable distribution to represent random data is the Gaussian (or normal), leading to the choice of Gaussian Mixture Models (GMMs) to model the ASR systems.
 
 Recognition systems are constructed using several techniques based on GMM. For identification, a GMM is trained for each enrolled speaker, referred to as Single Speaker Gaussian Mixture Model (SSGMM), with the identity given by the model with higher probability. Conversely, verification systems are designed using an Universal Background Model (UBM) trained to represent all speakers as a single background and a SSGMM or a Bayesian adaptation of the UBM, \refbib{Brown, Lee and Spohrer}{brown.lee.spohrer.1983}, named Single Speaker Adapted Gaussian Mixture Model (SSAGMM) to represent each speaker. A likelihood ratio test is used to evaluate a speech signal and to decide if it belongs or not to the identity claimed by the tested speaker.
 
