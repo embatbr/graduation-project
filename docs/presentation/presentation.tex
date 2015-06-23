@@ -3,9 +3,24 @@
 \mode<presentation>
 {
     \usetheme{CambridgeUS}
-    \usecolortheme{crane}
-    %\setbeamertemplate{footline}[page number]
+    %\usecolortheme{crane}
     \setbeamertemplate{navigation symbols}{}
+    \setbeamertemplate{footline}
+    {
+        \leavevmode%
+        \hbox{%
+        \begin{beamercolorbox}[wd=0.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+        \usebeamerfont{author in head/foot}\insertshortauthor \space (\insertshortinstitute)
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=0.6\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+        \usebeamerfont{title in head/foot}\inserttitle\hspace*{3em}
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=0.1\paperwidth,ht=2.25ex,dp=1ex,right]{page number in head/foot}%
+        \usebeamerfont{page number in head/foot}\insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+        \end{beamercolorbox}%
+        }
+        \vskip0pt%
+    }
 }
 
 \usepackage[utf8]{inputenc}
@@ -17,6 +32,16 @@
 
 % PRE CONFIGURATIONS
 \addbibresource{references.bib}
+
+
+% COMMANDS
+\newcommand{\contentscurrent}
+{
+    \begin{frame}
+    \frametitle{Conteúdo}
+    \tableofcontents[currentsection,hideallsubsections]
+    \end{frame}
+}
 
 
 %GLOBAL DEFINITIONS
@@ -35,7 +60,7 @@
 \gdef\defensedate{Recife, 25 de Junho de 2015}
 
 
-\title[\shortpapertitle]{\papertitle}
+\title[\papertitle]{\papertitle}
 
 \author[Eduardo Tenório]{\authorname}
 \institute[CIn-UFPE]
@@ -44,12 +69,12 @@
     \\
     \universityname
     \\
-    \papertype\space em \programname
+    \papertype \space em \programname
     \\
     \medskip
     \textit{embat@cin.ufpe.br}
 }
-\date{\defensedate}
+\date[]{\defensedate}
 
 
 \begin{document}
@@ -62,22 +87,39 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{Sumário}
-\tableofcontents
+\frametitle{Conteúdo}
+\tableofcontents[hideallsubsections]
 \end{frame}
 
 
 %MIDDLEMATTER
 
-\input{sections/introducao}
+\input{sections/introduction}
+
+\input{sections/speaker-recognition-systems}
+
+\input{sections/feature-extraction}
+
+\input{sections/gmm}
+
+\input{sections/experiments}
+
+\input{sections/conclusion}
 
 
 %BACKMATTER
+
+\section{Referências}
+\label{sec:references}
+
+\contentscurrent
 
 \begin{frame}
 \frametitle{Referências}
 \footnotesize{\printbibliography}
 \end{frame}
+
+\section{}
 
 \begin{frame}
 \Huge{\centerline{Obrigado}}
