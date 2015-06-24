@@ -4,89 +4,6 @@
 \contentscurrent
 
 \begin{frame}
-\frametitle{Status quo...}
-\begin{description}
-    \item Reconhecimento de usuários ainda é um processo bastante ``manual"
-    \pause
-    \item[Verificação] O usuário deve fornecer uma senha correta para:
-    \pause
-    \begin{itemize}
-        \item Efetuar login em um computador
-        \pause
-        \item Sacar dinheiro em um ATM
-        \pause
-        \item Ouvir seu saldo bancário pelo telefone
-        \pause
-    \end{itemize}
-    \item[Identificação] Um perito deve:
-    \pause
-    \begin{itemize}
-        \item Ouvir diversas ligações de telefone
-        \pause
-        \item Detectar características (sotaque, vícios de linguagem, gírias)
-        \pause
-        \item Conhecer detalhes do usuário e do assunto tratado
-    \end{itemize}
-\end{description}
-\end{frame}
-
-\begin{frame}
-\frametitle{... e suas falhas}
-\begin{description}
-    \item E justamente por ser ``manual", apresenta resultados pouco satisfatórios
-    \pause
-    \item[Verificação] A senha pode ser facilmente:
-    \pause
-    \begin{itemize}
-        \item Esquecida
-        \pause
-        \item Anotada em um papel e perdida
-        \pause
-        \item Quebrada
-        \pause
-    \end{itemize}
-    \item[Identificação] Pessoas apresentam diversos defeitos:
-    \pause
-    \begin{itemize}
-        \item Análises enviesadas
-        \pause
-        \item Precisam de anos de treinamento e prática para se especializarem
-        \pause
-        \item Demoram e se cansam com facilidade
-    \end{itemize}
-\end{description}
-\end{frame}
-
-\begin{frame}
-\frametitle{Solução}
-\begin{description}
-    \item Utilizar alguma biometria
-    \pause
-    \item Preferivelmente pouco invasiva
-    \pause
-    \item A voz é uma ótima escolha:
-    \pause
-    \begin{itemize}
-        \item Bastante natural para humanos
-        \pause
-        \item Peculiaridades referentes ao locutor
-        \pause
-        \item (quase) Todo mundo fala
-        \pause
-    \end{itemize}
-    \item Soluções atuais apresentam progresso contínuo:
-    \pause
-    \begin{itemize}
-        \item Apple Siri
-        \pause
-        \item Google Now
-        \pause
-        \item Samsung S Voice
-    \end{itemize}
-\end{description}
-\end{frame}
-
-\begin{frame}
 \frametitle{Reconhecimento de ...}
 \begin{description}
     \item[Fala] \textbf{O que} está sendo dito
@@ -107,15 +24,7 @@
         \item Autenticar um usuário
         \pause
     \end{itemize}
-    \item É comum o foco em apenas um tipo
-    \pause
-    \begin{description}
-        \item[Fala] Aplicações de busca por voz
-        \pause
-        \item[Locutor] Prevenção de fraude via telefone
-        \pause
-        \item[Ambos] Transcrição de conversas gravadas
-    \end{description}
+    \item Este trabalho é focado em \textbf{reconhecimento de locutor}
 \end{description}
 \end{frame}
 
@@ -166,6 +75,8 @@
         \pause
         \item Presentes em diferentes sotaques e até \emph{gibberish}
     \end{itemize}
+    \pause
+    \item Este trabalho é focado em \textbf{reconhecimento de locutor independente de texto}
 \end{description}
 \end{frame}
 
@@ -192,12 +103,24 @@
     \item Implementar sistemas de reconhecimento de locutor e analizar
     \pause
     \begin{itemize}
-        \item Taxas de sucesso para \textbf{identificação}
+        \item Taxas de \textbf{sucesso} para identificação
         \pause
+        \begin{itemize}
+            \item Diferentes tamanhos de mistura ($M$)
+            \pause
+            \item Diferentes tamanhos de características
+            \pause
+        \end{itemize}
         \item Comparar identificação utilizando GMM e FGMM
         \pause
-        \item Falsa detecção e falsa rejeição para \textbf{verificação}
+        \item Taxas de \textbf{falsa detecção} e \textbf{falsa rejeição} para verificação
         \pause
+        \begin{itemize}
+            \item Diferentes tamanhos de mistura ($M$)
+            \pause
+            \item Diferentes tamanhos de características
+            \pause
+        \end{itemize}
         \item Comparar verificação utilizando GMM e AGMM
     \end{itemize}
 \end{description}
