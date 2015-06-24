@@ -14,7 +14,7 @@
     \pause
     \item Constante no tempo e não afetável pela saúde
     \pause
-    \item Robusto a ruído razoável e a transmissão
+    \item Robusta a ruído razoável e a transmissão
     \pause
     \item Difícil de ser produzido artificialmente
     \pause
@@ -47,27 +47,194 @@
 
 \begin{frame}
 \frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
 \begin{description}
     \item[Pré-ênfase] \textbf{Realça} as altas frequências (opcional)
     \pause
-    \item[Janelamento] Divide o sinal em janelas \textbf{superpostas}
-    \pause
-    \item[$|FFT|^2$] Calcula o \textbf{espectro de potência}
-    \pause
-    \item[Filtros] Espectro em Hz $\implies$ espectro em \textbf{mels}
-    \pause
-    \item[dB] Calcula a \textbf{sonoridade}
-    \pause
-    \item[DCT] Coeficientes espectrais $\implies$ coeficientes \textbf{cepstrais}
-    \pause
-    \item[CMS] \textbf{Normaliza} os MFCCs para reduzir perturbações
-    \pause
-    \item[$\dvec{\Delta}$s] Novos coeficientes a partir de \textbf{aspectos temporais} dos antigos (opcional)
-    \pause
+    \begin{itemize}
+        \item $s_{emph}[n] = s[n] - \alpha \cdot s[n - 1]$
+        \pause
+        \item $\alpha \in [0.95, 0.98]$
+        \pause
+    \end{itemize}
 \end{description}
-
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.85\textwidth]{mfcc-flow}
+    \includegraphics[width=0.75\textwidth]{preemphasis}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[Janelamento] Divide o sinal em janelas \textbf{superpostas}
+    \pause
+    \begin{itemize}
+        \item Largura de 20 milissegundos
+        \pause
+        \item Deslocamento de 10 milissegundos
+        \pause
+    \end{itemize}
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{framing}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[$|FFT|^2$] Calcula o \textbf{espectro de potência}
+    \pause
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{fft}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[Filtros] Espectro em Hz $\implies$ espectro em \textbf{mels}
+    \pause
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{filterbank}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[dB] Calcula a \textbf{sonoridade}
+    \pause
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{features_and_featuresdB}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[DCT] Coeficientes espectrais $\implies$ coeficientes \textbf{cepstrais}
+    \pause
+    \begin{itemize}
+        \item $c_n = \sum_{k=1}^K S_k\cdot\cos\left[n\left(k - \frac{1}{2}\right)\frac{\pi}{K}\right], n = 1, 2, ..., L$
+        \pause
+    \end{itemize}
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc_energy_appended}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[CMS] \textbf{Normaliza} os MFCCs para reduzir perturbações
+    \pause
+    \begin{itemize}
+        \item $c_n = c_n - \frac{1}{T} \sum_{t=1}^T c_{n,t}$
+        \pause
+    \end{itemize}
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc_energy_appended}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc_energy_appended_cms}
+\end{figure}
+\end{frame}
+
+\subsection{MFCC - Extração}
+
+\begin{frame}
+\frametitle{MFCC - Extração}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{mfcc-flow}
+\end{figure}
+\pause
+
+\begin{description}
+    \item[$\dvec{\Delta}$s] Novos $c_n$ \textbf{derivados} dos antigos $c_n$ (opcional)
+    \pause
+    \begin{itemize}
+        \item $\Delta_t = \frac{\sum_{n=1}^N n(c_{t+n} - c_{t-n})}{2\sum_{n=1}^N n^2}$
+        \pause
+    \end{itemize}
+\end{description}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc_energy_appended_cms}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\textwidth]{mfcc_energy_appended_cms_delta_order_2}
 \end{figure}
 \end{frame}

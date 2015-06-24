@@ -69,7 +69,7 @@ def magspec(frames, NFFT=512):
     will be the magnitude spectrum of the corresponding frame.
     """
     complex_spec = np.fft.rfft(frames, NFFT)
-    return np.absolute(complex_spec)    # from a + jb to |z| (cuts in half due to simmetry)
+    return np.absolute(complex_spec)    # from z = a + jb to |z| (cuts in half due to simmetry)
 
 def powspec(frames, NFFT=512):
     """Computes the power spectrum (periodogram estimate) of each frame from frames.
