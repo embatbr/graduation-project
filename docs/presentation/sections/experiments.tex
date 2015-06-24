@@ -3,6 +3,101 @@
 
 \contentscurrent
 
+\subsection{Implementação}
+
 \begin{frame}
-\frametitle{Experimentos}
+\frametitle{Corpus}
+\begin{description}
+    \item[Base] MIT Mobile Device Speaker Verification Corpus
+    \pause
+    \item 54 locuções/locutor em 3 níveis de ruído
+    \pause
+    \begin{description}
+        \item[Baixo] Escritório calmo
+        \pause
+        \item[Médio] Saguão de edfício
+        \pause
+        \item[Alto] Cruzamento movimentado
+        \pause
+    \end{description}
+    \item 3 sessões distintas
+    \begin{description}
+        \item[Enroll 1] Treinamento dos modelos
+        \pause
+        \item[Enroll 2] Teste de detecção
+        \pause
+        \item[Imposter] Teste de rejeição
+        \pause
+    \end{description}
+\end{description}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    \multicolumn{1}{|c|}{{\bf Session}} & {\bf Training} & {\bf Test} & {\bf \#female} & {\bf \#male} \\ \hline
+    Enroll 1 & {\bf X} & {\bf } & 22 & 26 \\ \hline
+    Enroll 2 & {\bf } & {\bf X} & 22 & 26 \\ \hline
+    Imposter & {\bf } & {\bf X} & 17 & 23 \\ \hline
+    \end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}
+\frametitle{Codificação}
+\begin{description}
+    \item[Linguagem] Python 3.4.3
+    \pause
+    \item[Frameworks] NumPy 1.8.1, SciPy 0.14.0, Matplotlib 1.4
+    \pause
+    \item[Parâmetros] A implementação utilizou
+    \pause
+    \begin{itemize}
+        \item \# filtros = 26
+        \pause
+        \item \# coefficientes = 19
+        \pause
+        \item $\Delta$s de ordem 0, 1 e 2, com $K = 2$
+        \pause
+        \item Energy appending e CMS
+        \pause
+        \item $r = 16$ para AGMM
+        \pause
+        \item $threshold = 10^{-3}$ no EM
+        \pause
+        \item $M = 8, 16, 32, 64, 128$
+    \end{itemize}
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Percalços}
+\begin{description}\itemsep6pt
+    \item[Inicialização] Em 2 passos
+    \pause
+    \begin{itemize}
+        \item Escolha de médias aleatórias
+        \pause
+        \item \emph{k-means} $\implies$ Novas médias + pesos e variâncias
+        \pause
+    \end{itemize}
+    \item[Variâncias] Podem reduzir significativamente
+    \pause
+    \begin{itemize}\itemsep4pt
+        \item $\sigma_{min}^2 = 0.01$
+        \pause
+        \item $\sigma^2 < \sigma_{min}^2 \implies \sigma^2 \gets \sigma_{min}^2$
+        \pause
+    \end{itemize}
+    \item[$\overline{Monotonic}$] FGMM viola $\log\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \log\postpdf{\dvec{X}}{\lambda^{k}}$
+    \begin{itemize}\itemsep4pt
+        \item $|1 - r| \implies \downarrow$ estimação
+    \end{itemize}
+\end{description}
+\end{frame}
+
+\subsection{Experimentos}
+
+\begin{frame}
+\frametitle{Identificação}
 \end{frame}
