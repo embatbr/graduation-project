@@ -90,14 +90,628 @@
         \pause
     \end{itemize}
     \item[$\overline{Monotonic}$] FGMM viola $\log\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \log\postpdf{\dvec{X}}{\lambda^{k}}$
+    \pause
     \begin{itemize}\itemsep4pt
         \item $|1 - r| \implies \downarrow$ estimação
     \end{itemize}
 \end{description}
 \end{frame}
 
-\subsection{Experimentos}
+\subsection{Resultados}
 
 \begin{frame}
 \frametitle{Identificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+\end{description}
+
+\input{sections/tables/identify_speakers}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{identification-curves-speakers}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \pause
+    \item $r = r_0 + (-1)^u\delta$
+    \pause
+    \begin{itemize}
+        \item $r_0 = 1$, $u \in \{0, 1\}$
+        \pause
+        \item $\delta \in \{0.01, 0.05\}$
+        \pause
+    \end{itemize}
+    \item $\uparrow |1 - r| \implies \downarrow$ representação
+    \pause
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.75\textwidth]{frac-em-extremes}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 0.95$
+\end{description}
+
+\input{sections/tables/identify_speakers_0.95}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 0.95$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ssfgmm/r-095}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 0.99$
+\end{description}
+
+\input{sections/tables/identify_speakers_0.99}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 0.99$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ssfgmm/r-099}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1$
+\end{description}
+
+\input{sections/tables/identify_speakers_1.00}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ssfgmm/r-100}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1.01$
+\end{description}
+
+\input{sections/tables/identify_speakers_1.01}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1.01$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ssfgmm/r-101}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1.05$
+\end{description}
+
+\input{sections/tables/identify_speakers_1.05}
+\end{frame}
+
+\begin{frame}
+\frametitle{Identificação}
+\begin{description}
+    \item[SSFGMM] Single Speaker FGMM
+    \item $r = 1.05$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ssfgmm/r-105}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+\end{description}
+
+\input{sections/tables/verify_speakers}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verification-eer-speakers}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+    \item $M = 8$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/speakers/det_M_8}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+    \item $M = 16$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/speakers/det_M_16}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+    \item $M = 32$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/speakers/det_M_32}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+    \item $M = 64$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/speakers/det_M_64}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSGMM] Single Speaker GMM
+    \item $M = 128$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/speakers/det_M_128}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+\end{description}
+
+\input{sections/tables/verify_adapted_m}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/eer}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+    \item $M = 8$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/det_M_8}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+    \item $M = 16$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/det_M_16}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+    \item $M = 32$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/det_M_32}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+    \item $M = 64$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/det_M_64}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias
+    \item $M = 128$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_m/det_M_128}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+\end{description}
+
+\input{sections/tables/verify_adapted_mv}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/eer}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+    \item $M = 8$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/det_M_8}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+    \item $M = 16$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/det_M_16}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+    \item $M = 32$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/det_M_32}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+    \item $M = 64$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/det_M_64}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Médias e variâncias
+    \item $M = 128$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_mv/det_M_128}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+\end{description}
+
+\input{sections/tables/verify_adapted_wm}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/eer}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+    \item $M = 8$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/det_M_8}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+    \item $M = 16$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/det_M_16}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+    \item $M = 32$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/det_M_32}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+    \item $M = 64$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/det_M_64}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos e médias
+    \item $M = 128$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wm/det_M_128}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+\end{description}
+
+\input{sections/tables/verify_adapted_wmv}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/eer}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+    \item $M = 8$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/det_M_8}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+    \item $M = 16$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/det_M_16}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+    \item $M = 32$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/det_M_32}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+    \item $M = 64$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/det_M_64}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Verificação}
+\begin{description}
+    \item[SSAGMM] Single Speaker AGMM
+    \item[Adaptação] Pesos, médias e variâncias
+    \item $M = 128$
+\end{description}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.55\textwidth]{verify/adapted_wmv/det_M_128}
+\end{figure}
 \end{frame}
