@@ -48,26 +48,26 @@
 \begin{frame}
 \frametitle{MFCC - Extração}
 \begin{description}
-    \item[Pré-ênfase] Realça as altas frequências (opcional)
+    \item[Pré-ênfase] \textbf{Realça} as altas frequências (opcional)
     \pause
-    \item[Janelamento] Divide o sinal em janelas superpostas
+    \item[Janelamento] Divide o sinal em janelas \textbf{superpostas}
     \pause
-    \item[$|FFT|^2$] Calcula o espectro de potência
+    \item[$|FFT|^2$] Calcula o \textbf{espectro de potência}
     \pause
-    \item[Filtros] Espectro em Hz $\implies$ espectro em mels
+    \item[Filtros] Espectro em Hz $\implies$ espectro em \textbf{mels}
     \pause
-    \item[dB] Calcula a sonoridade
+    \item[dB] Calcula a \textbf{sonoridade}
     \pause
-    \item[DCT] Coeficientes espectrais $\implies$ coeficientes cepstrais
+    \item[DCT] Coeficientes espectrais $\implies$ coeficientes \textbf{cepstrais}
     \pause
-    \item[CMS] Normaliza os MFCCs para reduzir perturbações
+    \item[CMS] \textbf{Normaliza} os MFCCs para reduzir perturbações
     \pause
-    \item[$\dvec{\Delta}$s] Novos coeficientes a partir dos antigos (opcional)
+    \item[$\dvec{\Delta}$s] Novos coeficientes a partir de \textbf{aspectos temporais} dos antigos (opcional)
     \pause
 \end{description}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\textwidth]{mfcc-flow}
+    \includegraphics[width=0.85\textwidth]{mfcc-flow}
 \end{figure}
 \end{frame}
