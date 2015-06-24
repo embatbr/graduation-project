@@ -40,14 +40,14 @@ The raw speech signal is unfit to be used by the classifier in an ASR system. Fo
 \section{Speaker Identification}
 \label{sec:speaker-identification}
 
-Given a speech signal $\boldsymbol{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\dvec{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
+Given a speech signal $\boldsymbol{Y}$ spoken by an arbitrary speaker $\mathcal{S}$, the task of identify $\mathcal{S}$ as a particular $\mathcal{S}_i$ from $\boldsymbol{\mathcal{S}}$ (set of enrolled users) is given by the following equation:
 
 \begin{equation}
     i = \arg_j\max\postpdf{\boldsymbol{Y}}{\mathcal{S}_j} \implies \mathcal{S} \gets \mathcal{S}_i,
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., N$ (where $N$ is the size of $\dvec{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by the sequence $\boldsymbol{X}$ of features in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
+\noindent for $j = 1, ..., N$ (where $N$ is the size of $\boldsymbol{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by the sequence $\boldsymbol{X}$ of features in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
 
 \subsection{Training}
 
@@ -71,7 +71,7 @@ The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equati
     \label{eq:speaker_identification}
 \end{equation}
 
-\noindent where the $\lambda_j$ with the highest likelihood has its identity assigned to $\mathcal{S}$. The main disadvantage this system presents is that every $\boldsymbol{X}$ must be tested against every $\mathcal{S}_j$ from $\dvec{\mathcal{S}}$, what demands a high amount of time.
+\noindent where the $\lambda_j$ with the highest likelihood has its identity assigned to $\mathcal{S}$. The main disadvantage this system presents is that every $\boldsymbol{X}$ must be tested against every $\mathcal{S}_j$ from $\boldsymbol{\mathcal{S}}$, what demands a high amount of time.
 
 \begin{figure}[ht]
     \centering
@@ -83,7 +83,7 @@ The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equati
 \section{Speaker Verification}
 \label{sec:speaker-verification}
 
-If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_{C}$ from $\dvec{\mathcal{S}}$, the strength of this claim resides on how similar the features in $\boldsymbol{X}$ are to the features from $\mathcal{S}_{C}$ used to model the system. Then, a simple equation
+If a speaker $\mathcal{S}$ claims to be a particular user $\mathcal{S}_{C}$ from $\boldsymbol{\mathcal{S}}$, the strength of this claim resides on how similar the features in $\boldsymbol{X}$ are to the features from $\mathcal{S}_{C}$ used to model the system. Then, a simple equation
 
 \begin{equation}
     \postpdf{\boldsymbol{X}}{\mathcal{S}_{C}} \verifytestB{\alpha}{\mathcal{S}}

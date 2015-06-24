@@ -28,6 +28,8 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[backend=bibtex,sorting=none,citestyle=numeric-comp]{biblatex}
+\usepackage{mathtools}
+%\usepackage{amsmath}
 
 
 % PRE CONFIGURATIONS
@@ -42,6 +44,37 @@
     \frametitle{Conteúdo}
     \tableofcontents[currentsection,hideallsubsections]
     \end{frame}
+}
+
+%MATH COMMANDS
+\newcommand{\dvec}[1]{\boldsymbol{#1}}
+\newcommand{\dhatvec}[1]{\boldsymbol{\hat{#1}}}
+\newcommand{\prob}[1]{P(#1)}
+\newcommand{\postprob}[2]{P(#1|#2)}
+\newcommand{\pdf}[1]{p(#1)}
+\newcommand{\pdfi}[1]{p_i(#1)}
+\newcommand{\postpdf}[2]{p(#1|#2)}
+\newcommand{\postpdfi}[2]{p_i(#1|#2)}
+\newcommand{\determinant}[1]{|#1|}
+\newcommand{\dgaussian}[3]{\frac{1}{(2\pi)^{D/2}\determinant{\dvec{#3}}^{1/2}}e^{-\frac{1}{2}(\dvec{#1} - \dvec{#2})'\dvec{#3}^{-1}(\dvec{#1} - \dvec{#2})}}
+\newcommand{\dgaussianmixture}{\sum_{i=1}^M w_i \frac{1}{(2\pi)^{D/2}\determinant{\dvec{\Sigma}_i}^{1/2}}e^{-\frac{1}{2}(\dvec{x} - \dvec{\mu}_i)'\dvec{\Sigma}_i^{-1}(\dvec{x} - \dvec{\mu}_i)}}
+\newcommand{\verifytest}[2]
+{
+    \left\{
+        \begin{array}{ll}
+            \geq #1, & \text{accept } #2,\\
+            < #1, & \text{reject } #2.
+        \end{array}
+    \right.
+}
+\newcommand{\verifytestB}[2]
+{
+    \left\{
+        \begin{array}{ll}
+            \geq #1, & \text{accept } #2,\\
+            < #1, & \text{reject } #2,
+        \end{array}
+    \right.
 }
 
 
