@@ -1,7 +1,7 @@
 \chapter{Gaussian Mixture Models}
 \label{ch:gmm}
 
-\chapterref{speaker-recognition-systems} briefly discussed the use of models $\lambda_i$ to perform an identification process and models $\lambda_{C}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to a verification process. As the features from the speech signal have unknown values until the moment of extraction, it is reasonable to model the ASR system to work with random values.
+\chapterref{speaker-recognition-systems} briefly discussed the use of models $\lambda_j$ to perform an identification process and models $\lambda_{C}$ and $\lambda_{bkg}$ for a claimed speaker and for a background composed of all enrolled speakers, respectively, to a verification process. As the features from the speech signal have unknown values until the moment of extraction, it is reasonable to model the ASR system to work with random values.
 
 For all sorts of probability distributions, the Gaussian (or normal) is the one that best describes the behavior of a random variable of unknown distribution, as demonstrated by the central limit theorem. Its equation for a D-dimensional space is
 
@@ -29,10 +29,10 @@ For the general case, a single Gaussian distribution does not provide the most a
     \label{eq:likelihood_gmm}
 \end{equation}
 
-The reason to model a speaker $\mathcal{S}$ using a GMM is to achieve a $\lambda$ that maximizes the likelihood when applied to features $\dvec{x}$ extracted from a speech signal produced by $\mathcal{S}$. This value is found by a Maximum Likelihood Estimation (MLE) algorithm. For a sequence of T training vectors $\dvec{X} = \{\dvec{x}_t\}$, the GMM's likelihood can be written as
+The reason to model a speaker $\mathcal{S}$ using a GMM is to achieve a $\lambda$ that maximizes the likelihood when applied to features $\dvec{x}$ extracted from a speech signal produced by $\mathcal{S}$. This value is found by a Maximum Likelihood Estimation (MLE) algorithm. For a sequence of T training vectors $\boldsymbol{X} = \{\dvec{x}_t\}$, the GMM's likelihood can be written as
 
 \begin{equation}
-    \postpdf{\dvec{X}}{\lambda} = \prod_{t=1}^T \postpdf{\dvec{x}_t}{\lambda}.
+    \postpdf{\boldsymbol{X}}{\lambda} = \prod_{t=1}^T \postpdf{\dvec{x}_t}{\lambda}.
     \label{eq:likelihood_gmm_mle}
 \end{equation}
 
@@ -43,7 +43,7 @@ In this paper, the GMM that models a single speaker will be reffered to as Singl
 \section{Expectation-Maximization}
 \label{sec:em}
 
-The idea of the EM algorithm is to estimate a new model $\lambda^{(k+1)}$ from a previous model $\lambda^{(k)}$, that obeys $\postpdf{\dvec{X}}{\lambda^{(k+1)}} \geq \postpdf{\dvec{X}}{\lambda^{(k)}}$, better representing the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i^2$ of variances).
+The idea of the EM algorithm is to estimate a new model $\lambda^{(k+1)}$ from a previous model $\lambda^{(k)}$, that obeys $\postpdf{\boldsymbol{X}}{\lambda^{(k+1)}} \geq \postpdf{\boldsymbol{X}}{\lambda^{(k)}}$, better representing the training data at each iteration until some convergence threshold is reached. The algorithm is composed of 2 steps, an expectation of the \emph{a posteriori} probabilities for each distribution $i$, and a maximization step, when the parameters $w_i$, $\dvec{\mu}_i$ and $\dvec{\Sigma}_i$ are updated. The following description of the steps uses a $\lambda$ with \textbf{diagonal}\footnote{As stated in \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}, diagonal covariance matrix GMMs outperform and are more computationally efficient than full covariance matrix GMMs. Also, the density modeling of an $M$-th order full covariance matrix GMM can equally well be achieved using a larger order diagonal covariance.} $\dvec{\Sigma}_i$ (i.e., change the $D \times D$ matrix $\dvec{\Sigma}_i$ for a $D$-dimensional vector $\dvec{\sigma}_i^2$ of variances).
 
 \subsubsection*{E-Step}
 
@@ -86,10 +86,10 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
 \begin{algorithm}
 \label{em-algorithm}
 \begin{algorithmic}[1]
-\Procedure{Expectation\textendash Maximization}{$\lambda, \dvec{X}, threshold$}
+\Procedure{Expectation\textendash Maximization}{$\lambda, \boldsymbol{X}, threshold$}
 \State $\lambda^k = \lambda$
-\State $\lambda^{(k+1)} =$ M-Step($\lambda^k, \dvec{X})$
-\State \textbf{if} $\postpdf{\dvec{X}}{\lambda^{(k+1)}} - \postpdf{\dvec{X}}{\lambda^{(k)}} \leq threshold \implies$ \textbf{goto} line $7$
+\State $\lambda^{(k+1)} =$ M-Step($\lambda^k, \boldsymbol{X})$
+\State \textbf{if} $\postpdf{\boldsymbol{X}}{\lambda^{(k+1)}} - \postpdf{\boldsymbol{X}}{\lambda^{(k)}} \leq threshold \implies$ \textbf{goto} line $7$
 \State$\lambda^k = \lambda^{(k+1)}$
 \State \textbf{goto} line $3$
 \EndProcedure
@@ -122,17 +122,17 @@ There are many configurations for an UBM, however, as seen in \refbib{Reynolds e
 As shown in \sectionref{speaker-verification}, the likelihood ratio test is performed using the models $\lambda_{C}$ and $\lambda_{bkg}$. The default ASR system is a SSGMM-UBM system, turning \equationref{score_of_X} in
 
 \begin{equation}
-    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
+    \Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{SSGMM}) - \log p(\boldsymbol{X}|\lambda_{UBM}).
     \label{eq:score_of_X_ssgmm_ubm}
 \end{equation}
 
 \section{Adapted Gaussian Mixture Model}
 \label{sec:adapted-gmm}
 
-As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify the entire corpus demands the training of SSGMMs for all enrolled speakers, a highly costly action in time. An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster training than in the SSGMM-UBM system (there is no loop of indefinite time such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
+As seen in \chapterref{speaker-recognition-systems} and in the previous sections, to perform the verification process a GMM for the claimed speaker and an UBM must be trained. Verify the entire corpus demands the training of SSGMMs for all enrolled speakers, a highly costly action in time. An effective alternative is to take advantage of the well-trained $M$-th order UBM, since the SSGMMs and the UBM must have the same order to use \equationref{score_of_X_ssgmm_ubm}, and adapt its parameters to generate a new SSGMM for a speaker, \refbib{Brown et. al.}{brown.lee.spohrer.1983}. This technique provides a faster modeling than in the SSGMM-UBM system (there is no loop of indefinite time such as in the EM algorithm) and tighter coupling between the speaker’s model and the UBM, \refbib{Reynolds et. al.}{reynolds.quatieri.dunn.2000}. The resultant GMM is named Single Speaker Adapted Gaussian Mixture Model (SSAGMM). Refactoring \equationref{score_of_X_ssgmm_ubm}, the log-likelihood ratio test for Adapted Gaussian Mixture Model (AGMM) is
 
 \begin{equation}
-    \Lambda(\dvec{X}) = \log p(\dvec{X}|\lambda_{SSAGMM}) - \log p(\dvec{X}|\lambda_{UBM}).
+    \Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{SSAGMM}) - \log p(\boldsymbol{X}|\lambda_{UBM}).
     \label{eq:score_of_X_ssagmm_ubm}
 \end{equation}
 

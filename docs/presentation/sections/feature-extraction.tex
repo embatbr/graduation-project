@@ -168,6 +168,7 @@
 \begin{description}
     \item[DCT] Coeficientes espectrais $\implies$ coeficientes \textbf{cepstrais}
     \pause
+    \vskip2pt
     \begin{itemize}
         \item $c_n = \sum_{k=1}^K S_k\cdot\cos\left[n\left(k - \frac{1}{2}\right)\frac{\pi}{K}\right], n = 1, 2, ..., L$
         \pause
@@ -196,6 +197,7 @@
 \begin{description}
     \item[CMS] \textbf{Normaliza} os MFCCs para reduzir perturbações
     \pause
+    \vskip2pt
     \begin{itemize}
         \item $c_n = c_n - \frac{1}{T} \sum_{t=1}^T c_{n,t}$
         \pause
@@ -224,6 +226,7 @@
 \begin{description}
     \item[$\dvec{\Delta}$s] Novos $c_n$ \textbf{derivados} dos antigos $c_n$ (opcional)
     \pause
+    \vskip2pt
     \begin{itemize}
         \item $\Delta_t = \frac{\sum_{n=1}^N n(c_{t+n} - c_{t-n})}{2\sum_{n=1}^N n^2}$
         \pause
