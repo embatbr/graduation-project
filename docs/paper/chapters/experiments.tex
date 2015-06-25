@@ -25,7 +25,7 @@ The corpus is composed of three sessions. The first, named ``Enroll 1", contains
 
 All utterances are recorded in uncompressed WAV files using a single channel. For each utterance record there is a correspondent text file containing pertinent information, such as speaker, microphone, location, message content and etc. (see \tableref{utterance-info}).
 
-Despite being a base for speaker verification systems, in this paper MIT-MDSCV is also used for speaker identification experiments. The difference is that only ``Enroll 1" and ``Enroll 2" are used, for training and test respectively. In an ideal identification system all utterances from ``Enroll 2" are correctly identified and in an ideal verification system the false detection and false rejection rates are zero.
+Despite being a base for speaker verification systems, in this report MIT-MDSCV is also used for speaker identification experiments. The difference is that only ``Enroll 1" and ``Enroll 2" are used, for training and test respectively. In an ideal identification system all utterances from ``Enroll 2" are correctly identified and in an ideal verification system the false detection and false rejection rates are zero.
 
 \begin{table}[h]
     \centering
@@ -46,7 +46,7 @@ Despite being a base for speaker verification systems, in this paper MIT-MDSCV i
 \section{Coding and Data Preparation}
 \label{sec:coding-and-data-preparation}
 
-The systems described throughout the paper were implemented in the Python programming language, version 3.4.3, and the frameworks NumPy 1.8.1 and SciPy 0.14.0 were used to perform most of the calculations as matrices. Also, Matplotlib 1.4 was used to plot the results as figures. All codes can be found in \url{github.com/embatbr/tg} and are free to be used, since properly referenced.
+The systems described throughout the report were implemented in the Python programming language, version 3.4.3, and the frameworks NumPy 1.8.1 and SciPy 0.14.0 were used to perform most of the calculations as matrices. Also, Matplotlib 1.4 was used to plot the results as figures. All codes can be found in \url{github.com/embatbr/tg} and are free to be used, since properly referenced.
 
 The implementation is divided in 6 modules. Module \textbf{features} contains codes to execute the feature extraction through the MFCC algorithm. Each stage is executed by a different function. The main function joins all stages, receiving a speech signal in waveform and delivering a matrix of features over frames. Most of this module was written using codes from \refbib{Lyons}{lyons.2012}. The GMM is implemented in module \textbf{mixtures} as a class containing methods for training usign EM algorithm and for bayesian adaptation. The module also contains functions to execute the \emph{k-means} clustering, used during the GMM creation. Functions to extract the features from MIT-MDSCV and to read groups of feature data (e.g., single speaker and background) are present in module \textbf{bases}. The module \textbf{main}, as the name denounces, is filled with functions to execute every functionality needed. Through command lines it is possible to extract MFCCs from the base, train and adapt models, identify or verify speakers, calculate rates, draw curves and etc. Module \textbf{show} is aimed to generate figures to fill the previous chapters (mostly chapters \chapterrefcomp{feature-extraction} and \chapterrefcomp{gmm}). At last, module \textbf{common} contains useful constants and functions shared by the other modules.
 
