@@ -7,11 +7,9 @@
 \frametitle{Definição}
 \begin{description}\itemsep6pt
     \item[GMM] $\postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdfi{\dvec{x}}$
-    \pause
     \item[Gaussiana] $\pdf{\dvec{x}} = \dgaussian{x}{\mu}{\Sigma}$
     \pause
     \item $\lambda = \{(w_i, \dvec{\mu}_i, \dvec{\Sigma}_i)\}, i = 1, ..., M$
-    \pause
     \item $\dvec{\Sigma}$ diagonal $\implies \dvec{\sigma}^2$
     \pause
     \item Dada uma sequência $\boldsymbol{X}$
@@ -72,7 +70,7 @@
     \pause
     \item Realça características comuns
     \pause
-    \item $\boldsymbol{X}$ específico $\implies \uparrow \Lambda(\boldsymbol{X})$
+    \item $\boldsymbol{X}$ específico a $\mathcal{S} \implies \uparrow \Lambda(\boldsymbol{X})$
     \pause
     \item Escolhido o tipo $(b)$
 \end{description}
@@ -92,7 +90,7 @@
     \pause
     \item Modelagem mais rápida que EM
     \pause
-    \item Composto de \emph{M-Step} e \emph{MAP-Step}
+    \item Composto de \emph{E-Step} e \emph{MAP-Step}
     \pause
     \item[E-Step] Semelhante ao \emph{E-Step} do EM
     \pause

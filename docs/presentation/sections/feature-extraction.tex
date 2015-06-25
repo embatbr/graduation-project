@@ -7,17 +7,11 @@
 \frametitle{Características Ideais}
 \begin{itemize}
     \item Natural e frequente na fala
-    \pause
     \item Facilmente mensurável
-    \pause
     \item $\uparrow$ variação inter-locutor e $\downarrow$ variação intra-locutor
-    \pause
     \item Constante no tempo e não afetável pela saúde
-    \pause
     \item Robusta a ruído razoável e a transmissão
-    \pause
     \item Difícil de ser produzido artificialmente
-    \pause
     \item Não ser facilmente modificável pelo locutor
 \end{itemize}
 \end{frame}
@@ -30,7 +24,6 @@
     \item Simula a função da \textbf{cóclea}
     \pause
     \item[Escala Mel] Logaritmica
-    \pause
     \begin{itemize}
         \item $f_{mel} = 2595 \log_{10}(1 + \frac{f}{700})$
         \pause
@@ -51,10 +44,9 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
-    \item[Pré-ênfase] \textbf{Realça} as altas frequências (opcional)
+    \item[Pre-emphasis] \textbf{Realça} as frequências altas (opcional)
     \pause
     \begin{itemize}
         \item $s_{emph}[n] = s[n] - \alpha \cdot s[n - 1]$
@@ -76,12 +68,12 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
-    \item[Janelamento] Divide o sinal em janelas \textbf{superpostas}
+    \item[Framing] Divide o sinal em janelas \textbf{superpostas}
     \pause
     \begin{itemize}
+        \item Janela de Hamming
         \item Largura de 20 milissegundos
         \item Deslocamento de 10 milissegundos
         \pause
@@ -101,7 +93,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
     \item[$|FFT|^2$] Calcula o \textbf{espectro de potência}
@@ -121,16 +112,19 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
-    \item[Filtros] Espectro em Hz $\implies$ espectro em \textbf{mels}
+    \item[Mel-filterbank] Espectro em Hz $\implies$ espectro em \textbf{mels}
     \pause
 \end{description}
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.75\textwidth]{filterbank}
 \end{figure}
+
+\begin{description}
+    \item Na escala mel, as larguras são iguais
+\end{description}
 \end{frame}
 
 \subsection{MFCC - Extração}
@@ -141,7 +135,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
     \item[dB] Calcula a \textbf{sonoridade}
@@ -161,7 +154,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
     \item[DCT] Coeficientes espectrais $\implies$ coeficientes \textbf{cepstrais}
@@ -190,7 +182,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
     \item[CMS] \textbf{Normaliza} os MFCCs para reduzir perturbações
@@ -219,7 +210,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{mfcc-flow}
 \end{figure}
-\pause
 
 \begin{description}
     \item[$\dvec{\Delta}$s] Novos $c_n$ \textbf{derivados} dos antigos $c_n$ (opcional)
