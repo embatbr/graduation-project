@@ -10,7 +10,7 @@ Automatic Speaker Recognition (ASR) systems are bayesian classifiers, using the 
     \label{eq:bayes_equation}
 \end{equation}
 
-\noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ can be removed with no loss to the analysis, along with the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization). \equationref{bayes_equation} is then replaced by
+\noindent where $\mathcal{S}$ is the speaker who produced $\boldsymbol{Y}$. As all speakers are considered equally probable, the \emph{a priori} probability $\prob{\mathcal{S}}$ can be removed with no loss, along with the \emph{evidence} $\pdf{\boldsymbol{Y}}$ (just used for normalization). \equationref{bayes_equation} is then replaced by $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$, due to
 
 \begin{equation}
     \postprob{\mathcal{S}}{\boldsymbol{Y}} \sim \postpdf{\boldsymbol{Y}}{\mathcal{S}}.
@@ -47,7 +47,7 @@ Given a speech signal $\boldsymbol{Y}$ spoken by an arbitrary speaker $\mathcal{
     \label{eq:classification_speaker_identification}
 \end{equation}
 
-\noindent for $j = 1, ..., N$ (where $N$ is the size of $\boldsymbol{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by the sequence $\boldsymbol{X}$ of features in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
+\noindent for $j = 1, ..., N$ (where $N$ is the size of $\boldsymbol{\mathcal{S}}$). The high level speech $\boldsymbol{Y}$ in $\postpdf{\boldsymbol{Y}}{\mathcal{S}}$ is replaced by the sequence $\boldsymbol{X}$ of features, extracted from $\boldsymbol{Y}$, in \equationref{classification_speaker_identification}, a proper way to represent the signal's characteristics.
 
 \subsection{Training}
 
@@ -64,7 +64,7 @@ The idea behind the training stage is to make $\lambda_j$ ``memorize" the distin
 
 \subsection{Test}
 
-The system test is performed replacing the speakers $\mathcal{S}_j$'s in \equationref{classification_speaker_identification} by their models $\lambda_j$ (and $\boldsymbol{Y}$ by $\boldsymbol{X}$, as previously stated), leading to
+The system test is performed replacing the speakers $\mathcal{S}_j$ in \equationref{classification_speaker_identification} by their models $\lambda_j$ (and $\boldsymbol{Y}$ by $\boldsymbol{X}$, as previously stated), leading to
 
 \begin{equation}
     i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j} \implies \mathcal{S} \gets \mathcal{S}_i,
