@@ -52,7 +52,12 @@ The implementation is divided in 6 modules. Module \textbf{features} contains co
 
 \subsection{Parameters}
 
-The MFCCs extracted used a filterbank of size 26, maintaining only the first 19 features, and deltas of order 0, 1 and 2, leading to MFCCs with final feature number of 19, 38 and 57, respectively. The deltas were calculated using $K = 2$. Before any delta calculation, the energy appending and CMS steps were performed. The relevance factor $r$ in AGMM had a default value of 16 for all combinations of adaptations. The implemented EM algorithm stops the training when $\log\postpdf{\dvec{X}}{\lambda^{(k+1)}} - \log\postpdf{\dvec{X}}{\lambda^{(k)}} \le 10^{-3}$.
+The MFCCs extracted used a filterbank of size 26, maintaining only the first 19 features, and deltas of order 0, 1 and 2, leading to MFCCs with final feature number of 19, 38 and 57, respectively. The deltas were calculated using $K = 2$. Before any delta calculation, the energy appending and CMS steps were performed. The relevance factor $r$ in AGMM had a default value of 16 for all combinations of adaptations. The implemented EM algorithm stops the training when a convergence is reached.
+
+\begin{equation}
+    \log\postpdf{\dvec{X}}{\lambda^{(k+1)}} - \log\postpdf{\dvec{X}}{\lambda^{(k)}} \leq 10^{-3} \implies \text{stop training}.
+    \label{eq:stop-condition}
+\end{equation}
 
 All speakers were modeled using SSGMMs with sizes ($M$s) equal to 8, 16, 32, 64 and 128, each divided in 4 types of environment configuration: quiet office, mildly noisy hallway, busy street intersection and all three together. This leads to 48 speakers $\times$ 5 $M$s $\times$ 4 environments $\times$ 3 delta orders $=$ 2880 trained SSGMMs. The UBM is a combination of a trained male UBM and a trained female UBM (see \figureref{ubm-diagram}b), for all sizes of mixtures, types of environments and orders of delta, totaling 60 models. Each one of the 4 combinations of SSAGMM also contains 2880 models. Adding the Single Speaker Fractional Gaussian Mixture Models (SSFGMMs) for all 5 values of $r$ (0.95, 0.99, 1, 1.01 and 1.05), the total number of trained models is 28860.
 

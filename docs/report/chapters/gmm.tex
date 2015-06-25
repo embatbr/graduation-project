@@ -18,7 +18,7 @@ For all sorts of probability distributions, the Gaussian (or normal) is the one 
 For the general case, a single Gaussian distribution does not provide the most accurate representation. This issue is reduced using a linear combination of $\pdf{\dvec{x}}$'s to model the ASR system, estimating the one that best represents the training data. This combination is named Gaussian Mixture Model (GMM), first used for speaker recognition in \refbib{Reynolds}{reynolds.1992}, and given by
 
 \begin{equation}
-    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\postpdfi{\dvec{x}}{\dvec{\mu}_i, \dvec{\Sigma}_i} = \sum_{i=1}^M w_i\pdfi{\dvec{x}},
+    \postpdf{\dvec{x}}{\lambda} = \sum_{i=1}^M w_i\pdfi{\dvec{x}} = \sum_{i=1}^M w_i\postpdfi{\dvec{x}}{\dvec{\mu}_i, \dvec{\Sigma}_i},
     \label{eq:gaussian_mixture}
 \end{equation}
 
@@ -50,11 +50,11 @@ The idea of the EM algorithm is to estimate a new model $\lambda^{(k+1)}$ from a
 The \textbf{expectation step} consists of estimating the \emph{a posteriori} probabilities $\postprob{i}{\dvec{x}_t, \lambda}$ for each distribution $i$ and each feature vector $\dvec{x}_t$, defined as
 
 \begin{equation}
-    \postprob{i}{\dvec{x}_t, \lambda} = \postprob{i}{\dvec{x}_t} = \frac{w_i p_i(\dvec{x}_t)}{\sum_{k=1}^M w_k p_k(\dvec{x}_t)}.
+    \postprob{i}{\dvec{x}_t} = \postprob{i}{\dvec{x}_t, \lambda} = \frac{w_i p_i(\dvec{x}_t)}{\sum_{k=1}^M w_k p_k(\dvec{x}_t)}.
     \label{eq:e-step-posterior}
 \end{equation}
 
-\noindent The $\lambda$ present in \equationref{e-step-posterior} is the previously cited $\lambda^{(k)}$ for the current iteration.
+\noindent The $\lambda$ present in \equationref{e-step-posterior} is the previously cited $\lambda^{k}$ for the current iteration.
 
 \subsubsection*{M-Step}
 
@@ -81,7 +81,7 @@ In the \textbf{maximization step} the model is updated by recalculation of the p
     \label{eq:m-step-variances}
 \end{equation}
 
-\noindent\\ where $\lambda^{(k+1)} = \{(\overline{w}_i, \overline{\dvec{\mu}}_i, \overline{\dvec{\sigma}}_i^2)\}$, for $i = 1, \dots, M$, and $\lambda^{k} = \lambda^{(k+1)}$ in the next iteration. This algorithm trains the GMMs used in the ASR systems shown in sections \sectionrefcomp{speaker-identification} and \sectionrefcomp{speaker-verification} and previously described in \sectionref{gmm-definition}.
+\noindent\\ where $\lambda^{(k+1)} = \{(\overline{w}_i, \overline{\dvec{\mu}}_i, \overline{\dvec{\sigma}}_i^2)\}$, for $i = 1, \dots, M$, and $\lambda = \lambda^{(k+1)}$ in the next iteration. This algorithm trains the GMMs used in the ASR systems shown in sections \sectionrefcomp{speaker-identification} and \sectionrefcomp{speaker-verification} and previously described in \sectionref{gmm-definition}.
 
 \begin{algorithm}
 \label{em-algorithm}
