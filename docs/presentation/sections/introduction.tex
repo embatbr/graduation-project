@@ -3,31 +3,6 @@
 
 \contentscurrent
 
-\begin{frame}
-\frametitle{Reconhecimento de ...}
-\begin{description}
-    \item[Fala] \textbf{O que} está sendo dito
-    \pause
-    \begin{itemize}
-        \item Conteúdo da mensagem
-        \pause
-        \item Estado emocional do locutor
-        \pause
-        \item Sotaque ou dificuldade de articulação
-        \pause
-    \end{itemize}
-    \item[Locutor] \textbf{Quem} está falando
-    \pause
-    \begin{itemize}
-        \item Identificar uma pessoa num grupo
-        \pause
-        \item Autenticar um usuário
-        \pause
-    \end{itemize}
-    \item Este trabalho é focado em reconhecimento de \textbf{locutor}
-\end{description}
-\end{frame}
-
 \subsection{Reconhecimento de Locutor}
 
 \begin{frame}
@@ -37,7 +12,6 @@
     \pause
     \begin{itemize}
         \item 1 para N
-        \pause
         \item Problema de \textbf{conjunto fechado}
         \pause
     \end{itemize}
@@ -45,7 +19,6 @@
     \pause
     \begin{itemize}
         \item 1 para 1
-        \pause
         \item Problema de \textbf{conjunto aberto}
         \pause
     \end{itemize}
@@ -60,22 +33,20 @@
 \begin{frame}
 \frametitle{Dependência de texto}
 \begin{description}
-    \item[Dependente] Teste $\in$ Treinamento
+    \item[Com] Teste $\in$ Treinamento
     \pause
     \begin{itemize}
         \item Diversos graus de dependência
-        \pause
         \item Teste $\not\in$ Treinamento $\implies$ Retreinamento
         \pause
     \end{itemize}
-    \item[Independente] Teste $\neq$ Treinamento
+    \item[Sem] Teste $\neq$ Treinamento
     \pause
     \begin{itemize}
         \item Características não textuais
-        \pause
         \item Presentes em diferentes sotaques e até \emph{gibberish}
+        \pause
     \end{itemize}
-    \pause
     \item Este trabalho é focado em reconhecimento de locutor \textbf{independente de texto}
 \end{description}
 \end{frame}
@@ -107,7 +78,6 @@
         \pause
         \begin{itemize}
             \item Diferentes tamanhos de mistura ($M$)
-            \pause
             \item Diferentes tamanhos de características ($\boldsymbol{\Delta}$)
             \pause
         \end{itemize}
@@ -117,7 +87,6 @@
         \pause
         \begin{itemize}
             \item Diferentes tamanhos de mistura ($M$)
-            \pause
             \item Diferentes tamanhos de características ($\boldsymbol{\Delta}$)
             \pause
         \end{itemize}

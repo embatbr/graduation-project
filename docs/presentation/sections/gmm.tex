@@ -18,9 +18,7 @@
     \pause
     \begin{itemize}\itemsep4pt
         \item $\postpdf{\boldsymbol{X}}{\lambda} = \prod_{t=1}^T \postpdf{\dvec{x}_t}{\lambda}.$
-        \pause
         \item Função não linear de $\lambda$
-        \pause
         \item Estimar com o Expectation-Maximization (EM)
     \end{itemize}
 \end{description}
@@ -30,7 +28,7 @@
 
 \begin{frame}
 \frametitle{Expectation-Maximization}
-\begin{description}\itemsep4pt
+\begin{description}\itemsep6pt
     \item Estimar $\lambda^{(k+1)}$ a partir de $\lambda^{k}$
     \pause
     \item Obedecer $\postpdf{\boldsymbol{X}}{\lambda^{(k+1)}} \geq \postpdf{\boldsymbol{X}}{\lambda^{(k)}}$
@@ -41,11 +39,9 @@
     \pause
     \item[M-Step] Adaptar os parâmetros
     \pause
-    \begin{description}\itemsep4pt
+    \begin{description}\itemsep6pt
         \item[Pesos] $\overline{w}_i = \frac{1}{T} \sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}$
-        \pause
         \item[Médias] $\overline{\dvec{\mu}}_i = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}}$
-        \pause
         \item[Variâncias] $\overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} \dvec{x}_t^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}} - \overline{\dvec{\mu}}_i^2$
     \end{description}
 \end{description}
@@ -60,12 +56,9 @@
 \pause
 
 \begin{description}
-    \item $M = 8$
-    \pause
-    \item $\Delta = 0$
+    \item $M = 8$ e $\Delta = 0$
     \pause
     \item[Inicialização] \emph{k-means} com 1 iteração
-    \pause
     \item[Limiar] $10^{-3}$
 \end{description}
 \end{frame}
@@ -82,7 +75,6 @@
     \item $\boldsymbol{X}$ específico $\implies \uparrow \Lambda(\boldsymbol{X})$
     \pause
     \item Escolhido o tipo $(b)$
-    \pause
 \end{description}
 
 \begin{figure}[ht]
@@ -107,9 +99,7 @@
     \begin{itemize}\itemsep4pt
         \item $n_i = \sum_{t=1}^{T} \postprob{i}{\dvec{x}_t}
     \label{eq:n_i}$
-        \pause
         \item $E_i(\dvec{x}) = \frac{1}{n_i} \sum_{t=1}^{T} \postprob{i}{\dvec{x}_t} \dvec{x}_t$
-        \pause
         \item $E_i(\dvec{x}^2) = \frac{1}{n_i} \sum_{t=1}^{T} \postprob{i}{\dvec{x}_t} \dvec{x}_t^2$
         \pause
     \end{itemize}
@@ -117,9 +107,7 @@
     \pause
     \begin{description}\itemsep4pt
         \item[Pesos] $\hat{w_i} = [\alpha_i n_i / T + (1 - \alpha_i)w_i]\gamma$
-        \pause
         \item[Médias] $\hat{\dvec{\mu}_i} = \alpha_i E_i(\dvec{x}) + (1 - \alpha_i)\dvec{\mu}_i$
-        \pause
         \item[Variâncias] $\hat{\dvec{\sigma}_i}^2 = \alpha_i E_i(\dvec{x}^2) + (1 - \alpha_i)(\dvec{\sigma}_i^2 + \dvec{\mu}_i^2) - \hat{\dvec{\mu}_i}^2$
     \end{description}
 \end{description}
@@ -134,7 +122,6 @@
     \pause
     \begin{itemize}
         \item $\alpha_i \to 0 \implies$ manter os antigos parâmetros
-        \pause
         \item $\alpha_i \to 1 \implies$ adaptar para os novos parâmetros
         \pause
     \end{itemize}
@@ -144,7 +131,6 @@
     \centering
     \includegraphics[width=0.75\textwidth]{adapted_wmv}
 \end{figure}
-\pause
 
 \begin{description}
     \item Pesos, médias e variâncias adaptados
@@ -160,7 +146,6 @@
     \pause
     \begin{itemize}\itemsep4pt
         \item $\sigma^2 = E[(X^r - \mu^r)^2]$
-        \pause
         \item $\overline{\dvec{\sigma}}_i^2 = \frac{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda} (\dvec{x}_t^r - \overline{\dvec{\mu}}_i^r)^2}{\sum_{t=1}^T \postprob{i}{\dvec{x}_t, \lambda}}$
         \pause
     \end{itemize}
@@ -168,7 +153,6 @@
     \pause
     \begin{description}\itemsep4pt
         \item[Antes] $c_n = c_n + (1 - \min_t c_{n,t})$
-        \pause
         \item[Depois] $\mu_n = \mu_n - (1 - \min_t c_{n,t})$
         \pause
     \end{description}
