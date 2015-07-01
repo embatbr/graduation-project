@@ -207,6 +207,10 @@ class GMM(object):
         T = len(featsvec)
         posteriors = np.zeros((T, self.M))
         old_log_like = self.log_likelihood(featsvec)
+        #if self.r is None:
+        #    old_log_like = self.log_likelihood(featsvec)
+        #else:
+        #    old_log_like = self.log_likelihood(featsvec**self.r)
         print('log_like = %f' % old_log_like)
 
         iteration = 0
@@ -244,6 +248,10 @@ class GMM(object):
             self.weights = self.weights / np.sum(self.weights, axis=0)
 
             new_log_like = self.log_likelihood(featsvec)
+            #if self.r is None:
+            #    new_log_like = self.log_likelihood(featsvec)
+            #else:
+            #    new_log_like = self.log_likelihood(featsvec**self.r)
             diff = new_log_like - old_log_like
 
             # DEBUG

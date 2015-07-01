@@ -18,8 +18,8 @@ FRAC_SPEAKERS_DIR = '%sspeakers/' % FRAC_GMMS_DIR
 FRAC_UBMS_DIR = '%subms/' % FRAC_GMMS_DIR
 
 DOCS_DIR = '../docs/'
-PAPER_DIR = '%spaper/' % DOCS_DIR
-CHAPTERS_DIR = '%schapters/' % PAPER_DIR
+REPORT_DIR = '%sreport/' % DOCS_DIR
+CHAPTERS_DIR = '%schapters/' % REPORT_DIR
 TABLES_DIR = '%stables/' % CHAPTERS_DIR
 
 EXPERIMENTS_DIR = '../experiments/'

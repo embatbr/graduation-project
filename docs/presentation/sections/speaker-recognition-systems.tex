@@ -9,18 +9,14 @@
 \frametitle{Identificação}
 \begin{description}
     \item[Modelagem] Para cada locutor $\mathcal{S}_j \in \boldsymbol{\mathcal{S}}$
-    \pause
     \begin{itemize}
         \item Extrair $\boldsymbol{X}_k$ dos sinais $\boldsymbol{Y}_k$ falados por $\mathcal{S}_j$
         \item Treinar um $\lambda_j$ para cada $\mathcal{S}_j$ através dos $\boldsymbol{X}_k$
-        \pause
     \end{itemize}
     \item[Teste] Para um locutor desconhecido $\mathcal{S}$
-    \pause
     \begin{itemize}
         \item Extrair $\boldsymbol{X}$ do sinal $\boldsymbol{Y}$ falado por $\mathcal{S}$
         \item $i = \arg_j\max\postpdf{\boldsymbol{X}}{\lambda_j} \implies \mathcal{S} \gets \mathcal{S}_i$
-        \pause
     \end{itemize}
 \end{description}
 
@@ -36,20 +32,16 @@
 \frametitle{Verificação}
 \begin{description}
     \item[Modelagem] Para todos os $\mathcal{S}_j \in \boldsymbol{\mathcal{S}}$
-    \pause
     \begin{itemize}
         \item Extrair $\boldsymbol{X}_k$ dos sinais $\boldsymbol{Y}_k$ falados por cada $\mathcal{S}_j$
         \item Treinar um $\lambda_{bkg}$ através dos $\boldsymbol{X}_k$ de todos os $\mathcal{S}_j$
         \item Modelar um $\lambda_j$ para cada $\mathcal{S}_j$
-        \pause
     \end{itemize}
     \item[Teste] $\mathcal{S}$ diz ser $\mathcal{S}_C \in \boldsymbol{\mathcal{S}}$
-    \pause
     \begin{itemize}
         \item Extrair $\boldsymbol{X}$ do sinal $\boldsymbol{Y}$ falado por $\mathcal{S}_C$
         \item $\Lambda(\boldsymbol{X}) = \log p(\boldsymbol{X}|\lambda_{C}) - \log p(\boldsymbol{X}|\lambda_{bkg})$
         \item $\Lambda(\boldsymbol{X}) \geq \theta \implies aceita$
-        \pause
     \end{itemize}
 \end{description}
 

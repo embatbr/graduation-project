@@ -9,18 +9,14 @@
 \frametitle{Reconhecimento de Locutor}
 \begin{description}
     \item[Identificação] Determina a identidade de um locutor dentro de um conjunto não unitário
-    \pause
     \begin{itemize}
         \item 1 para N
         \item Problema de \textbf{conjunto fechado}
-        \pause
     \end{itemize}
     \item[Verificação] Determina se o locutor é quem diz ser
-    \pause
     \begin{itemize}
         \item 1 para 1
         \item Problema de \textbf{conjunto aberto}
-        \pause
     \end{itemize}
 \end{description}
 
@@ -34,18 +30,14 @@
 \frametitle{Dependência de texto}
 \begin{description}
     \item[Com] Teste $\in$ Treinamento
-    \pause
     \begin{itemize}
         \item Diversos graus de dependência
         \item Teste $\not\in$ Treinamento $\implies$ Retreinamento
-        \pause
     \end{itemize}
     \item[Sem] Teste $\neq$ Treinamento
-    \pause
     \begin{itemize}
         \item Características não textuais
         \item Presentes em diferentes sotaques e até \emph{gibberish}
-        \pause
     \end{itemize}
     \item Este trabalho é focado em \textbf{reconhecimento de locutor independente de texto}
 \end{description}
@@ -72,7 +64,6 @@
     \pause
     \begin{itemize}
         \item Taxas de \textbf{sucesso} para identificação
-        \pause
         \begin{itemize}
             \item Diferentes tamanhos de mistura ($M$)
             \item Diferentes tamanhos de características ($\boldsymbol{\Delta}$)
@@ -81,7 +72,6 @@
         \item Comparar identificações utilizando GMM e FGMM
         \pause
         \item Taxas de \textbf{falsa detecção} e \textbf{falsa rejeição} para verificação
-        \pause
         \begin{itemize}
             \item Diferentes tamanhos de mistura ($M$)
             \item Diferentes tamanhos de características ($\boldsymbol{\Delta}$)

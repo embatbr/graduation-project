@@ -908,9 +908,8 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
         if directory == 'speakers':
             caption = '\n\t\caption{Verification EERs for enrolled speakers.}'
         else:
-            adaptations = directory.split('_')[1]
-            caption = '\n\t\caption{Verification EERs for enrolled speakers with \
-adaptations = %s.}' % adaptations
+            adaptations = ' %s-system' % directory.split('_')[1]
+            caption = '\n\t\caption{Verification EERs for enrolled speakers%s.}' % adaptations
         table = '%s%s' % (table, bottom % (caption, tablename))
         table = table.replace('\t', '%4s' % '')
 
@@ -980,13 +979,14 @@ M{2cm}|M{2cm}|M{2cm}|M{2cm}|}\n\t\hline\n\t$\\boldsymbol{\Delta}$ & \\bf{M} & \
 
 elif command == 'appendix-A':
     appendixname = 'results-identify-ssfgmm'
-    appendix = '\chapter{Identification (SSFGMM)}\n\label{apx:%s}' % appendixname
+    appendix = '\chapter{Identification (Fractional)}\n\label{apx:%s}' % appendixname
 
     for r in rs:
         newpage = '' if r == 0.95 else '\\newpage\n'
         labelname = '%03d' % int(r * 100)
 
-        appendix = '%s\n\n%s\input{chapters/tables/identify_speakers_%.02f}' % (appendix, newpage, r)
+        appendix = '%s\n\n%s\\noindent \\textbf{r = %.02f}' % (appendix, newpage, r)
+        appendix = '%s\n\n\input{chapters/tables/identify_speakers_%.02f}' % (appendix, r)
         appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
         appendix = '%s\n\t\includegraphics{chapters/%s/r-%s}' % (appendix, appendixname, labelname)
         appendix = '%s\n\t\caption{Identification rates for enrolled speakers with \
@@ -1007,36 +1007,34 @@ elif command == 'appendix-B':
     directories.sort()
     directories = [directories[-1]] + directories[0 : -1]
 
-    insert_newpage = False
     for directory in directories:
-        newpage = '\\newpage\n' if insert_newpage else ''
-        insert_newpage = True
-        adaptations = '' if directory == 'speakers' else ' with adaptations = %s' %\
-                                                          directory.split('_')[1]
-        adapt = '' if directory == 'speakers' else '-%s' % directory
+        is_speakers = directory == 'speakers'
+        newpage = '' if is_speakers else '\\newpage\n'
+        adaptations = '' if is_speakers else directory.split('_')[1]
+        adapt = '' if is_speakers else '-%s' % directory
+        system_type = '' if is_speakers else ' %s-system' % adaptations
 
-        appendix = '%s\n\n%s\input{chapters/tables/verify_%s}' % (appendix, newpage,
-                                                                  directory)
+        appendix = '%s\n\n%s\\noindent \\textbf{EERs for enrolled speakers%s}' % (appendix, newpage, system_type)
+        appendix = '%s\n\n\input{chapters/tables/verify_%s}' % (appendix, directory)
 
         appendix = '%s\n\n\\begin{figure}[ht]\n\t\centering' % appendix
         appendix = '%s\n\t\includegraphics{chapters/%s/%s/eer}' % (appendix, appendixname,
                                                                    directory)
-        appendix = '%s\n\t\caption{Verification EERs for enrolled speakers%s.}' % (appendix,
-                                                                                   adaptations)
+        appendix = '%s\n\t\caption{Verification EERs for enrolled speakers %s.}' % (appendix,
+                                                                                    system_type)
         appendix = '%s\n\t\label{fig:%s%s}' % (appendix, appendixname, adapt)
         appendix = '%s\n\end{figure}' % appendix
 
         # inserting DET curves
         for M in Ms:
             newpage = '\\clearpage\n' if M == 128 else ''
-            adapt = '' if directory == 'speakers' else '-%s' % directory
-
+            adapt = '' if is_speakers else '-%s' % directory
 
             appendix = '%s\n\n%s\\begin{figure}[ht]\n\t\centering' % (appendix, newpage)
             appendix = '%s\n\t\includegraphics{chapters/%s/%s/det_M_%d}' % (appendix, appendixname,
                                                                             directory, M)
             appendix = '%s\n\t\caption{DET Curves with $M = %d$, for enrolled speakers%s.}' % \
-                        (appendix, M, adaptations)
+                        (appendix, M, system_type)
             appendix = '%s\n\t\label{fig:%s%s-M_%d}' % (appendix, appendixname, adapt, M)
             appendix = '%s\n\end{figure}' % appendix
 

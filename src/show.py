@@ -99,7 +99,7 @@ if __name__ == '__main__':
         pl.plot(duration, signal, 'b')
         ax.set_xlim([duration[0], duration[-1]])
 
-        FILE_PATH = '../docs/paper/images/chapters/speaker-recognition-systems/speech_signal.png'
+        FILE_PATH = '../docs/report/images/chapters/speaker-recognition-systems/speech_signal.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'mfcc-images':
@@ -130,7 +130,7 @@ if __name__ == '__main__':
             set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(hzpoints, melpoints, 'r')
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/mel_scale.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/mel_scale.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
             emph_magspec = features.magspec(emph_signal)
             pl.fill_between(frequencies, emph_magspec, edgecolor='red', facecolor='red')
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/preemphasis.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/preemphasis.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -183,7 +183,7 @@ if __name__ == '__main__':
             set_plot_params(ax, grid=True, xticks=xticks)
             pl.plot(duration, frame, 'g')
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/framing.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/framing.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
                 for magframe in func_frames:
                     pl.plot(frequencies, magframe)
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/fft.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/fft.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -218,7 +218,7 @@ if __name__ == '__main__':
             for f in fbank:
                 pl.plot(frequencies, f, 'y')
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/filterbank.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/filterbank.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -239,7 +239,7 @@ if __name__ == '__main__':
                 for feats in featsvec.T:
                     pl.plot(feats)
 
-            FILE_PATH = '../docs/paper/images/chapters/feature-extraction/features_and_featuresdB.png'
+            FILE_PATH = '../docs/report/images/chapters/feature-extraction/features_and_featuresdB.png'
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -285,7 +285,7 @@ if __name__ == '__main__':
                 pl.plot(featsvec)
 
                 directory = '/chapters/%s' % ('gmm' if frac else 'feature-extraction')
-                FILE_PATH = '../docs/paper/images%s/%s.png' % (directory, filename)
+                FILE_PATH = '../docs/report/images%s/%s.png' % (directory, filename)
                 pl.savefig(FILE_PATH, bbox_inches='tight')
                 pl.clf()
 
@@ -308,7 +308,7 @@ if __name__ == '__main__':
         set_plot_params(ax)
         plot_gmm(gmm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm.png'
+        FILE_PATH = '../docs/report/images/chapters/gmm/em_algorithm.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'frac-em':
@@ -344,7 +344,7 @@ if __name__ == '__main__':
             print('max = %f, min = %f' % (max(log_likes), min(log_likes)))
 
             r_apx = str(r)[ : 4].replace('.', '')
-            FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm_r%s.png' % r_apx
+            FILE_PATH = '../docs/report/images/chapters/gmm/em_algorithm_r%s.png' % r_apx
             pl.savefig(FILE_PATH, bbox_inches='tight')
             pl.clf()
 
@@ -374,7 +374,81 @@ if __name__ == '__main__':
         set_plot_params(ax)
         plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/chapters/experiments/frac-em-extremes.png'
+        FILE_PATH = '../docs/report/images/chapters/experiments/frac-em-extremes.png'
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+        pl.clf()
+
+    elif command == 'frac-em-r-down':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
+
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
+                                      downlim='01', uplim='19')
+
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec_shifted = featsvec + (1 - min_featsvec)
+
+        frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        frac_gmm.train(featsvec)
+        ax = pl.subplot(2, 2, 1)
+        ax.set_title('non-fractional', fontsize=FONTSIZE)
+        set_plot_params(ax)
+        plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
+
+        rs = [0.95, 0.8, 0.65]
+        for (r, position) in zip(rs, range(2, 5)):
+            print('r = %.2f' % r)
+            featsvec_to_r = featsvec_shifted**r #- (1 - min_featsvec)
+
+            frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
+            frac_gmm.train(featsvec)
+            ax = pl.subplot(2, 2, position)
+            ax.set_title('r = %.2f' % r, fontsize=FONTSIZE)
+            set_plot_params(ax)
+            plot_gmm(frac_gmm, [featsvec, featsvec_to_r], x_axis, y_axis,
+                     param_feats=['b.', 'g.'])
+
+        FILE_PATH = '../docs/presentation/images/frac-em-r-down.png'
+        pl.savefig(FILE_PATH, bbox_inches='tight')
+        pl.clf()
+
+    elif command == 'frac-em-r-up':
+        speaker = args[0]
+        M = int(args[1])
+        delta_order = int(args[2])
+        x_axis = int(args[3])
+        y_axis = int(args[4])
+
+        featsvec = bases.read_speaker(numceps, delta_order, 'enroll_1', speaker,
+                                      downlim='01', uplim='19')
+
+        min_featsvec = np.amin(featsvec, axis=0)
+        featsvec_shifted = featsvec + (1 - min_featsvec)
+
+        frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec)
+        frac_gmm.train(featsvec)
+        ax = pl.subplot(2, 2, 1)
+        ax.set_title('non-fractional', fontsize=FONTSIZE)
+        set_plot_params(ax)
+        plot_gmm(frac_gmm, featsvec, x_axis, y_axis)
+
+        rs = [1.05, 1.2, 1.35]
+        for (r, position) in zip(rs, range(2, 5)):
+            print('r = %.2f' % r)
+            featsvec_to_r = featsvec_shifted**r #- (1 - min_featsvec)
+
+            frac_gmm = mixtures.GMM(speaker, M, numceps, featsvec, r=r)
+            frac_gmm.train(featsvec)
+            ax = pl.subplot(2, 2, position)
+            ax.set_title('r = %.2f' % r, fontsize=FONTSIZE)
+            set_plot_params(ax)
+            plot_gmm(frac_gmm, [featsvec, featsvec_to_r], x_axis, y_axis,
+                     param_feats=['b.', 'g.'])
+
+        FILE_PATH = '../docs/presentation/images/frac-em-r-up.png'
         pl.savefig(FILE_PATH, bbox_inches='tight')
         pl.clf()
 
@@ -420,7 +494,7 @@ if __name__ == '__main__':
         ax.set_title('combined UBM', size=10)
         plot_gmm(ubm, featsvec, x_axis, y_axis)
 
-        FILE_PATH = '../docs/paper/images/chapters/gmm/em_algorithm_ubm_%d.png' % M
+        FILE_PATH = '../docs/report/images/chapters/gmm/em_algorithm_ubm_%d.png' % M
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     elif command == 'adapt':
@@ -457,7 +531,7 @@ if __name__ == '__main__':
         plot_gmm(gmm, [featsvec, featsvec_speaker], x_axis, y_axis,
                  param_feats=['b.', 'g.'])
 
-        FILE_PATH = '../docs/paper/images/chapters/gmm/adapted_%s.png' % adaptations
+        FILE_PATH = '../docs/report/images/chapters/gmm/adapted_%s.png' % adaptations
         pl.savefig(FILE_PATH, bbox_inches='tight')
 
     t = time.time() - t
